@@ -6,6 +6,9 @@
   "assets": {
     "directory": "public"
   },
+  "rules": [
+    { "type": "Text", "globs": ["**/*.html"] }
+  ],
   "routes": [
     {
       "pattern": "embeds.oshineye.dev",

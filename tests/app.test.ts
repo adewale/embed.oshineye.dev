@@ -111,12 +111,50 @@ describe("postMessage resize contract", () => {
   });
 });
 
+describe("GET /v1/avatar-stack", () => {
+  it("returns 200 with correct HTML", async () => {
+    const res = await app.request("/v1/avatar-stack");
+    expect(res.status).toBe(200);
+    const body = await res.text();
+    expect(body).toContain("Avatar Stack");
+    expect(body).toContain("<!DOCTYPE html>");
+    expect(body).toContain("ResizeObserver");
+  });
+
+  it("sets correct response headers", async () => {
+    const res = await app.request("/v1/avatar-stack");
+    expect(res.headers.get("X-Frame-Options")).toBe("ALLOWALL");
+    expect(res.headers.get("Access-Control-Allow-Origin")).toBe("*");
+    expect(res.headers.get("Cache-Control")).toBe(
+      "public, max-age=3600, s-maxage=86400"
+    );
+    const csp = res.headers.get("Content-Security-Policy");
+    expect(csp).toContain("frame-ancestors *");
+  });
+
+  it("HTML contains theme reading logic", async () => {
+    const res = await app.request("/v1/avatar-stack");
+    const body = await res.text();
+    expect(body).toContain("searchParams.get('theme')");
+    expect(body).toContain("'light'");
+    expect(body).toContain("'dark'");
+  });
+
+  it("HTML contains postMessage resize contract", async () => {
+    const res = await app.request("/v1/avatar-stack");
+    const body = await res.text();
+    expect(body).toContain("embeds.oshineye.resize");
+    expect(body).toContain("document.body.scrollHeight");
+  });
+});
+
 describe("catalogue page", () => {
   it("contains links to each embed", async () => {
     const res = await app.request("/");
     const body = await res.text();
     expect(body).toContain('href="/v1/reading-timeline"');
     expect(body).toContain('href="/v1/tech-radar"');
+    expect(body).toContain('href="/v1/avatar-stack"');
   });
 
   it("returns HTML content type", async () => {
