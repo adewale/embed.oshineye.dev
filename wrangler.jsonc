@@ -1,0 +1,15 @@
+{
+  // embeds.oshineye.dev — Cloudflare Worker config
+  "name": "embeds",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-01-13",
+  "assets": {
+    "directory": "public"
+  },
+  "routes": [
+    {
+      "pattern": "embeds.oshineye.dev",
+      "custom_domain": true
+    }
+  ]
+}
