@@ -135,7 +135,7 @@ describe("GET /v1/avatar-stack", () => {
   it("HTML contains theme reading logic", async () => {
     const res = await app.request("/v1/avatar-stack");
     const body = await res.text();
-    expect(body).toContain("searchParams.get('theme')");
+    expect(body).toContain(".get('theme')");
     expect(body).toContain("'light'");
     expect(body).toContain("'dark'");
   });
@@ -198,6 +198,18 @@ describe("avatar-stack live vs playground separation", () => {
     expect(body).not.toContain("btnRemove");
     expect(body).not.toContain("toggleSpread");
     expect(body).not.toContain("hero-title");
+  });
+
+  it("live embed supports layout query param (spread, both, list)", async () => {
+    const res = await app.request("/v1/avatar-stack");
+    const body = await res.text();
+    expect(body).toContain("params.get('layout')");
+    expect(body).toContain("'spread'");
+    expect(body).toContain("'both'");
+    expect(body).toContain("'list'");
+    expect(body).toContain("avatarStackSpread");
+    expect(body).toContain("userList");
+    expect(body).toContain("user-list-item");
   });
 
   it("live embed uses WebSocket for real presence", async () => {

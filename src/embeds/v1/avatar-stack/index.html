@@ -151,6 +151,102 @@
       border-color: var(--color-border);
     }
 
+    /* ===== User List (layout=list) ===== */
+    .user-list-panel {
+      width: 100%;
+      max-width: 560px;
+    }
+
+    .user-list {
+      list-style: none;
+    }
+
+    .user-list-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      transition: background var(--transition-fast);
+    }
+
+    .user-list-item:hover {
+      background: var(--color-surface-hover);
+    }
+
+    .user-list-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 600;
+      color: #ffffff;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+      flex-shrink: 0;
+    }
+
+    .user-list-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .user-list-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--color-text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .user-list-status {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 600;
+      color: var(--color-success);
+    }
+
+    .status-dot {
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      margin-right: 4px;
+      vertical-align: middle;
+      background: var(--color-success);
+    }
+
+    /* ===== Spread variant (scoped CSS variable override) ===== */
+    .avatar-stack-container.spread {
+      --avatar-overlap: -4px;
+      --avatar-overlap-spread: 0px;
+    }
+
+    /* ===== Layout label ===== */
+    .layout-label {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--color-text-dimmed);
+      margin-bottom: 4px;
+      text-align: center;
+    }
+
+    .layout-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .layout-section + .layout-section {
+      margin-top: 10px;
+    }
+
     /* ===== Online count ===== */
     .user-count {
       text-align: center;
@@ -162,19 +258,52 @@
   </style>
 </head>
 <body>
-  <div class="avatar-stack-container">
-    <div class="avatar-stack" id="avatarStack"></div>
+  <div id="compactSection" class="layout-section">
+    <div class="avatar-stack-container">
+      <div class="avatar-stack" id="avatarStack"></div>
+    </div>
+  </div>
+  <div id="spreadSection" class="layout-section" style="display:none">
+    <div class="avatar-stack-container spread">
+      <div class="avatar-stack" id="avatarStackSpread"></div>
+    </div>
+  </div>
+  <div id="listSection" class="layout-section" style="display:none">
+    <div class="user-list-panel">
+      <ul class="user-list" id="userList"></ul>
+    </div>
   </div>
   <div class="user-count" id="userCount"></div>
 
   <script>
     (function () {
       /* ===== Theme ===== */
-      var theme = new URL(location.href).searchParams.get('theme') || 'light';
+      var params = new URL(location.href).searchParams;
+      var theme = params.get('theme') || 'light';
       if (theme === 'dark') {
         document.documentElement.classList.remove('light');
       } else {
         document.documentElement.classList.add('light');
+      }
+
+      /* ===== Layout ===== */
+      var layout = params.get('layout') || 'compact';
+      var compactSection = document.getElementById('compactSection');
+      var spreadSection = document.getElementById('spreadSection');
+      var listSection = document.getElementById('listSection');
+
+      if (layout === 'spread') {
+        compactSection.style.display = 'none';
+        spreadSection.style.display = '';
+      } else if (layout === 'list') {
+        compactSection.style.display = 'none';
+        listSection.style.display = '';
+      } else if (layout === 'both') {
+        compactSection.querySelector('.layout-label') ||
+          compactSection.insertBefore(Object.assign(document.createElement('div'), { className: 'layout-label', textContent: 'Compact' }), compactSection.firstChild);
+        spreadSection.style.display = '';
+        spreadSection.querySelector('.layout-label') ||
+          spreadSection.insertBefore(Object.assign(document.createElement('div'), { className: 'layout-label', textContent: 'Spread' }), spreadSection.firstChild);
       }
 
       /* ===== State ===== */
@@ -183,12 +312,15 @@
       var myId = null;
 
       /* ===== DOM Refs ===== */
-      var stackEl = document.getElementById('avatarStack');
+      var stackEls = [];
+      if (layout !== 'spread' && layout !== 'list') stackEls.push(document.getElementById('avatarStack'));
+      if (layout === 'spread' || layout === 'both') stackEls.push(document.getElementById('avatarStackSpread'));
+      var userListEl = document.getElementById('userList');
       var userCountEl = document.getElementById('userCount');
 
-      /* ===== Render Avatar Stack ===== */
-      function renderStack() {
-        stackEl.innerHTML = '';
+      /* ===== Render into a single stack element ===== */
+      function renderInto(targetEl) {
+        targetEl.innerHTML = '';
 
         var visiblePlayers = players.slice(0, MAX_VISIBLE);
         var overflowCount = players.length - MAX_VISIBLE;
@@ -216,11 +348,11 @@
         }
 
         for (var j = 0; j < elements.length; j++) {
-          stackEl.appendChild(elements[j]);
+          targetEl.appendChild(elements[j]);
         }
 
         /* Staggered entrance */
-        var avatarEls = stackEl.querySelectorAll('.avatar');
+        var avatarEls = targetEl.querySelectorAll('.avatar');
         for (var k = 0; k < avatarEls.length; k++) {
           (function(el, delay) {
             setTimeout(function() {
@@ -228,7 +360,49 @@
             }, delay);
           })(avatarEls[k], 50 + k * 60);
         }
+      }
 
+      /* ===== Render user list (layout=list) ===== */
+      function renderUserList() {
+        userListEl.innerHTML = '';
+        for (var i = 0; i < players.length; i++) {
+          var player = players[i];
+          var li = document.createElement('li');
+          li.className = 'user-list-item';
+
+          var avatarDiv = document.createElement('div');
+          avatarDiv.className = 'user-list-avatar';
+          avatarDiv.style.backgroundColor = player.color;
+          avatarDiv.textContent = player.initial;
+
+          var infoDiv = document.createElement('div');
+          infoDiv.className = 'user-list-info';
+
+          var nameDiv = document.createElement('div');
+          nameDiv.className = 'user-list-name';
+          nameDiv.textContent = player.name + (player.id === myId ? ' (You)' : '');
+
+          var statusDiv = document.createElement('div');
+          statusDiv.className = 'user-list-status';
+          var dot = document.createElement('span');
+          dot.className = 'status-dot';
+          statusDiv.appendChild(dot);
+          statusDiv.appendChild(document.createTextNode('Online'));
+
+          infoDiv.appendChild(nameDiv);
+          infoDiv.appendChild(statusDiv);
+          li.appendChild(avatarDiv);
+          li.appendChild(infoDiv);
+          userListEl.appendChild(li);
+        }
+      }
+
+      /* ===== Render all visible stacks ===== */
+      function renderStack() {
+        for (var s = 0; s < stackEls.length; s++) {
+          renderInto(stackEls[s]);
+        }
+        if (layout === 'list') renderUserList();
         userCountEl.textContent = players.length + ' online';
       }
 
