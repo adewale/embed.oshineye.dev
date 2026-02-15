@@ -2,7 +2,15 @@ import { Hono } from "hono";
 import { embedHeaders } from "./middleware/embed-headers";
 import { embeds, embedsBySlug } from "./embeds/registry";
 
-const app = new Hono();
+export { PresenceRoom } from "./presence/room";
+
+type Env = {
+  Bindings: {
+    PRESENCE_ROOM: DurableObjectNamespace;
+  };
+};
+
+const app = new Hono<Env>();
 
 // Index / catalogue page
 app.get("/", (c) => {
@@ -46,6 +54,24 @@ app.get("/", (c) => {
 </html>`;
 
   return c.html(html);
+});
+
+// WebSocket upgrade for avatar-stack presence (before embed headers middleware)
+app.get("/v1/avatar-stack/ws", async (c) => {
+  const upgradeHeader = c.req.header("Upgrade");
+  if (upgradeHeader !== "websocket") {
+    return c.text("Expected WebSocket", 426);
+  }
+
+  const page = c.req.query("page") || "default";
+  const playerId = c.req.query("playerId");
+  if (!playerId) {
+    return c.text("Missing playerId", 400);
+  }
+
+  const id = c.env.PRESENCE_ROOM.idFromName(page);
+  const stub = c.env.PRESENCE_ROOM.get(id);
+  return stub.fetch(c.req.raw);
 });
 
 // Apply embed headers middleware to all /v1/* routes

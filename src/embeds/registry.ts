@@ -1,6 +1,7 @@
 import readingTimelineHtml from "./v1/reading-timeline/index.html";
 import techRadarHtml from "./v1/tech-radar/index.html";
 import avatarStackHtml from "./v1/avatar-stack/index.html";
+import avatarStackPlaygroundHtml from "./v1/avatar-stack-playground/index.html";
 
 export interface EmbedEntry {
   slug: string;
@@ -25,8 +26,14 @@ export const embeds: EmbedEntry[] = [
   {
     slug: "avatar-stack",
     title: "Avatar Stack",
-    description: "An interactive multiplayer avatar stack with the Keyboardia design language.",
+    description: "A live presence indicator showing visitors currently on the page.",
     html: avatarStackHtml,
+  },
+  {
+    slug: "avatar-stack-playground",
+    title: "Avatar Stack Playground",
+    description: "Interactive demo of the avatar stack with add/remove controls and layout modes.",
+    html: avatarStackPlaygroundHtml,
   },
 ];
 

@@ -148,6 +148,85 @@ describe("GET /v1/avatar-stack", () => {
   });
 });
 
+describe("GET /v1/avatar-stack-playground", () => {
+  it("returns 200 with correct HTML", async () => {
+    const res = await app.request("/v1/avatar-stack-playground");
+    expect(res.status).toBe(200);
+    const body = await res.text();
+    expect(body).toContain("Avatar Stack Playground");
+    expect(body).toContain("<!DOCTYPE html>");
+    expect(body).toContain("ResizeObserver");
+  });
+
+  it("sets correct response headers", async () => {
+    const res = await app.request("/v1/avatar-stack-playground");
+    expect(res.headers.get("X-Frame-Options")).toBe("ALLOWALL");
+    expect(res.headers.get("Access-Control-Allow-Origin")).toBe("*");
+    const csp = res.headers.get("Content-Security-Policy");
+    expect(csp).toContain("frame-ancestors *");
+  });
+
+  it("HTML contains theme reading logic", async () => {
+    const res = await app.request("/v1/avatar-stack-playground");
+    const body = await res.text();
+    expect(body).toContain("searchParams.get('theme')");
+    expect(body).toContain("'light'");
+    expect(body).toContain("'dark'");
+  });
+
+  it("HTML contains postMessage resize contract", async () => {
+    const res = await app.request("/v1/avatar-stack-playground");
+    const body = await res.text();
+    expect(body).toContain("embeds.oshineye.resize");
+    expect(body).toContain("document.body.scrollHeight");
+  });
+
+  it("contains interactive controls", async () => {
+    const res = await app.request("/v1/avatar-stack-playground");
+    const body = await res.text();
+    expect(body).toContain("btnAdd");
+    expect(body).toContain("btnRemove");
+    expect(body).toContain("toggleSpread");
+  });
+});
+
+describe("avatar-stack live vs playground separation", () => {
+  it("live embed does not contain playground controls", async () => {
+    const res = await app.request("/v1/avatar-stack");
+    const body = await res.text();
+    expect(body).not.toContain("btnAdd");
+    expect(body).not.toContain("btnRemove");
+    expect(body).not.toContain("toggleSpread");
+    expect(body).not.toContain("hero-title");
+  });
+
+  it("live embed uses WebSocket for real presence", async () => {
+    const res = await app.request("/v1/avatar-stack");
+    const body = await res.text();
+    expect(body).toContain("WebSocket");
+    expect(body).toContain("sessionStorage");
+    expect(body).toContain("player_joined");
+    expect(body).toContain("player_left");
+    expect(body).toContain("snapshot");
+    expect(body).toContain("/v1/avatar-stack/ws");
+  });
+
+  it("live embed does NOT contain simulated presence", async () => {
+    const res = await app.request("/v1/avatar-stack");
+    const body = await res.text();
+    expect(body).not.toContain("scheduleNextChange");
+    expect(body).not.toContain("PRESENCE_INTERVAL");
+    expect(body).not.toContain("NAMES_POOL");
+  });
+});
+
+describe("GET /v1/avatar-stack/ws", () => {
+  it("returns 426 when not a WebSocket upgrade", async () => {
+    const res = await app.request("/v1/avatar-stack/ws");
+    expect(res.status).toBe(426);
+  });
+});
+
 describe("catalogue page", () => {
   it("contains links to each embed", async () => {
     const res = await app.request("/");
@@ -155,6 +234,7 @@ describe("catalogue page", () => {
     expect(body).toContain('href="/v1/reading-timeline"');
     expect(body).toContain('href="/v1/tech-radar"');
     expect(body).toContain('href="/v1/avatar-stack"');
+    expect(body).toContain('href="/v1/avatar-stack-playground"');
   });
 
   it("returns HTML content type", async () => {

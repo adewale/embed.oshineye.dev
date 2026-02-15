@@ -9,6 +9,14 @@
   "rules": [
     { "type": "Text", "globs": ["**/*.html"] }
   ],
+  "durable_objects": {
+    "bindings": [
+      { "name": "PRESENCE_ROOM", "class_name": "PresenceRoom" }
+    ]
+  },
+  "migrations": [
+    { "tag": "v1", "new_classes": ["PresenceRoom"] }
+  ],
   "routes": [
     {
       "pattern": "embeds.oshineye.dev",
