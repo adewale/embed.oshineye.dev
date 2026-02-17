@@ -426,7 +426,7 @@
 
       function connect() {
         var protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
-        var page = encodeURIComponent(document.referrer || location.href);
+        var page = encodeURIComponent(location.href);
         var url = protocol + '//' + location.host + '/v1/avatar-stack/ws?page=' + page + '&playerId=' + encodeURIComponent(playerId);
 
         ws = new WebSocket(url);

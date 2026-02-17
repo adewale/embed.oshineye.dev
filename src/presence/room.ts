@@ -34,24 +34,32 @@ export class PresenceRoom implements DurableObject {
     const identity = getIdentity(playerId);
     const playerInfo: PlayerInfo = { id: playerId, ...identity };
 
+    // Check if this playerId already has an active socket (duplicate tab)
+    const isNewPlayer = !this.ctx.getWebSockets().some((s) => {
+      const t = this.ctx.getTags(s);
+      return t.length > 0 && t[0] === playerId;
+    });
+
     // Accept with hibernation — store player info as tags for retrieval later
     this.ctx.acceptWebSocket(server, [playerId, identity.name, identity.color, identity.initial]);
 
-    // Build current player list from all connected sockets
+    // Build current player list from all connected sockets (deduplicated)
     const players = this.getPlayers();
 
-    // Send snapshot to the new client (after a microtask so client is ready)
+    // Send snapshot to the new client
     server.send(JSON.stringify({
       type: "snapshot",
       players: players,
       you: playerId,
     }));
 
-    // Broadcast player_joined to everyone else
-    this.broadcast(JSON.stringify({
-      type: "player_joined",
-      player: playerInfo,
-    }), server);
+    // Only broadcast player_joined if this is a genuinely new player
+    if (isNewPlayer) {
+      this.broadcast(JSON.stringify({
+        type: "player_joined",
+        player: playerInfo,
+      }), server);
+    }
 
     return new Response(null, { status: 101, webSocket: client });
   }
@@ -74,21 +82,31 @@ export class PresenceRoom implements DurableObject {
 
     const playerId = tags[0];
 
-    // Broadcast player_left to remaining connections
-    this.broadcast(JSON.stringify({
-      type: "player_left",
-      playerId: playerId,
-    }));
+    // Only broadcast player_left if this was the last socket for this playerId
+    const remaining = this.ctx.getWebSockets().filter((s) => {
+      if (s === ws) return false;
+      const t = this.ctx.getTags(s);
+      return t.length > 0 && t[0] === playerId;
+    });
+
+    if (remaining.length === 0) {
+      this.broadcast(JSON.stringify({
+        type: "player_left",
+        playerId: playerId,
+      }));
+    }
   }
 
-  /** Get all currently connected players from WebSocket tags. */
+  /** Get all currently connected players from WebSocket tags, deduplicated by playerId. */
   private getPlayers(): PlayerInfo[] {
     const sockets = this.ctx.getWebSockets();
+    const seen = new Set<string>();
     const players: PlayerInfo[] = [];
 
     for (const ws of sockets) {
       const tags = this.ctx.getTags(ws);
-      if (tags.length >= 4) {
+      if (tags.length >= 4 && !seen.has(tags[0])) {
+        seen.add(tags[0]);
         players.push({
           id: tags[0],
           name: tags[1],

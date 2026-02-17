@@ -146,6 +146,13 @@ describe("GET /v1/avatar-stack", () => {
     expect(body).toContain("embed.oshineye.resize");
     expect(body).toContain("document.body.scrollHeight");
   });
+
+  it("room key is derived from location.href, not document.referrer", async () => {
+    const res = await app.request("/v1/avatar-stack");
+    const body = await res.text();
+    expect(body).toContain("encodeURIComponent(location.href)");
+    expect(body).not.toContain("document.referrer");
+  });
 });
 
 describe("GET /v1/avatar-stack-playground", () => {
