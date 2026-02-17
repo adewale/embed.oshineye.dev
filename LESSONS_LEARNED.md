@@ -1,6 +1,6 @@
 # Lessons Learned
 
-Captured during the initial build-out of embeds.oshineye.dev from spec to working implementation.
+Captured during the initial build-out of embed.oshineye.dev from spec to working implementation.
 
 ## 1. Spec-first development works well with a clear spec
 
@@ -24,7 +24,7 @@ The `?theme=light|dark` parameter is read by JavaScript in the embed HTML, not b
 
 ## 6. Loader script needs defensive origin validation
 
-The `loader.js` validates `event.origin === "https://embeds.oshineye.dev"` before acting on any postMessage. This is critical security — without it, any page could send resize messages and manipulate the iframe height. The spec was explicit about this, and the implementation follows it exactly.
+The `loader.js` validates `event.origin === "https://embed.oshineye.dev"` before acting on any postMessage. This is critical security — without it, any page could send resize messages and manipulate the iframe height. The spec was explicit about this, and the implementation follows it exactly.
 
 ## 7. The registry pattern makes adding embeds straightforward
 
@@ -36,7 +36,7 @@ Both sample embeds (reading-timeline with DOM manipulation, tech-radar with SVG)
 
 ## 9. Test what the spec specifies, not what the implementation does
 
-The tests check for `searchParams.get('theme')`, `embeds.oshineye.resize`, `document.body.scrollHeight` — strings that the spec defines as part of the contract. They don't test internal function calls or module structure. When the auditor reviewed the tests, the question was "would this test break if we refactored the internals?" and the answer was no for all 14 tests.
+The tests check for `searchParams.get('theme')`, `embed.oshineye.resize`, `document.body.scrollHeight` — strings that the spec defines as part of the contract. They don't test internal function calls or module structure. When the auditor reviewed the tests, the question was "would this test break if we refactored the internals?" and the answer was no for all 14 tests.
 
 ## 10. Audit-then-fix cycles are efficient
 

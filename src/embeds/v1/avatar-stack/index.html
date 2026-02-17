@@ -496,7 +496,7 @@
       /* ===== ResizeObserver for postMessage-based auto-height ===== */
       new ResizeObserver(function () {
         window.parent.postMessage(
-          { type: 'embeds.oshineye.resize', height: document.body.scrollHeight },
+          { type: 'embed.oshineye.resize', height: document.body.scrollHeight },
           '*'
         );
       }).observe(document.body);

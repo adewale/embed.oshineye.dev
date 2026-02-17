@@ -1,4 +1,4 @@
-# embeds.oshineye.dev — Spec
+# embed.oshineye.dev — Spec
 
 ## Overview
 
@@ -22,10 +22,10 @@ A lightweight **TypeScript on Cloudflare Workers** service that hosts self-conta
 
 ```
 ┌─────────────────────┐        ┌──────────────────────────────┐
-│  Blogger / any site │        │  embeds.oshineye.dev         │
+│  Blogger / any site │        │  embed.oshineye.dev          │
 │                     │ iframe │  (Cloudflare Worker + Assets) │
 │  <iframe src="      │───────▶│                              │
-│   embeds.oshineye   │        │  GET /v1/:slug?theme=light   │
+│   embed.oshineye    │        │  GET /v1/:slug?theme=light   │
 │   .dev/v1/chart-1"> │◀───────│  → returns self-contained    │
 │                     │postMsg │    HTML+JS+CSS page           │
 └─────────────────────┘        └──────────────────────────────┘
@@ -38,7 +38,7 @@ A lightweight **TypeScript on Cloudflare Workers** service that hosts self-conta
 - **Language:** TypeScript
 - **Static assets:** Workers Static Assets (configured via `wrangler.jsonc`)
 - **Build/dev:** Wrangler + Vite (optional, for bundling visualisation source)
-- **Custom domain:** `embeds.oshineye.dev` via Cloudflare DNS
+- **Custom domain:** `embed.oshineye.dev` via Cloudflare DNS
 
 ---
 
@@ -67,14 +67,14 @@ Embeds accept a `?theme=light|dark` query parameter (default: `light`). Each vis
 
 ```html
 <div id="embed-reading-timeline"></div>
-<script src="https://embeds.oshineye.dev/static/loader.js"
+<script src="https://embed.oshineye.dev/static/loader.js"
         data-slug="reading-timeline"
         data-target="embed-reading-timeline"
         data-theme="light"></script>
 ```
 
 The **loader script** (`loader.js`):
-- Creates an `<iframe>` pointing to `https://embeds.oshineye.dev/v1/{slug}?theme={theme}`
+- Creates an `<iframe>` pointing to `https://embed.oshineye.dev/v1/{slug}?theme={theme}`
 - Sets `width: 100%; border: none;`
 - Listens for `postMessage` events from the iframe origin to auto-resize height
 - Reads `data-theme` (default: `light`) and forwards it as a query param
@@ -85,7 +85,7 @@ The **loader script** (`loader.js`):
 For sites where custom JS isn't allowed, a plain iframe also works:
 
 ```html
-<iframe src="https://embeds.oshineye.dev/v1/reading-timeline?theme=light"
+<iframe src="https://embed.oshineye.dev/v1/reading-timeline?theme=light"
         style="width:100%; height:600px; border:none;"
         loading="lazy"></iframe>
 ```
@@ -97,10 +97,10 @@ For sites where custom JS isn't allowed, a plain iframe also works:
 The embedded page sends:
 
 ```jsonc
-{ "type": "embeds.oshineye.resize", "height": 482 }
+{ "type": "embed.oshineye.resize", "height": 482 }
 ```
 
-The loader listens and validates `event.origin === "https://embeds.oshineye.dev"` before applying.
+The loader listens and validates `event.origin === "https://embed.oshineye.dev"` before applying.
 
 ---
 
@@ -212,7 +212,7 @@ embeds/
    ```js
    new ResizeObserver(() => {
      window.parent.postMessage(
-       { type: 'embeds.oshineye.resize', height: document.body.scrollHeight },
+       { type: 'embed.oshineye.resize', height: document.body.scrollHeight },
        '*'
      );
    }).observe(document.body);
@@ -230,7 +230,7 @@ Manual via Wrangler from local machine:
 wrangler deploy
 ```
 
-No CI/CD pipeline for v1. The custom domain `embeds.oshineye.dev` is configured in `wrangler.jsonc` and resolved via Cloudflare DNS.
+No CI/CD pipeline for v1. The custom domain `embed.oshineye.dev` is configured in `wrangler.jsonc` and resolved via Cloudflare DNS.
 
 ---
 

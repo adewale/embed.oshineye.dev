@@ -101,12 +101,12 @@ describe("postMessage resize contract", () => {
   it("embeds include the correct postMessage type string", async () => {
     const res1 = await app.request("/v1/reading-timeline");
     const body1 = await res1.text();
-    expect(body1).toContain("embeds.oshineye.resize");
+    expect(body1).toContain("embed.oshineye.resize");
     expect(body1).toContain("document.body.scrollHeight");
 
     const res2 = await app.request("/v1/tech-radar");
     const body2 = await res2.text();
-    expect(body2).toContain("embeds.oshineye.resize");
+    expect(body2).toContain("embed.oshineye.resize");
     expect(body2).toContain("document.body.scrollHeight");
   });
 });
@@ -143,7 +143,7 @@ describe("GET /v1/avatar-stack", () => {
   it("HTML contains postMessage resize contract", async () => {
     const res = await app.request("/v1/avatar-stack");
     const body = await res.text();
-    expect(body).toContain("embeds.oshineye.resize");
+    expect(body).toContain("embed.oshineye.resize");
     expect(body).toContain("document.body.scrollHeight");
   });
 });
@@ -177,7 +177,7 @@ describe("GET /v1/avatar-stack-playground", () => {
   it("HTML contains postMessage resize contract", async () => {
     const res = await app.request("/v1/avatar-stack-playground");
     const body = await res.text();
-    expect(body).toContain("embeds.oshineye.resize");
+    expect(body).toContain("embed.oshineye.resize");
     expect(body).toContain("document.body.scrollHeight");
   });
 

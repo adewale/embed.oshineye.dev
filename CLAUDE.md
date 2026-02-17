@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-A TypeScript Cloudflare Workers service (using Hono) that hosts self-contained interactive visualisations, embedded via `<iframe>` in Blogger posts and other sites. Hosted at `embeds.oshineye.dev`.
+A TypeScript Cloudflare Workers service (using Hono) that hosts self-contained interactive visualisations, embedded via `<iframe>` in Blogger posts and other sites. Hosted at `embed.oshineye.dev`.
 
 The full spec is in `embeds.md` — read it before making architectural decisions.
 
@@ -49,7 +49,7 @@ Every embed response must include `X-Frame-Options: ALLOWALL`, permissive `Conte
 
 1. Create `src/embeds/v1/{slug}/index.html` (self-contained HTML+CSS+JS)
 2. Read theme from URL: `new URL(location.href).searchParams.get('theme') || 'light'`
-3. Include resize observer snippet for auto-height via `postMessage({ type: 'embeds.oshineye.resize', height })`
+3. Include resize observer snippet for auto-height via `postMessage({ type: 'embed.oshineye.resize', height })`
 4. Target < 200 KB compressed per embed
 
 ## Constraints

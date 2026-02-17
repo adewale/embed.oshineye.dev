@@ -1,8 +1,8 @@
 (function () {
   "use strict";
 
-  var EMBED_ORIGIN = "https://embeds.oshineye.dev";
-  var MESSAGE_TYPE = "embeds.oshineye.resize";
+  var EMBED_ORIGIN = "https://embed.oshineye.dev";
+  var MESSAGE_TYPE = "embed.oshineye.resize";
 
   // Find the current script tag (the one that loaded this file)
   var scripts = document.getElementsByTagName("script");
@@ -14,7 +14,7 @@
 
   if (!slug || !targetId) {
     console.error(
-      "[embeds.oshineye] loader.js requires data-slug and data-target attributes."
+      "[embed.oshineye] loader.js requires data-slug and data-target attributes."
     );
     return;
   }
@@ -22,7 +22,7 @@
   var target = document.getElementById(targetId);
   if (!target) {
     console.error(
-      "[embeds.oshineye] Target element not found: #" + targetId
+      "[embed.oshineye] Target element not found: #" + targetId
     );
     return;
   }

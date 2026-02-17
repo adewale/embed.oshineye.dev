@@ -1,4 +1,4 @@
-# embeds.oshineye.dev
+# embed.oshineye.dev
 
 Self-contained interactive visualisations hosted on Cloudflare Workers, designed to be embedded via `<iframe>` in Blogger posts and other sites.
 
@@ -33,7 +33,7 @@ Add `?theme=dark` or `?theme=light` to any embed URL to switch themes.
 
 ```html
 <div id="embed-avatar-stack"></div>
-<script src="https://embeds.oshineye.dev/static/loader.js"
+<script src="https://embed.oshineye.dev/static/loader.js"
         data-slug="avatar-stack"
         data-target="embed-avatar-stack"
         data-theme="light"></script>
@@ -44,7 +44,7 @@ The loader creates the iframe, sets it to full width, and auto-resizes its heigh
 ### Option 2: Raw iframe
 
 ```html
-<iframe src="https://embeds.oshineye.dev/v1/avatar-stack?theme=light"
+<iframe src="https://embed.oshineye.dev/v1/avatar-stack?theme=light"
         style="width:100%; height:600px; border:none;"
         loading="lazy"></iframe>
 ```
@@ -65,7 +65,7 @@ npm test           # Run tests
 npx wrangler deploy
 ```
 
-Deploys to `embeds.oshineye.dev` via Cloudflare Workers.
+Deploys to `embed.oshineye.dev` via Cloudflare Workers.
 
 ## Adding a New Embed
 
@@ -76,7 +76,7 @@ Deploys to `embeds.oshineye.dev` via Cloudflare Workers.
    ```js
    new ResizeObserver(() => {
      window.parent.postMessage(
-       { type: 'embeds.oshineye.resize', height: document.body.scrollHeight },
+       { type: 'embed.oshineye.resize', height: document.body.scrollHeight },
        '*'
      );
    }).observe(document.body);
