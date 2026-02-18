@@ -6,8 +6,6 @@ Self-contained interactive visualisations hosted on Cloudflare Workers, designed
 
 | Embed | Description |
 |-------|-------------|
-| **Reading Timeline** | A timeline visualisation of books read over time |
-| **Tech Radar** | A technology radar showing adoption stages of tools and frameworks |
 | **Avatar Stack** | An interactive avatar stack component with Keyboardia's "industrial warmth" aesthetic |
 | **GitHub Timeline** | A timeline of public GitHub projects for adewale, newest first |
 
@@ -22,8 +20,6 @@ npm run dev
 Then open in your browser:
 
 - **Catalogue page:** http://localhost:8787/
-- **Reading Timeline:** http://localhost:8787/v1/reading-timeline
-- **Tech Radar:** http://localhost:8787/v1/tech-radar
 - **Avatar Stack:** http://localhost:8787/v1/avatar-stack
 - **GitHub Timeline:** http://localhost:8787/v1/github-timeline
 
@@ -64,7 +60,7 @@ The loader creates the iframe, sets it to full width, and auto-resizes its heigh
         loading="lazy"></iframe>
 ```
 
-Replace `avatar-stack` with any slug (`reading-timeline`, `tech-radar`).
+Replace `avatar-stack` with any embed slug.
 
 ## Development
 

@@ -1,5 +1,3 @@
-import readingTimelineHtml from "./v1/reading-timeline/index.html";
-import techRadarHtml from "./v1/tech-radar/index.html";
 import avatarStackHtml from "./v1/avatar-stack/index.html";
 import avatarStackPlaygroundHtml from "./v1/avatar-stack-playground/index.html";
 import githubTimelineHtml from "./v1/github-timeline/index.html";
@@ -12,18 +10,6 @@ export interface EmbedEntry {
 }
 
 export const embeds: EmbedEntry[] = [
-  {
-    slug: "reading-timeline",
-    title: "Reading Timeline",
-    description: "A timeline visualisation of books read over time.",
-    html: readingTimelineHtml,
-  },
-  {
-    slug: "tech-radar",
-    title: "Tech Radar",
-    description: "A technology radar showing adoption stages of tools and frameworks.",
-    html: techRadarHtml,
-  },
   {
     slug: "avatar-stack",
     title: "Avatar Stack",

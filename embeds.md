@@ -55,7 +55,7 @@ GET /static/*                   → JS/CSS/image assets (unversioned, cache-bust
 
 URLs are **versioned** (`/v1/`). This means embed snippets already pasted into blog posts will continue to work indefinitely, even if a future `/v2/` introduces breaking changes to a visualisation's markup, behaviour, or query params.
 
-Each visualisation is a **slug** (e.g. `/v1/reading-timeline`, `/v1/tech-radar`). Adding a new visualisation means adding a new slug and its assets.
+Each visualisation is a **slug** (e.g. `/v1/avatar-stack`, `/v1/github-timeline`). Adding a new visualisation means adding a new slug and its assets.
 
 ### Theme Support
 
@@ -68,10 +68,10 @@ Embeds accept a `?theme=light|dark` query parameter (default: `light`). Each vis
 ### 1. Embed snippet (placed in Blogger HTML editor)
 
 ```html
-<div id="embed-reading-timeline"></div>
+<div id="embed-avatar-stack"></div>
 <script src="https://embed.oshineye.dev/static/loader.js"
-        data-slug="reading-timeline"
-        data-target="embed-reading-timeline"
+        data-slug="avatar-stack"
+        data-target="embed-avatar-stack"
         data-theme="light"></script>
 ```
 
@@ -87,7 +87,7 @@ The **loader script** (`loader.js`):
 For sites where custom JS isn't allowed, a plain iframe also works:
 
 ```html
-<iframe src="https://embed.oshineye.dev/v1/reading-timeline?theme=light"
+<iframe src="https://embed.oshineye.dev/v1/avatar-stack?theme=light"
         style="width:100%; height:600px; border:none;"
         loading="lazy"></iframe>
 ```
@@ -193,10 +193,6 @@ embeds/
 │   │   └── embed-headers.ts    # X-Frame-Options, CSP, CORS, Cache headers
 │   └── embeds/
 │       └── v1/                 # Versioned embed source
-│           ├── reading-timeline/
-│           │   └── index.html  # Self-contained HTML page
-│           ├── tech-radar/
-│           │   └── index.html
 │           ├── avatar-stack/
 │           │   └── index.html
 │           ├── avatar-stack-playground/

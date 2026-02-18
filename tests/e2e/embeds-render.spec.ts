@@ -1,8 +1,6 @@
 import { test, expect } from "@playwright/test";
 
 const EMBEDS = [
-  "reading-timeline",
-  "tech-radar",
   "avatar-stack",
   "avatar-stack-playground",
   "github-timeline",

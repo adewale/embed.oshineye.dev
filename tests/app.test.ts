@@ -6,31 +6,9 @@ describe("GET /", () => {
     const res = await app.request("/");
     expect(res.status).toBe(200);
     const body = await res.text();
-    expect(body).toContain("reading-timeline");
-    expect(body).toContain("tech-radar");
+    expect(body).toContain("avatar-stack");
+    expect(body).toContain("github-timeline");
     expect(body).toContain("Embeds Catalogue");
-  });
-});
-
-describe("GET /v1/reading-timeline", () => {
-  it("returns 200 with correct HTML", async () => {
-    const res = await app.request("/v1/reading-timeline");
-    expect(res.status).toBe(200);
-    const body = await res.text();
-    expect(body).toContain("Reading Timeline");
-    expect(body).toContain("<!DOCTYPE html>");
-    expect(body).toContain("ResizeObserver");
-  });
-});
-
-describe("GET /v1/tech-radar", () => {
-  it("returns 200 with correct HTML", async () => {
-    const res = await app.request("/v1/tech-radar");
-    expect(res.status).toBe(200);
-    const body = await res.text();
-    expect(body).toContain("Tech Radar");
-    expect(body).toContain("<!DOCTYPE html>");
-    expect(body).toContain("ResizeObserver");
   });
 });
 
@@ -43,12 +21,12 @@ describe("GET /v1/nonexistent", () => {
 
 describe("embed response headers", () => {
   it("sets X-Frame-Options: ALLOWALL on /v1/* responses", async () => {
-    const res = await app.request("/v1/reading-timeline");
+    const res = await app.request("/v1/avatar-stack");
     expect(res.headers.get("X-Frame-Options")).toBe("ALLOWALL");
   });
 
   it("sets correct Content-Security-Policy on /v1/* responses", async () => {
-    const res = await app.request("/v1/tech-radar");
+    const res = await app.request("/v1/avatar-stack");
     const csp = res.headers.get("Content-Security-Policy");
     expect(csp).toContain("frame-ancestors *");
     expect(csp).toContain("default-src 'self'");
@@ -60,12 +38,12 @@ describe("embed response headers", () => {
   });
 
   it("sets Access-Control-Allow-Origin: * on /v1/* responses", async () => {
-    const res = await app.request("/v1/reading-timeline");
+    const res = await app.request("/v1/avatar-stack");
     expect(res.headers.get("Access-Control-Allow-Origin")).toBe("*");
   });
 
   it("sets Cache-Control on /v1/* responses", async () => {
-    const res = await app.request("/v1/reading-timeline");
+    const res = await app.request("/v1/avatar-stack");
     expect(res.headers.get("Cache-Control")).toBe(
       "public, max-age=3600, s-maxage=86400"
     );
@@ -75,39 +53,6 @@ describe("embed response headers", () => {
     const res = await app.request("/");
     expect(res.headers.get("X-Frame-Options")).toBeNull();
     expect(res.headers.get("Access-Control-Allow-Origin")).toBeNull();
-  });
-});
-
-describe("theme support", () => {
-  it("embed HTML contains theme reading logic", async () => {
-    const res = await app.request("/v1/reading-timeline");
-    const body = await res.text();
-    // The embed reads ?theme= from the URL
-    expect(body).toContain("searchParams.get('theme')");
-    expect(body).toContain("'light'");
-    expect(body).toContain("'dark'");
-  });
-
-  it("embed HTML for tech-radar contains theme reading logic", async () => {
-    const res = await app.request("/v1/tech-radar");
-    const body = await res.text();
-    expect(body).toContain("searchParams.get('theme')");
-    expect(body).toContain("'light'");
-    expect(body).toContain("'dark'");
-  });
-});
-
-describe("postMessage resize contract", () => {
-  it("embeds include the correct postMessage type string", async () => {
-    const res1 = await app.request("/v1/reading-timeline");
-    const body1 = await res1.text();
-    expect(body1).toContain("embed.oshineye.resize");
-    expect(body1).toContain("document.body.scrollHeight");
-
-    const res2 = await app.request("/v1/tech-radar");
-    const body2 = await res2.text();
-    expect(body2).toContain("embed.oshineye.resize");
-    expect(body2).toContain("document.body.scrollHeight");
   });
 });
 
@@ -336,8 +281,6 @@ describe("catalogue page", () => {
   it("contains links to each embed", async () => {
     const res = await app.request("/");
     const body = await res.text();
-    expect(body).toContain('href="/v1/reading-timeline"');
-    expect(body).toContain('href="/v1/tech-radar"');
     expect(body).toContain('href="/v1/avatar-stack"');
     expect(body).toContain('href="/v1/avatar-stack-playground"');
     expect(body).toContain('href="/v1/github-timeline"');

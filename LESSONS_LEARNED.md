@@ -32,7 +32,7 @@ Each embed is an entry in `registry.ts` with a slug, title, description, and imp
 
 ## 8. Self-contained HTML embeds are surprisingly capable
 
-Both sample embeds (reading-timeline with DOM manipulation, tech-radar with SVG) are fully self-contained single HTML files with inline CSS and JS. No build step, no external dependencies, no framework. The browser APIs available inside an iframe (SVG, Canvas, ResizeObserver, CSS custom properties) are more than sufficient for rich visualisations under the 200 KB budget.
+All embeds are fully self-contained single HTML files with inline CSS and JS. No build step, no external dependencies, no framework. The browser APIs available inside an iframe (SVG, Canvas, ResizeObserver, CSS custom properties) are more than sufficient for rich visualisations under the 200 KB budget.
 
 ## 9. Test what the spec specifies, not what the implementation does
 
