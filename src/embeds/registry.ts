@@ -39,7 +39,7 @@ export const embeds: EmbedEntry[] = [
   {
     slug: "github-timeline",
     title: "GitHub Timeline",
-    description: "A timeline of public GitHub projects for adewale, newest first.",
+    description: "A timeline of public GitHub projects for adewale, newest first. Shows last 2 years by default; use ?years=all for full history, ?forks=show to include forks.",
     html: githubTimelineHtml,
   },
 ];

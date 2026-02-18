@@ -9,6 +9,7 @@ Self-contained interactive visualisations hosted on Cloudflare Workers, designed
 | **Reading Timeline** | A timeline visualisation of books read over time |
 | **Tech Radar** | A technology radar showing adoption stages of tools and frameworks |
 | **Avatar Stack** | An interactive avatar stack component with Keyboardia's "industrial warmth" aesthetic |
+| **GitHub Timeline** | A timeline of public GitHub projects for adewale, newest first |
 
 ## Viewing the Embeds Locally
 
@@ -24,8 +25,22 @@ Then open in your browser:
 - **Reading Timeline:** http://localhost:8787/v1/reading-timeline
 - **Tech Radar:** http://localhost:8787/v1/tech-radar
 - **Avatar Stack:** http://localhost:8787/v1/avatar-stack
+- **GitHub Timeline:** http://localhost:8787/v1/github-timeline
 
 Add `?theme=dark` or `?theme=light` to any embed URL to switch themes.
+
+### GitHub Timeline query parameters
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `theme` | `light` | `light` or `dark` |
+| `years` | `2` | Show repos from the last N years. Use `years=all` to show full history. |
+| `forks` | hidden | Set `forks=show` to include forked repos (dimmed, with muted timeline dot). |
+
+Examples:
+- Last 2 years, original repos only (default): `/v1/github-timeline`
+- Full history with forks: `/v1/github-timeline?years=all&forks=show`
+- Last 5 years, dark theme: `/v1/github-timeline?years=5&theme=dark`
 
 ## Embedding on a Page
 

@@ -14,6 +14,7 @@ interface Repo {
   description: string | null;
   language: string | null;
   created_at: string;
+  fork: boolean;
 }
 
 const USERNAME = "adewale";
@@ -75,10 +76,10 @@ function buildTimelineItems(repos: Repo[]): string {
 
     if (year !== currentYear) {
       currentYear = year;
-      html += `    <div class="year-header">${year}</div>\n`;
+      html += `    <div class="year-header" data-year="${year}">${year}</div>\n`;
     }
 
-    html += `    <div class="timeline-item">\n`;
+    html += `    <div class="timeline-item${repo.fork ? ' fork' : ''}" data-year="${year}" data-fork="${repo.fork}">\n`;
     html += `      <div class="timeline-date">${month} ${year}</div>\n`;
     html += `      <div class="timeline-title"><a href="https://github.com/adewale/${escapeHtml(repo.name)}" target="_blank" rel="noopener">${escapeHtml(repo.name)}</a></div>\n`;
 
@@ -248,6 +249,14 @@ function generateHtml(timelineItems: string): string {
       color: var(--lang-text);
       margin-top: 4px;
     }
+
+    .timeline-item.fork {
+      opacity: 0.55;
+    }
+
+    .timeline-item.fork::before {
+      background: var(--muted);
+    }
   </style>
 </head>
 <body>
@@ -257,9 +266,45 @@ ${timelineItems}  </div>
 
   <script>
     (function () {
-      var theme = new URL(location.href).searchParams.get('theme') || 'light';
+      var params = new URL(location.href).searchParams;
+      var theme = params.get('theme') || 'light';
       if (theme === 'dark') {
         document.documentElement.classList.add('dark');
+      }
+
+      // Hide forks by default; show with ?forks=show
+      if (params.get('forks') !== 'show') {
+        var forks = document.querySelectorAll('[data-fork="true"]');
+        for (var i = 0; i < forks.length; i++) {
+          forks[i].style.display = 'none';
+        }
+        // Hide year headers that have no visible items after them
+        var headers = document.querySelectorAll('.year-header');
+        for (var i = 0; i < headers.length; i++) {
+          var next = headers[i].nextElementSibling;
+          var hasVisible = false;
+          while (next && !next.classList.contains('year-header')) {
+            if (next.style.display !== 'none') hasVisible = true;
+            next = next.nextElementSibling;
+          }
+          if (!hasVisible) headers[i].style.display = 'none';
+        }
+      }
+
+      // Filter by ?years=N (default: 2). Use ?years=all to show full history.
+      var yearsParam = params.get('years');
+      if (yearsParam !== 'all') {
+        var n = parseInt(yearsParam, 10) || 2;
+        if (n > 0) {
+          var cutoff = new Date().getFullYear() - n;
+          var items = document.querySelectorAll('[data-year]');
+          for (var i = 0; i < items.length; i++) {
+            var year = parseInt(items[i].getAttribute('data-year'), 10);
+            if (year <= cutoff) {
+              items[i].style.display = 'none';
+            }
+          }
+        }
       }
 
       // Resize observer for postMessage-based auto-height

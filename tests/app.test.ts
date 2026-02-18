@@ -267,7 +267,7 @@ describe("GET /v1/github-timeline", () => {
   it("HTML contains theme reading logic", async () => {
     const res = await app.request("/v1/github-timeline");
     const body = await res.text();
-    expect(body).toContain("searchParams.get('theme')");
+    expect(body).toContain(".get('theme')");
     expect(body).toContain("'light'");
     expect(body).toContain("'dark'");
   });
@@ -288,6 +288,47 @@ describe("GET /v1/github-timeline", () => {
     expect(body).toContain("timeline-item");
     expect(body).toContain("timeline-title");
     expect(body).toContain("github.com/adewale");
+  });
+
+  it("defaults to showing last 2 years only", async () => {
+    const res = await app.request("/v1/github-timeline");
+    const body = await res.text();
+    // Items and year headers have data-year for client-side filtering
+    expect(body).toContain("data-year=");
+    // Script reads years param with default of 2
+    expect(body).toContain(".get('years')");
+    // Default is 2 years when param is not set
+    expect(body).toMatch(/var\s+n\s*=\s*.*\|\|\s*2/);
+  });
+
+  it("supports ?years=all to show full history", async () => {
+    const res = await app.request("/v1/github-timeline");
+    const body = await res.text();
+    expect(body).toContain("'all'");
+  });
+
+  it("bakes in fork metadata for each repo", async () => {
+    const res = await app.request("/v1/github-timeline");
+    const body = await res.text();
+    // Each timeline item has a data-fork attribute
+    expect(body).toContain('data-fork="true"');
+    expect(body).toContain('data-fork="false"');
+  });
+
+  it("hides forks by default, shows with ?forks=show", async () => {
+    const res = await app.request("/v1/github-timeline");
+    const body = await res.text();
+    // Script reads the forks param and hides forks by default
+    expect(body).toContain(".get('forks')");
+    expect(body).toContain("data-fork");
+  });
+
+  it("styles forks differently: muted dot and dimmed card", async () => {
+    const res = await app.request("/v1/github-timeline");
+    const body = await res.text();
+    // CSS for fork items: muted dot color and reduced opacity
+    expect(body).toContain(".timeline-item.fork");
+    expect(body).toContain("opacity");
   });
 });
 
