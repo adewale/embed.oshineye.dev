@@ -5,6 +5,7 @@ const EMBEDS = [
   "tech-radar",
   "avatar-stack",
   "avatar-stack-playground",
+  "github-timeline",
 ];
 
 for (const slug of EMBEDS) {

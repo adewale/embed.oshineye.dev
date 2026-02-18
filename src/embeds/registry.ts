@@ -2,6 +2,7 @@ import readingTimelineHtml from "./v1/reading-timeline/index.html";
 import techRadarHtml from "./v1/tech-radar/index.html";
 import avatarStackHtml from "./v1/avatar-stack/index.html";
 import avatarStackPlaygroundHtml from "./v1/avatar-stack-playground/index.html";
+import githubTimelineHtml from "./v1/github-timeline/index.html";
 
 export interface EmbedEntry {
   slug: string;
@@ -34,6 +35,12 @@ export const embeds: EmbedEntry[] = [
     title: "Avatar Stack Playground",
     description: "Interactive demo of the avatar stack with add/remove controls and layout modes.",
     html: avatarStackPlaygroundHtml,
+  },
+  {
+    slug: "github-timeline",
+    title: "GitHub Timeline",
+    description: "A timeline of public GitHub projects for adewale, newest first.",
+    html: githubTimelineHtml,
   },
 ];
 

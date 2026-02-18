@@ -246,6 +246,51 @@ describe("GET /v1/avatar-stack/ws", () => {
   });
 });
 
+describe("GET /v1/github-timeline", () => {
+  it("returns 200 with correct HTML", async () => {
+    const res = await app.request("/v1/github-timeline");
+    expect(res.status).toBe(200);
+    const body = await res.text();
+    expect(body).toContain("GitHub Timeline");
+    expect(body).toContain("<!DOCTYPE html>");
+    expect(body).toContain("ResizeObserver");
+  });
+
+  it("sets correct response headers", async () => {
+    const res = await app.request("/v1/github-timeline");
+    expect(res.headers.get("X-Frame-Options")).toBe("ALLOWALL");
+    expect(res.headers.get("Access-Control-Allow-Origin")).toBe("*");
+    const csp = res.headers.get("Content-Security-Policy");
+    expect(csp).toContain("frame-ancestors *");
+  });
+
+  it("HTML contains theme reading logic", async () => {
+    const res = await app.request("/v1/github-timeline");
+    const body = await res.text();
+    expect(body).toContain("searchParams.get('theme')");
+    expect(body).toContain("'light'");
+    expect(body).toContain("'dark'");
+  });
+
+  it("HTML contains postMessage resize contract", async () => {
+    const res = await app.request("/v1/github-timeline");
+    const body = await res.text();
+    expect(body).toContain("embed.oshineye.resize");
+    expect(body).toContain("document.body.scrollHeight");
+  });
+
+  it("contains baked-in repo data (no runtime API call)", async () => {
+    const res = await app.request("/v1/github-timeline");
+    const body = await res.text();
+    // Should NOT fetch from GitHub at runtime
+    expect(body).not.toContain("api.github.com");
+    // Should contain actual baked-in timeline entries
+    expect(body).toContain("timeline-item");
+    expect(body).toContain("timeline-title");
+    expect(body).toContain("github.com/adewale");
+  });
+});
+
 describe("catalogue page", () => {
   it("contains links to each embed", async () => {
     const res = await app.request("/");
@@ -254,6 +299,7 @@ describe("catalogue page", () => {
     expect(body).toContain('href="/v1/tech-radar"');
     expect(body).toContain('href="/v1/avatar-stack"');
     expect(body).toContain('href="/v1/avatar-stack-playground"');
+    expect(body).toContain('href="/v1/github-timeline"');
   });
 
   it("returns HTML content type", async () => {
