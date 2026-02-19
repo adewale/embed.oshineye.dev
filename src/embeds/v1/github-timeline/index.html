@@ -156,8 +156,62 @@
       opacity: 0.55;
     }
 
-    .timeline-item.dot-muted::before {
+    .timeline-item.fork::before {
       background: var(--muted);
+    }
+
+    .timeline-item.lang-python::before {
+      background: #3572A5;
+    }
+
+    .timeline-item.lang-typescript::before {
+      background: #3178C6;
+    }
+
+    .timeline-item.lang-javascript::before {
+      background: #f1e05a;
+    }
+
+    .timeline-item.lang-go::before {
+      background: #00ADD8;
+    }
+
+    .timeline-item.lang-java::before {
+      background: #b07219;
+    }
+
+    .timeline-item.lang-ruby::before {
+      background: #701516;
+    }
+
+    .timeline-item.lang-cpp::before {
+      background: #f34b7d;
+    }
+
+    .timeline-item.lang-html::before {
+      background: #e34c26;
+    }
+
+    .timeline-item.lang-css::before {
+      background: #563d7c;
+    }
+
+    .timeline-item.lang-shell::before {
+      background: #89e051;
+    }
+
+    .timeline-tag {
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+
+    .timeline-tag:hover {
+      opacity: 0.8;
+    }
+
+    .timeline-tag-active {
+      outline: 2px solid var(--accent);
+      outline-offset: 1px;
     }
   </style>
 </head>
@@ -165,64 +219,64 @@
   <h1>GitHub Timeline</h1>
   <div class="timeline" id="timeline">
     <div class="year-header" data-year="2026">2026</div>
-    <div class="timeline-item" data-year="2026" data-fork="false">
+    <div class="timeline-item lang-html" data-year="2026" data-fork="false" data-language="html">
       <div class="timeline-date">Feb 2026</div>
       <div class="timeline-title"><a href="https://github.com/adewale/oshineye-dev" target="_blank" rel="noopener">oshineye-dev</a></div>
       <span class="timeline-tag">HTML</span>
     </div>
-    <div class="timeline-item" data-year="2026" data-fork="false">
+    <div class="timeline-item lang-python" data-year="2026" data-fork="false" data-language="python">
       <div class="timeline-date">Feb 2026</div>
       <div class="timeline-title"><a href="https://github.com/adewale/skill_scanner" target="_blank" rel="noopener">skill_scanner</a></div>
       <div class="timeline-desc">A _very_ simple tool to detect malware and security antipatterns in AI agent skills</div>
       <span class="timeline-tag">Python</span>
     </div>
-    <div class="timeline-item fork dot-muted" data-year="2026" data-fork="true">
+    <div class="timeline-item fork" data-year="2026" data-fork="true">
       <div class="timeline-date">Feb 2026</div>
       <div class="timeline-title"><a href="https://github.com/adewale/python-workers-examples" target="_blank" rel="noopener">python-workers-examples</a></div>
     </div>
-    <div class="timeline-item" data-year="2026" data-fork="false">
+    <div class="timeline-item lang-typescript" data-year="2026" data-fork="false" data-language="typescript">
       <div class="timeline-date">Jan 2026</div>
       <div class="timeline-title"><a href="https://github.com/adewale/vaders" target="_blank" rel="noopener">vaders</a></div>
       <div class="timeline-desc">An OpenTUI Space Invaders clone (with elements of Galaga and Galaxian) supporting solo play or 2-4 player co-op, synchronised via Cloudflare Durable Objects.</div>
       <span class="timeline-tag">TypeScript</span>
     </div>
-    <div class="timeline-item" data-year="2026" data-fork="false">
+    <div class="timeline-item lang-python" data-year="2026" data-fork="false" data-language="python">
       <div class="timeline-date">Jan 2026</div>
       <div class="timeline-title"><a href="https://github.com/adewale/planet_cf" target="_blank" rel="noopener">planet_cf</a></div>
       <div class="timeline-desc">A Planet for Cloudflare-adjacent blogs</div>
       <span class="timeline-tag">Python</span>
     </div>
     <div class="year-header" data-year="2025">2025</div>
-    <div class="timeline-item" data-year="2025" data-fork="false">
+    <div class="timeline-item lang-typescript" data-year="2025" data-fork="false" data-language="typescript">
       <div class="timeline-date">Dec 2025</div>
       <div class="timeline-title"><a href="https://github.com/adewale/garten" target="_blank" rel="noopener">garten</a></div>
       <div class="timeline-desc">Animated canvas garden that grows over time</div>
       <span class="timeline-tag">TypeScript</span>
     </div>
-    <div class="timeline-item fork dot-muted" data-year="2025" data-fork="true">
+    <div class="timeline-item fork" data-year="2025" data-fork="true">
       <div class="timeline-date">Dec 2025</div>
       <div class="timeline-title"><a href="https://github.com/adewale/who-to-bother-at-on-x" target="_blank" rel="noopener">who-to-bother-at-on-x</a></div>
       <div class="timeline-desc">Find the right people to reach out to at your favorite tech companies</div>
     </div>
-    <div class="timeline-item" data-year="2025" data-fork="false">
+    <div class="timeline-item lang-typescript" data-year="2025" data-fork="false" data-language="typescript">
       <div class="timeline-date">Dec 2025</div>
       <div class="timeline-title"><a href="https://github.com/adewale/keyboardia" target="_blank" rel="noopener">keyboardia</a></div>
       <div class="timeline-desc">Multiplayer step sequencer with polyrhythmic patterns for real-time collaboration</div>
       <span class="timeline-tag">TypeScript</span>
     </div>
-    <div class="timeline-item" data-year="2025" data-fork="false">
+    <div class="timeline-item lang-python" data-year="2025" data-fork="false" data-language="python">
       <div class="timeline-date">Dec 2025</div>
       <div class="timeline-title"><a href="https://github.com/adewale/claude-history-explorer" target="_blank" rel="noopener">claude-history-explorer</a></div>
       <div class="timeline-desc">Python CLI tool to explore, search and visualise your Claude Code conversation history</div>
       <span class="timeline-tag">Python</span>
     </div>
-    <div class="timeline-item" data-year="2025" data-fork="false">
+    <div class="timeline-item lang-html" data-year="2025" data-fork="false" data-language="html">
       <div class="timeline-date">Dec 2025</div>
       <div class="timeline-title"><a href="https://github.com/adewale/fibonacci_durable_object" target="_blank" rel="noopener">fibonacci_durable_object</a></div>
       <div class="timeline-desc">A very simple demonstration of a Durable Object</div>
       <span class="timeline-tag">HTML</span>
     </div>
-    <div class="timeline-item" data-year="2025" data-fork="false">
+    <div class="timeline-item lang-typescript" data-year="2025" data-fork="false" data-language="typescript">
       <div class="timeline-date">Nov 2025</div>
       <div class="timeline-title"><a href="https://github.com/adewale/next-starter-template" target="_blank" rel="noopener">next-starter-template</a></div>
       <span class="timeline-tag">TypeScript</span>
@@ -231,191 +285,191 @@
       <div class="timeline-date">Nov 2025</div>
       <div class="timeline-title"><a href="https://github.com/adewale/cf-advisor-skill" target="_blank" rel="noopener">cf-advisor-skill</a></div>
     </div>
-    <div class="timeline-item fork dot-muted" data-year="2025" data-fork="true">
+    <div class="timeline-item fork lang-go" data-year="2025" data-fork="true" data-language="go">
       <div class="timeline-date">Oct 2025</div>
       <div class="timeline-title"><a href="https://github.com/adewale/livecore" target="_blank" rel="noopener">livecore</a></div>
       <div class="timeline-desc">Linux low-pause core file dumper from an existing running process</div>
       <span class="timeline-tag">Go</span>
     </div>
-    <div class="timeline-item" data-year="2025" data-fork="false">
+    <div class="timeline-item lang-python" data-year="2025" data-fork="false" data-language="python">
       <div class="timeline-date">Oct 2025</div>
       <div class="timeline-title"><a href="https://github.com/adewale/geist_fabrik" target="_blank" rel="noopener">geist_fabrik</a></div>
       <div class="timeline-desc">GeistFabrik is a Python-based divergence engine for Obsidian vaults that generates creative suggestions through both code and Tracery grammars.</div>
       <span class="timeline-tag">Python</span>
     </div>
-    <div class="timeline-item" data-year="2025" data-fork="false">
+    <div class="timeline-item lang-go" data-year="2025" data-fork="false" data-language="go">
       <div class="timeline-date">Oct 2025</div>
       <div class="timeline-title"><a href="https://github.com/adewale/olsen" target="_blank" rel="noopener">olsen</a></div>
       <div class="timeline-desc">A local-first CLI tool for faceted browsing of photographs in DNG (and other file formats)</div>
       <span class="timeline-tag">Go</span>
     </div>
-    <div class="timeline-item" data-year="2025" data-fork="false">
+    <div class="timeline-item lang-go" data-year="2025" data-fork="false" data-language="go">
       <div class="timeline-date">Oct 2025</div>
       <div class="timeline-title"><a href="https://github.com/adewale/rogue_planet" target="_blank" rel="noopener">rogue_planet</a></div>
       <div class="timeline-desc">A modern feed aggregator written in Go, inspired by Planet Planet, Planet Venus and friends.</div>
       <span class="timeline-tag">Go</span>
     </div>
     <div class="year-header" data-year="2016">2016</div>
-    <div class="timeline-item fork dot-muted" data-year="2016" data-fork="true">
+    <div class="timeline-item fork lang-html" data-year="2016" data-fork="true" data-language="html">
       <div class="timeline-date">Mar 2016</div>
       <div class="timeline-title"><a href="https://github.com/adewale/amp-by-example" target="_blank" rel="noopener">amp-by-example</a></div>
       <div class="timeline-desc">Accelerated Mobile Pages in Action</div>
       <span class="timeline-tag">HTML</span>
     </div>
-    <div class="timeline-item fork dot-muted" data-year="2016" data-fork="true">
+    <div class="timeline-item fork lang-javascript" data-year="2016" data-fork="true" data-language="javascript">
       <div class="timeline-date">Jan 2016</div>
       <div class="timeline-title"><a href="https://github.com/adewale/amphtml" target="_blank" rel="noopener">amphtml</a></div>
       <div class="timeline-desc">AMP HTML source code, samples, and documentation.  See below for more info.</div>
       <span class="timeline-tag">JavaScript</span>
     </div>
     <div class="year-header" data-year="2015">2015</div>
-    <div class="timeline-item fork dot-muted" data-year="2015" data-fork="true">
+    <div class="timeline-item fork lang-python" data-year="2015" data-fork="true" data-language="python">
       <div class="timeline-date">Aug 2015</div>
       <div class="timeline-title"><a href="https://github.com/adewale/AxmlParserPY" target="_blank" rel="noopener">AxmlParserPY</a></div>
       <div class="timeline-desc">Python AxmlParser</div>
       <span class="timeline-tag">Python</span>
     </div>
-    <div class="timeline-item" data-year="2015" data-fork="false">
+    <div class="timeline-item lang-html" data-year="2015" data-fork="false" data-language="html">
       <div class="timeline-date">Jul 2015</div>
       <div class="timeline-title"><a href="https://github.com/adewale/adewale.github.io" target="_blank" rel="noopener">adewale.github.io</a></div>
       <div class="timeline-desc">My old-fashioned static website</div>
       <span class="timeline-tag">HTML</span>
     </div>
-    <div class="timeline-item fork dot-muted" data-year="2015" data-fork="true">
+    <div class="timeline-item fork lang-go" data-year="2015" data-fork="true" data-language="go">
       <div class="timeline-date">Jun 2015</div>
       <div class="timeline-title"><a href="https://github.com/adewale/par" target="_blank" rel="noopener">par</a></div>
       <span class="timeline-tag">Go</span>
     </div>
-    <div class="timeline-item fork dot-muted" data-year="2015" data-fork="true">
+    <div class="timeline-item fork lang-java" data-year="2015" data-fork="true" data-language="java">
       <div class="timeline-date">Mar 2015</div>
       <div class="timeline-title"><a href="https://github.com/adewale/grpc-java" target="_blank" rel="noopener">grpc-java</a></div>
       <div class="timeline-desc">The Java gRPC implementation. HTTP/2 based RPC</div>
       <span class="timeline-tag">Java</span>
     </div>
-    <div class="timeline-item fork dot-muted" data-year="2015" data-fork="true">
+    <div class="timeline-item fork lang-cpp" data-year="2015" data-fork="true" data-language="c++">
       <div class="timeline-date">Feb 2015</div>
       <div class="timeline-title"><a href="https://github.com/adewale/grpc-common" target="_blank" rel="noopener">grpc-common</a></div>
       <div class="timeline-desc">Documents, resources, examples shared across other gRPC repos.</div>
       <span class="timeline-tag">C++</span>
     </div>
     <div class="year-header" data-year="2014">2014</div>
-    <div class="timeline-item fork dot-muted" data-year="2014" data-fork="true">
+    <div class="timeline-item fork lang-css" data-year="2014" data-fork="true" data-language="css">
       <div class="timeline-date">Jan 2014</div>
       <div class="timeline-title"><a href="https://github.com/adewale/speakerconf.github.io" target="_blank" rel="noopener">speakerconf.github.io</a></div>
       <div class="timeline-desc">speakerconf website</div>
       <span class="timeline-tag">CSS</span>
     </div>
     <div class="year-header" data-year="2013">2013</div>
-    <div class="timeline-item fork dot-muted" data-year="2013" data-fork="true">
+    <div class="timeline-item fork lang-python" data-year="2013" data-fork="true" data-language="python">
       <div class="timeline-date">Jul 2013</div>
       <div class="timeline-title"><a href="https://github.com/adewale/venus" target="_blank" rel="noopener">venus</a></div>
       <div class="timeline-desc">Planet Venus is an awesome ‘river of news’ feed reader. It downloads news feeds published by web sites and aggregates their content together into a single combined feed, latest news first.</div>
       <span class="timeline-tag">Python</span>
     </div>
-    <div class="timeline-item" data-year="2013" data-fork="false">
+    <div class="timeline-item lang-javascript" data-year="2013" data-fork="false" data-language="javascript">
       <div class="timeline-date">Jul 2013</div>
       <div class="timeline-title"><a href="https://github.com/adewale/acnpov" target="_blank" rel="noopener">acnpov</a></div>
       <div class="timeline-desc">A rogue planet of my own</div>
       <span class="timeline-tag">JavaScript</span>
     </div>
     <div class="year-header" data-year="2012">2012</div>
-    <div class="timeline-item fork dot-muted" data-year="2012" data-fork="true">
+    <div class="timeline-item fork lang-python" data-year="2012" data-fork="true" data-language="python">
       <div class="timeline-date">Nov 2012</div>
       <div class="timeline-title"><a href="https://github.com/adewale/qc" target="_blank" rel="noopener">qc</a></div>
       <div class="timeline-desc">A Quickcheck implementation for Python</div>
       <span class="timeline-tag">Python</span>
     </div>
     <div class="year-header" data-year="2011">2011</div>
-    <div class="timeline-item" data-year="2011" data-fork="false">
+    <div class="timeline-item lang-html" data-year="2011" data-fork="false" data-language="html">
       <div class="timeline-date">Sep 2011</div>
       <div class="timeline-title"><a href="https://github.com/adewale/wwwoshineye" target="_blank" rel="noopener">wwwoshineye</a></div>
       <div class="timeline-desc">My personal website</div>
       <span class="timeline-tag">HTML</span>
     </div>
-    <div class="timeline-item fork dot-muted" data-year="2011" data-fork="true">
+    <div class="timeline-item fork" data-year="2011" data-fork="true">
       <div class="timeline-date">Jul 2011</div>
       <div class="timeline-title"><a href="https://github.com/adewale/visivotab" target="_blank" rel="noopener">visivotab</a></div>
       <div class="timeline-desc">Beautiful photos hand-selected by Flickr's visivo for your New Tab</div>
     </div>
     <div class="year-header" data-year="2010">2010</div>
-    <div class="timeline-item" data-year="2010" data-fork="false">
+    <div class="timeline-item lang-python" data-year="2010" data-fork="false" data-language="python">
       <div class="timeline-date">Nov 2010</div>
       <div class="timeline-title"><a href="https://github.com/adewale/buzzsearchengine" target="_blank" rel="noopener">buzzsearchengine</a></div>
       <div class="timeline-desc">It's a search engine for Buzz</div>
       <span class="timeline-tag">Python</span>
     </div>
-    <div class="timeline-item" data-year="2010" data-fork="false">
+    <div class="timeline-item lang-shell" data-year="2010" data-fork="false" data-language="shell">
       <div class="timeline-date">Oct 2010</div>
       <div class="timeline-title"><a href="https://github.com/adewale/dotfiles" target="_blank" rel="noopener">dotfiles</a></div>
       <div class="timeline-desc">My dotfiles (.vimrc and friends) for my various Macs</div>
       <span class="timeline-tag">Shell</span>
     </div>
-    <div class="timeline-item fork dot-muted" data-year="2010" data-fork="true">
+    <div class="timeline-item fork lang-java" data-year="2010" data-fork="true" data-language="java">
       <div class="timeline-date">Oct 2010</div>
       <div class="timeline-title"><a href="https://github.com/adewale/cq-challenge-markup" target="_blank" rel="noopener">cq-challenge-markup</a></div>
       <div class="timeline-desc">Code Quarterly Code Challenge -- Markup</div>
       <span class="timeline-tag">Java</span>
     </div>
-    <div class="timeline-item" data-year="2010" data-fork="false">
+    <div class="timeline-item lang-ruby" data-year="2010" data-fork="false" data-language="ruby">
       <div class="timeline-date">Oct 2010</div>
       <div class="timeline-title"><a href="https://github.com/adewale/scna-randori" target="_blank" rel="noopener">scna-randori</a></div>
       <div class="timeline-desc">Randori exercise from SCNA 2010</div>
       <span class="timeline-tag">Ruby</span>
     </div>
-    <div class="timeline-item fork dot-muted" data-year="2010" data-fork="true">
+    <div class="timeline-item fork" data-year="2010" data-fork="true">
       <div class="timeline-date">Oct 2010</div>
       <div class="timeline-title"><a href="https://github.com/adewale/oembed" target="_blank" rel="noopener">oembed</a></div>
       <div class="timeline-desc">The oEmbed Spec</div>
     </div>
-    <div class="timeline-item" data-year="2010" data-fork="false">
+    <div class="timeline-item lang-python" data-year="2010" data-fork="false" data-language="python">
       <div class="timeline-date">Sep 2010</div>
       <div class="timeline-title"><a href="https://github.com/adewale/tools" target="_blank" rel="noopener">tools</a></div>
       <div class="timeline-desc">Weird and wacky tools and scripts that I hack together</div>
       <span class="timeline-tag">Python</span>
     </div>
-    <div class="timeline-item" data-year="2010" data-fork="false">
+    <div class="timeline-item lang-python" data-year="2010" data-fork="false" data-language="python">
       <div class="timeline-date">Sep 2010</div>
       <div class="timeline-title"><a href="https://github.com/adewale/Buzz-Chat-Bot" target="_blank" rel="noopener">Buzz-Chat-Bot</a></div>
       <div class="timeline-desc">A jaiku-style chat bot for Buzz using the new discovery-based client libraries</div>
       <span class="timeline-tag">Python</span>
     </div>
-    <div class="timeline-item" data-year="2010" data-fork="false">
+    <div class="timeline-item lang-python" data-year="2010" data-fork="false" data-language="python">
       <div class="timeline-date">Aug 2010</div>
       <div class="timeline-title"><a href="https://github.com/adewale/oauthstarter" target="_blank" rel="noopener">oauthstarter</a></div>
       <div class="timeline-desc">Simple starter project for people who want to use OAuth on App Engine</div>
       <span class="timeline-tag">Python</span>
     </div>
-    <div class="timeline-item fork dot-muted" data-year="2010" data-fork="true">
+    <div class="timeline-item fork lang-python" data-year="2010" data-fork="true" data-language="python">
       <div class="timeline-date">Jul 2010</div>
       <div class="timeline-title"><a href="https://github.com/adewale/gaetestbed" target="_blank" rel="noopener">gaetestbed</a></div>
       <div class="timeline-desc">A suite of base test cases that simplify unit testing for AppEngine applications. Documentation is here: http://gaetestbed.geewax.org/index.html</div>
       <span class="timeline-tag">Python</span>
     </div>
-    <div class="timeline-item" data-year="2010" data-fork="false">
+    <div class="timeline-item lang-python" data-year="2010" data-fork="false" data-language="python">
       <div class="timeline-date">Jun 2010</div>
       <div class="timeline-title"><a href="https://github.com/adewale/BuzzWatching" target="_blank" rel="noopener">BuzzWatching</a></div>
       <div class="timeline-desc">Slicing through the buzz, so you don't have to!</div>
       <span class="timeline-tag">Python</span>
     </div>
-    <div class="timeline-item fork dot-muted" data-year="2010" data-fork="true">
+    <div class="timeline-item fork lang-python" data-year="2010" data-fork="true" data-language="python">
       <div class="timeline-date">Jun 2010</div>
       <div class="timeline-title"><a href="https://github.com/adewale/feedvalidator" target="_blank" rel="noopener">feedvalidator</a></div>
       <div class="timeline-desc">A validator for syndicated feeds. It works with Atom, RSS feeds as well as OPML and KML formats.</div>
       <span class="timeline-tag">Python</span>
     </div>
-    <div class="timeline-item fork dot-muted" data-year="2010" data-fork="true">
+    <div class="timeline-item fork lang-javascript" data-year="2010" data-fork="true" data-language="javascript">
       <div class="timeline-date">Apr 2010</div>
       <div class="timeline-title"><a href="https://github.com/adewale/gae-contactswhovefaved" target="_blank" rel="noopener">gae-contactswhovefaved</a></div>
       <span class="timeline-tag">JavaScript</span>
     </div>
     <div class="year-header" data-year="2009">2009</div>
-    <div class="timeline-item" data-year="2009" data-fork="false">
+    <div class="timeline-item lang-python" data-year="2009" data-fork="false" data-language="python">
       <div class="timeline-date">Dec 2009</div>
       <div class="timeline-title"><a href="https://github.com/adewale/streamer" target="_blank" rel="noopener">streamer</a></div>
       <div class="timeline-desc">A feed aggregator powered by Pubsubhubbub</div>
       <span class="timeline-tag">Python</span>
     </div>
-    <div class="timeline-item fork dot-muted" data-year="2009" data-fork="true">
+    <div class="timeline-item fork" data-year="2009" data-fork="true">
       <div class="timeline-date">May 2009</div>
       <div class="timeline-title"><a href="https://github.com/adewale/codekata" target="_blank" rel="noopener">codekata</a></div>
       <div class="timeline-desc">This project is designed to provide a place for exercises which craftsman can solve to sharpen their skills.</div>
@@ -432,23 +486,71 @@
 
 
       // Hide forks by default; show with ?forks=show
-      if (params.get('forks') !== 'show') {
+      var showForks = params.get('forks') === 'show';
+      if (!showForks) {
         var forks = document.querySelectorAll('[data-fork="true"]');
         for (var i = 0; i < forks.length; i++) {
           forks[i].style.display = 'none';
+          forks[i].setAttribute('data-hidden-by-forks', 'true');
         }
-        // Hide year headers that have no visible items after them
+      }
+
+      // Refresh year header visibility based on visible children
+      function refreshYearHeaders() {
         var headers = document.querySelectorAll('.year-header');
         for (var i = 0; i < headers.length; i++) {
+          if (headers[i].getAttribute('data-hidden-by-years') === 'true') continue;
           var next = headers[i].nextElementSibling;
           var hasVisible = false;
           while (next && !next.classList.contains('year-header')) {
             if (next.style.display !== 'none') hasVisible = true;
             next = next.nextElementSibling;
           }
-          if (!hasVisible) headers[i].style.display = 'none';
+          headers[i].style.display = hasVisible ? '' : 'none';
         }
       }
+      refreshYearHeaders();
+
+      // Interactive language tag filtering
+      var activeFilter = null;
+      document.getElementById('timeline').addEventListener('click', function (e) {
+        var tag = e.target.closest('.timeline-tag');
+        if (!tag) return;
+
+        var filterText = tag.textContent.trim().toLowerCase();
+
+        if (activeFilter === filterText) {
+          activeFilter = null;
+        } else {
+          activeFilter = filterText;
+        }
+
+        // Update active indicator on all tags
+        var allTags = document.querySelectorAll('.timeline-tag');
+        for (var i = 0; i < allTags.length; i++) {
+          if (activeFilter && allTags[i].textContent.trim().toLowerCase() === activeFilter) {
+            allTags[i].classList.add('timeline-tag-active');
+          } else {
+            allTags[i].classList.remove('timeline-tag-active');
+          }
+        }
+
+        // Show/hide items based on filter
+        var items = document.querySelectorAll('.timeline-item');
+        for (var i = 0; i < items.length; i++) {
+          if (items[i].getAttribute('data-hidden-by-years') === 'true') continue;
+          if (!showForks && items[i].getAttribute('data-hidden-by-forks') === 'true') continue;
+
+          if (!activeFilter) {
+            items[i].style.display = '';
+          } else {
+            var lang = (items[i].getAttribute('data-language') || '').toLowerCase();
+            items[i].style.display = lang === activeFilter ? '' : 'none';
+          }
+        }
+
+        refreshYearHeaders();
+      });
 
 
       // Filter by ?years=N (default: 2). Use ?years=all to show full history.

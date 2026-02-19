@@ -275,6 +275,28 @@ describe("GET /v1/github-timeline", () => {
     expect(body).toContain(".timeline-item.fork");
     expect(body).toContain("opacity");
   });
+
+  it("color-codes timeline dots by programming language", async () => {
+    const res = await app.request("/v1/github-timeline");
+    const body = await res.text();
+    // Language-specific CSS classes on timeline items
+    expect(body).toContain("lang-python");
+    expect(body).toContain("lang-typescript");
+    expect(body).toContain("lang-go");
+    expect(body).toContain("lang-javascript");
+    expect(body).toContain("lang-java");
+    // Each language class has a distinct dot color
+    expect(body).toContain(".timeline-item.lang-python::before");
+    expect(body).toContain(".timeline-item.lang-go::before");
+  });
+
+  it("language tags are clickable and filter the timeline dynamically", async () => {
+    const res = await app.request("/v1/github-timeline");
+    const body = await res.text();
+    expect(body).toContain("cursor: pointer");
+    expect(body).toContain("activeFilter");
+    expect(body).toContain("timeline-tag-active");
+  });
 });
 
 describe("GET /v1/blogging-timeline", () => {
