@@ -308,6 +308,7 @@
 
       /* ===== State ===== */
       var MAX_VISIBLE = 6;
+      var MAX_VISIBLE_LIST = 10;
       var players = [];
       var myId = null;
 
@@ -365,8 +366,11 @@
       /* ===== Render user list (layout=list) ===== */
       function renderUserList() {
         userListEl.innerHTML = '';
-        for (var i = 0; i < players.length; i++) {
-          var player = players[i];
+        var visible = players.slice(0, MAX_VISIBLE_LIST);
+        var overflowCount = players.length - MAX_VISIBLE_LIST;
+
+        for (var i = 0; i < visible.length; i++) {
+          var player = visible[i];
           var li = document.createElement('li');
           li.className = 'user-list-item';
 
@@ -394,6 +398,31 @@
           li.appendChild(avatarDiv);
           li.appendChild(infoDiv);
           userListEl.appendChild(li);
+        }
+
+        if (overflowCount > 0) {
+          var moreLi = document.createElement('li');
+          moreLi.className = 'user-list-item more-users';
+
+          var moreAvatar = document.createElement('div');
+          moreAvatar.className = 'user-list-avatar';
+          moreAvatar.style.backgroundColor = 'var(--color-surface-elevated)';
+          moreAvatar.style.color = 'var(--color-text-dimmed)';
+          moreAvatar.style.border = '1px solid var(--color-border)';
+          moreAvatar.textContent = '+' + overflowCount;
+          moreAvatar.style.fontSize = '11px';
+
+          var moreInfo = document.createElement('div');
+          moreInfo.className = 'user-list-info';
+          var moreName = document.createElement('div');
+          moreName.className = 'user-list-name';
+          moreName.style.color = 'var(--color-text-dimmed)';
+          moreName.textContent = overflowCount + ' more ' + (overflowCount === 1 ? 'user' : 'users');
+
+          moreInfo.appendChild(moreName);
+          moreLi.appendChild(moreAvatar);
+          moreLi.appendChild(moreInfo);
+          userListEl.appendChild(moreLi);
         }
       }
 
@@ -480,13 +509,35 @@
         '#039BE5', '#00ACC1', '#00897B', '#43A047', '#7CB342', '#C0CA33',
         '#FDD835', '#FFB300', '#FB8C00', '#F4511E', '#6D4C41', '#757575'
       ];
+      var FALLBACK_COLOR_NAMES = [
+        'Red', 'Pink', 'Purple', 'Violet', 'Indigo', 'Blue',
+        'Sky', 'Cyan', 'Teal', 'Green', 'Lime', 'Olive',
+        'Yellow', 'Amber', 'Orange', 'Coral', 'Brown', 'Grey'
+      ];
+      var FALLBACK_ANIMALS = [
+        'Ant', 'Badger', 'Bat', 'Bear', 'Beaver', 'Bee', 'Bird', 'Bison',
+        'Butterfly', 'Camel', 'Cat', 'Cheetah', 'Chicken', 'Crab', 'Crow',
+        'Deer', 'Dog', 'Dolphin', 'Dove', 'Dragon', 'Duck', 'Eagle', 'Elephant',
+        'Falcon', 'Fish', 'Flamingo', 'Fox', 'Frog', 'Giraffe', 'Goat',
+        'Gorilla', 'Hamster', 'Hawk', 'Hedgehog', 'Hippo', 'Horse', 'Jaguar',
+        'Kangaroo', 'Koala', 'Lemur', 'Leopard', 'Lion', 'Llama', 'Lobster',
+        'Monkey', 'Moose', 'Mouse', 'Octopus', 'Otter', 'Owl', 'Panda',
+        'Panther', 'Parrot', 'Peacock', 'Penguin', 'Pig', 'Puma', 'Rabbit',
+        'Raccoon', 'Raven', 'Rhino', 'Seal', 'Shark', 'Sheep', 'Snake',
+        'Spider', 'Squid', 'Swan', 'Tiger', 'Turtle', 'Whale', 'Wolf', 'Zebra'
+      ];
       function hashStr(s) {
         var h = 0;
-        for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
+        for (var i = 0; i < s.length; i++) h = ((h << 5) - h) + s.charCodeAt(i) | 0;
         return Math.abs(h);
       }
-      var fallbackColor = FALLBACK_PALETTE[hashStr(playerId) % FALLBACK_PALETTE.length];
-      players = [{ id: playerId, name: 'You', color: fallbackColor, initial: 'Y' }];
+      var fbHash = hashStr(playerId);
+      var fbColorIdx = fbHash % FALLBACK_PALETTE.length;
+      var fbAnimalIdx = (fbHash >> 8) % FALLBACK_ANIMALS.length;
+      var fbColor = FALLBACK_PALETTE[fbColorIdx];
+      var fbAnimal = FALLBACK_ANIMALS[fbAnimalIdx];
+      var fbName = FALLBACK_COLOR_NAMES[fbColorIdx] + ' ' + fbAnimal;
+      players = [{ id: playerId, name: fbName, color: fbColor, initial: fbAnimal.charAt(0) }];
       myId = playerId;
       renderStack();
 

@@ -182,6 +182,14 @@ describe("avatar-stack live vs playground separation", () => {
     expect(body).not.toContain("PRESENCE_INTERVAL");
     expect(body).not.toContain("NAMES_POOL");
   });
+
+  it("list layout caps visible rows with overflow indicator", async () => {
+    const res = await app.request("/v1/avatar-stack");
+    const body = await res.text();
+    // List rendering should respect MAX_VISIBLE and show overflow
+    expect(body).toContain("MAX_VISIBLE_LIST");
+    expect(body).toContain("more-users");
+  });
 });
 
 describe("GET /v1/avatar-stack/ws", () => {
