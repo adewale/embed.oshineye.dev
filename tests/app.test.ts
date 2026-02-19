@@ -338,6 +338,18 @@ describe("GET /v1/blogging-timeline", () => {
     const body = await res.text();
     expect(body).toContain("timeline-tag");
   });
+
+  it("tags are clickable and filter the timeline dynamically", async () => {
+    const res = await app.request("/v1/blogging-timeline");
+    const body = await res.text();
+    // Tags have cursor pointer styling
+    expect(body).toContain("cursor: pointer");
+    // Click handler filters by data-categories
+    expect(body).toContain("data-categories");
+    expect(body).toContain("activeFilter");
+    // Active tag gets a visual indicator
+    expect(body).toContain("timeline-tag-active");
+  });
 });
 
 describe("catalogue page", () => {

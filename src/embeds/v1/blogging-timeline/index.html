@@ -167,6 +167,20 @@
     .timeline-item.cat-mobile::before {
       background: #10b981;
     }
+
+    .timeline-tag {
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+
+    .timeline-tag:hover {
+      opacity: 0.8;
+    }
+
+    .timeline-tag-active {
+      outline: 2px solid var(--accent);
+      outline-offset: 1px;
+    }
   </style>
 </head>
 <body>
@@ -746,6 +760,63 @@
         document.documentElement.classList.add('dark');
       }
 
+
+      // Interactive tag filtering
+      var activeFilter = null;
+      document.getElementById('timeline').addEventListener('click', function (e) {
+        var tag = e.target.closest('.timeline-tag');
+        if (!tag) return;
+
+        var filterText = tag.textContent.trim().toLowerCase();
+
+        // Toggle: clicking the same tag clears the filter
+        if (activeFilter === filterText) {
+          activeFilter = null;
+        } else {
+          activeFilter = filterText;
+        }
+
+        // Update active indicator on all tags
+        var allTags = document.querySelectorAll('.timeline-tag');
+        for (var i = 0; i < allTags.length; i++) {
+          if (activeFilter && allTags[i].textContent.trim().toLowerCase() === activeFilter) {
+            allTags[i].classList.add('timeline-tag-active');
+          } else {
+            allTags[i].classList.remove('timeline-tag-active');
+          }
+        }
+
+        // Show/hide items based on filter and existing years visibility
+        var items = document.querySelectorAll('.timeline-item');
+        for (var i = 0; i < items.length; i++) {
+          // Skip items already hidden by years filter
+          if (items[i].getAttribute('data-hidden-by-years') === 'true') continue;
+
+          if (!activeFilter) {
+            items[i].style.display = '';
+          } else {
+            var cats = (items[i].getAttribute('data-categories') || '').toLowerCase();
+            items[i].style.display = cats.split(',').indexOf(activeFilter) !== -1 ? '' : 'none';
+          }
+        }
+
+        // Update year header visibility
+        var headers = document.querySelectorAll('.year-header');
+        for (var i = 0; i < headers.length; i++) {
+          // Skip headers already hidden by years filter
+          if (headers[i].getAttribute('data-hidden-by-years') === 'true') continue;
+
+          var next = headers[i].nextElementSibling;
+          var hasVisible = false;
+          while (next && !next.classList.contains('year-header')) {
+            if (next.style.display !== 'none') hasVisible = true;
+            next = next.nextElementSibling;
+          }
+          headers[i].style.display = hasVisible ? '' : 'none';
+        }
+      });
+
+
       // Filter by ?years=N (default: 2). Use ?years=all to show full history.
       var yearsParam = params.get('years');
       if (yearsParam !== 'all') {
@@ -757,6 +828,7 @@
             var year = parseInt(items[i].getAttribute('data-year'), 10);
             if (year <= cutoff) {
               items[i].style.display = 'none';
+              items[i].setAttribute('data-hidden-by-years', 'true');
             }
           }
         }

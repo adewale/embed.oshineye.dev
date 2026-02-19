@@ -284,6 +284,7 @@ ${extraJs}
             var year = parseInt(items[i].getAttribute('data-year'), 10);
             if (year <= cutoff) {
               items[i].style.display = 'none';
+              items[i].setAttribute('data-hidden-by-years', 'true');
             }
           }
         }
