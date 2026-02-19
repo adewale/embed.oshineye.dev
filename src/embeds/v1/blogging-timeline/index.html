@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blogging Timeline</title>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --text: #1a1a2e;
+      --accent: #0f3460;
+      --line: #e0e0e0;
+      --dot: #e94560;
+      --card-bg: #f8f9fa;
+      --card-border: #dee2e6;
+      --tag-bg: #e9ecef;
+      --tag-text: #495057;
+      --link: #0f3460;
+      --muted: #6c757d;
+    }
+
+    :root.dark {
+      --bg: #1a1a2e;
+      --text: #e0e0e0;
+      --accent: #e94560;
+      --line: #333;
+      --dot: #0f3460;
+      --card-bg: #16213e;
+      --card-border: #0f3460;
+      --tag-bg: #0f3460;
+      --tag-text: #e0e0e0;
+      --link: #e94560;
+      --muted: #9ca3af;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 24px;
+      line-height: 1.6;
+    }
+
+    h1 {
+      font-size: 1.25rem;
+      margin-bottom: 24px;
+      color: var(--accent);
+    }
+
+    .timeline {
+      position: relative;
+      padding-left: 32px;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 8px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: var(--line);
+    }
+
+    .year-header {
+      position: relative;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 16px;
+      margin-top: 8px;
+    }
+
+    .year-header::before {
+      content: '';
+      position: absolute;
+      left: -28px;
+      top: 6px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 2px solid var(--bg);
+    }
+
+    .timeline-item {
+      position: relative;
+      margin-bottom: 16px;
+      padding: 12px 16px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+    }
+
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: -28px;
+      top: 16px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--dot);
+      border: 2px solid var(--bg);
+    }
+
+    .timeline-date {
+      font-size: 0.75rem;
+      color: var(--muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .timeline-title {
+      font-size: 1rem;
+      font-weight: 600;
+      margin: 2px 0;
+    }
+
+    .timeline-title a {
+      color: var(--link);
+      text-decoration: none;
+    }
+
+    .timeline-title a:hover {
+      text-decoration: underline;
+    }
+
+    .timeline-desc {
+      font-size: 0.85rem;
+      opacity: 0.8;
+      margin: 2px 0;
+    }
+
+    .timeline-tag {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 12px;
+      background: var(--tag-bg);
+      color: var(--tag-text);
+      margin-top: 4px;
+      margin-right: 4px;
+    }
+
+
+    .timeline-item.cat-presentations::before {
+      background: #8b5cf6;
+    }
+
+    .timeline-item.cat-web::before {
+      background: #06b6d4;
+    }
+
+    .timeline-item.cat-ai::before {
+      background: #f59e0b;
+    }
+
+    .timeline-item.cat-mobile::before {
+      background: #10b981;
+    }
+  </style>
+</head>
+<body>
+  <h1>Blogging Timeline</h1>
+  <div class="timeline" id="timeline">
+    <div class="year-header" data-year="2025">2025</div>
+    <div class="timeline-item cat-ai" data-year="2025" data-categories="artificial intelligence,presentations">
+      <div class="timeline-date">Nov 2025</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2025/11/geistfabrik-and-ai-augmented-software.html" target="_blank" rel="noopener">GeistFabrik and AI-augmented software development at ARIA</a></div>
+      <span class="timeline-tag">artificial intelligence</span>
+      <span class="timeline-tag">presentations</span>
+    </div>
+    <div class="timeline-item cat-presentations" data-year="2025" data-categories="apple,presentations">
+      <div class="timeline-date">Nov 2025</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2025/11/exporting-pdfs-from-keynote-with-better.html" target="_blank" rel="noopener">Exporting PDFs from Keynote with  Better Keynote Export</a></div>
+      <span class="timeline-tag">apple</span>
+      <span class="timeline-tag">presentations</span>
+    </div>
+    <div class="year-header" data-year="2017">2017</div>
+    <div class="timeline-item cat-presentations" data-year="2017" data-categories="apple,devrel,presentations">
+      <div class="timeline-date">Dec 2017</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2017/12/why-are-keynote-pdfs-ugly.html" target="_blank" rel="noopener">Why are the presenter notes ugly when I export them as PDFs from Keynote?</a></div>
+      <span class="timeline-tag">apple</span>
+      <span class="timeline-tag">devrel</span>
+      <span class="timeline-tag">presentations</span>
+    </div>
+    <div class="timeline-item cat-mobile" data-year="2017" data-categories="mobile,multi-screen,progressive web apps,web">
+      <div class="timeline-date">Jun 2017</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2017/06/progressive-web-sites.html" target="_blank" rel="noopener">Progressive web sites: a future that’s native to the web</a></div>
+      <span class="timeline-tag">mobile</span>
+      <span class="timeline-tag">multi-screen</span>
+      <span class="timeline-tag">progressive web apps</span>
+      <span class="timeline-tag">web</span>
+    </div>
+    <div class="timeline-item cat-web" data-year="2017" data-categories="APIs,progressive web apps,web">
+      <div class="timeline-date">May 2017</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2017/05/pwas-are-websites.html" target="_blank" rel="noopener">PWAs are websites</a></div>
+      <span class="timeline-tag">APIs</span>
+      <span class="timeline-tag">progressive web apps</span>
+      <span class="timeline-tag">web</span>
+    </div>
+    <div class="year-header" data-year="2016">2016</div>
+    <div class="timeline-item cat-web" data-year="2016" data-categories="devrel,progressive web apps,web">
+      <div class="timeline-date">Oct 2016</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2016/10/starting-new-pwa-directory.html" target="_blank" rel="noopener">Starting a new PWA directory</a></div>
+      <span class="timeline-tag">devrel</span>
+      <span class="timeline-tag">progressive web apps</span>
+      <span class="timeline-tag">web</span>
+    </div>
+    <div class="timeline-item cat-web" data-year="2016" data-categories="context,multi-context,portable content units,slice,sluice,social-web,syndication,value,web">
+      <div class="timeline-date">Aug 2016</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2016/08/embeds-content-and-context.html" target="_blank" rel="noopener">Embeds, content and context</a></div>
+      <span class="timeline-tag">context</span>
+      <span class="timeline-tag">multi-context</span>
+      <span class="timeline-tag">portable content units</span>
+      <span class="timeline-tag">slice</span>
+      <span class="timeline-tag">sluice</span>
+      <span class="timeline-tag">social-web</span>
+      <span class="timeline-tag">syndication</span>
+      <span class="timeline-tag">value</span>
+      <span class="timeline-tag">web</span>
+    </div>
+    <div class="timeline-item cat-ai" data-year="2016" data-categories="artificial intelligence,computational aesthetics,curation,google,googleio,io16,io2016,machine learning,mobile,photos">
+      <div class="timeline-date">Jul 2016</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2016/07/art-ai-and-google-io-2016.html" target="_blank" rel="noopener">Art, AI and Google I/O 2016</a></div>
+      <span class="timeline-tag">artificial intelligence</span>
+      <span class="timeline-tag">computational aesthetics</span>
+      <span class="timeline-tag">curation</span>
+      <span class="timeline-tag">google</span>
+      <span class="timeline-tag">googleio</span>
+      <span class="timeline-tag">io16</span>
+      <span class="timeline-tag">io2016</span>
+      <span class="timeline-tag">machine learning</span>
+      <span class="timeline-tag">mobile</span>
+      <span class="timeline-tag">photos</span>
+    </div>
+    <div class="timeline-item cat-web" data-year="2016" data-categories="curation,progressive web apps,web">
+      <div class="timeline-date">Jun 2016</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2016/06/cargo-cults-and-progressive-web-app-stores.html" target="_blank" rel="noopener">Cargo cults and progressive web app stores</a></div>
+      <span class="timeline-tag">curation</span>
+      <span class="timeline-tag">progressive web apps</span>
+      <span class="timeline-tag">web</span>
+    </div>
+    <div class="timeline-item" data-year="2016" data-categories="history,nostalgia,open,openwebfoo,retrospective,social-web">
+      <div class="timeline-date">Jun 2016</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2016/06/the-social-stack-whats-in-and-whats-out.html" target="_blank" rel="noopener">The Social Stack: what’s in and what’s out at the various layers</a></div>
+      <span class="timeline-tag">history</span>
+      <span class="timeline-tag">nostalgia</span>
+      <span class="timeline-tag">open</span>
+      <span class="timeline-tag">openwebfoo</span>
+      <span class="timeline-tag">retrospective</span>
+      <span class="timeline-tag">social-web</span>
+    </div>
+    <div class="year-header" data-year="2015">2015</div>
+    <div class="timeline-item cat-mobile" data-year="2015" data-categories="android,multi-context,slice,sluice">
+      <div class="timeline-date">Sep 2015</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2015/09/guide-to-implementing-app-linking-on.html" target="_blank" rel="noopener">Guide to implementing App Linking on Android 6.0 Marshmallow</a></div>
+      <span class="timeline-tag">android</span>
+      <span class="timeline-tag">multi-context</span>
+      <span class="timeline-tag">slice</span>
+      <span class="timeline-tag">sluice</span>
+    </div>
+    <div class="timeline-item cat-mobile" data-year="2015" data-categories="conferences,generative communities,mobile,photos,presentations,web">
+      <div class="timeline-date">Jun 2015</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2015/06/closing-the-browser-parenthesis.html" target="_blank" rel="noopener">Omnivorous inclusiveness and the closing of the browser parenthesis</a></div>
+      <span class="timeline-tag">conferences</span>
+      <span class="timeline-tag">generative communities</span>
+      <span class="timeline-tag">mobile</span>
+      <span class="timeline-tag">photos</span>
+      <span class="timeline-tag">presentations</span>
+      <span class="timeline-tag">web</span>
+    </div>
+    <div class="timeline-item" data-year="2015" data-categories="APIs,microservices">
+      <div class="timeline-date">Jan 2015</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2015/01/awkward-microservices-questions.html" target="_blank" rel="noopener">Awkward questions for those boarding the microservices bandwagon</a></div>
+      <span class="timeline-tag">APIs</span>
+      <span class="timeline-tag">microservices</span>
+    </div>
+    <div class="timeline-item cat-mobile" data-year="2015" data-categories="communities,identity,mobile,multi-device,retrospective,social-web,software craftsmanship">
+      <div class="timeline-date">Jan 2015</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2015/01/2015-technology-wishlist.html" target="_blank" rel="noopener">2015 technology wishlist</a></div>
+      <span class="timeline-tag">communities</span>
+      <span class="timeline-tag">identity</span>
+      <span class="timeline-tag">mobile</span>
+      <span class="timeline-tag">multi-device</span>
+      <span class="timeline-tag">retrospective</span>
+      <span class="timeline-tag">social-web</span>
+      <span class="timeline-tag">software craftsmanship</span>
+    </div>
+    <div class="year-header" data-year="2014">2014</div>
+    <div class="timeline-item cat-mobile" data-year="2014" data-categories="mobile,post-pc">
+      <div class="timeline-date">Dec 2014</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2014/12/what-makes-native-mobile-apps-special.html" target="_blank" rel="noopener">What makes native mobile apps special?</a></div>
+      <span class="timeline-tag">mobile</span>
+      <span class="timeline-tag">post-pc</span>
+    </div>
+    <div class="year-header" data-year="2013">2013</div>
+    <div class="timeline-item cat-mobile" data-year="2013" data-categories="android,mobile,product design">
+      <div class="timeline-date">Dec 2013</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2013/12/what-is-state-of-art-in-android-sharing.html" target="_blank" rel="noopener">What is the state of the art in Android sharing?</a></div>
+      <span class="timeline-tag">android</span>
+      <span class="timeline-tag">mobile</span>
+      <span class="timeline-tag">product design</span>
+    </div>
+    <div class="timeline-item" data-year="2013" data-categories="developer experience,devexp,devrel,google,google+,identity,openid,social-login,social-web">
+      <div class="timeline-date">Dec 2013</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2013/12/migrating-to-google-sign-in-in-5-minutes.html" target="_blank" rel="noopener">Migrating to Google+ Sign-in in 5 minutes</a></div>
+      <span class="timeline-tag">developer experience</span>
+      <span class="timeline-tag">devexp</span>
+      <span class="timeline-tag">devrel</span>
+      <span class="timeline-tag">google</span>
+      <span class="timeline-tag">google+</span>
+      <span class="timeline-tag">identity</span>
+      <span class="timeline-tag">openid</span>
+      <span class="timeline-tag">social-login</span>
+      <span class="timeline-tag">social-web</span>
+    </div>
+    <div class="timeline-item" data-year="2013" data-categories="apprenticeship patterns,conferences,software craftsmanship">
+      <div class="timeline-date">Nov 2013</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2013/11/scna-2013-in-memes.html" target="_blank" rel="noopener">SCNA 2013 in memes</a></div>
+      <span class="timeline-tag">apprenticeship patterns</span>
+      <span class="timeline-tag">conferences</span>
+      <span class="timeline-tag">software craftsmanship</span>
+    </div>
+    <div class="timeline-item cat-mobile" data-year="2013" data-categories="context,mobile,multi-context,multi-device,multi-screen,post-pc">
+      <div class="timeline-date">Oct 2013</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2013/10/the-screens-in-our-future.html" target="_blank" rel="noopener">The screens in our future</a></div>
+      <span class="timeline-tag">context</span>
+      <span class="timeline-tag">mobile</span>
+      <span class="timeline-tag">multi-context</span>
+      <span class="timeline-tag">multi-device</span>
+      <span class="timeline-tag">multi-screen</span>
+      <span class="timeline-tag">post-pc</span>
+    </div>
+    <div class="timeline-item" data-year="2013" data-categories="google+,identity,social-login,social-web,value">
+      <div class="timeline-date">Sep 2013</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2013/09/minimum-viable-identity-provider.html" target="_blank" rel="noopener">Minimum-viable identity provider</a></div>
+      <span class="timeline-tag">google+</span>
+      <span class="timeline-tag">identity</span>
+      <span class="timeline-tag">social-login</span>
+      <span class="timeline-tag">social-web</span>
+      <span class="timeline-tag">value</span>
+    </div>
+    <div class="timeline-item" data-year="2013" data-categories="conferences,developer experience,devexp,google+,identity,social-login,social-web">
+      <div class="timeline-date">Sep 2013</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2013/09/beyond-nascar.html" target="_blank" rel="noopener">Beyond the NASCAR</a></div>
+      <span class="timeline-tag">conferences</span>
+      <span class="timeline-tag">developer experience</span>
+      <span class="timeline-tag">devexp</span>
+      <span class="timeline-tag">google+</span>
+      <span class="timeline-tag">identity</span>
+      <span class="timeline-tag">social-login</span>
+      <span class="timeline-tag">social-web</span>
+    </div>
+    <div class="timeline-item" data-year="2013" data-categories="blogging,buzz,comments,communities,google+">
+      <div class="timeline-date">Sep 2013</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2013/09/why-doesnt-this-blog-allow-comments.html" target="_blank" rel="noopener">Why doesn't this blog allow comments?</a></div>
+      <span class="timeline-tag">blogging</span>
+      <span class="timeline-tag">buzz</span>
+      <span class="timeline-tag">comments</span>
+      <span class="timeline-tag">communities</span>
+      <span class="timeline-tag">google+</span>
+    </div>
+    <div class="timeline-item" data-year="2013" data-categories="aesthetics,books">
+      <div class="timeline-date">Jun 2013</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2013/06/in-praise-of-shadows.html" target="_blank" rel="noopener">In Praise Of Shadows</a></div>
+      <span class="timeline-tag">aesthetics</span>
+      <span class="timeline-tag">books</span>
+    </div>
+    <div class="timeline-item" data-year="2013" data-categories="open">
+      <div class="timeline-date">Apr 2013</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2013/04/open-always-wins.html" target="_blank" rel="noopener">Open always wins?</a></div>
+      <span class="timeline-tag">open</span>
+    </div>
+    <div class="timeline-item" data-year="2013" data-categories="conferences,speakerconf,thoughtworks">
+      <div class="timeline-date">Mar 2013</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2013/03/speakerconf-2013.html" target="_blank" rel="noopener">Speakerconf 2013</a></div>
+      <span class="timeline-tag">conferences</span>
+      <span class="timeline-tag">speakerconf</span>
+      <span class="timeline-tag">thoughtworks</span>
+    </div>
+    <div class="timeline-item" data-year="2013" data-categories="APIs,developer experience,devexp">
+      <div class="timeline-date">Mar 2013</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2013/03/why-do-we-bother-with-apis.html" target="_blank" rel="noopener">Why do we bother with APIs?</a></div>
+      <span class="timeline-tag">APIs</span>
+      <span class="timeline-tag">developer experience</span>
+      <span class="timeline-tag">devexp</span>
+    </div>
+    <div class="timeline-item" data-year="2013" data-categories="social-web">
+      <div class="timeline-date">Mar 2013</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2013/03/what-do-you-mean-we.html" target="_blank" rel="noopener">What do you mean 'we'?</a></div>
+      <span class="timeline-tag">social-web</span>
+    </div>
+    <div class="timeline-item" data-year="2013" data-categories="identity,openid,social-login,social-web">
+      <div class="timeline-date">Mar 2013</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2013/03/a-world-of-social-login.html" target="_blank" rel="noopener">A world of social login</a></div>
+      <span class="timeline-tag">identity</span>
+      <span class="timeline-tag">openid</span>
+      <span class="timeline-tag">social-login</span>
+      <span class="timeline-tag">social-web</span>
+    </div>
+    <div class="timeline-item" data-year="2013" data-categories="APIs,devrel,google,google+,social-web">
+      <div class="timeline-date">Feb 2013</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2013/02/the-google-sharelink-endpoint-doing-it.html" target="_blank" rel="noopener">The Google+ Sharelink Endpoint: doing it right</a></div>
+      <span class="timeline-tag">APIs</span>
+      <span class="timeline-tag">devrel</span>
+      <span class="timeline-tag">google</span>
+      <span class="timeline-tag">google+</span>
+      <span class="timeline-tag">social-web</span>
+    </div>
+    <div class="year-header" data-year="2012">2012</div>
+    <div class="timeline-item" data-year="2012" data-categories="gated communities,generative communities,social-web,syndication,value">
+      <div class="timeline-date">Dec 2012</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2012/12/the-other-side-of-creating-more-value.html" target="_blank" rel="noopener">The other side of creating more value than you capture</a></div>
+      <span class="timeline-tag">gated communities</span>
+      <span class="timeline-tag">generative communities</span>
+      <span class="timeline-tag">social-web</span>
+      <span class="timeline-tag">syndication</span>
+      <span class="timeline-tag">value</span>
+    </div>
+    <div class="timeline-item" data-year="2012" data-categories="books,social-web">
+      <div class="timeline-date">Mar 2012</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2012/03/reading-grouped-and-creative-mischief.html" target="_blank" rel="noopener">Grouped &amp; Creative Mischief</a></div>
+      <span class="timeline-tag">books</span>
+      <span class="timeline-tag">social-web</span>
+    </div>
+    <div class="year-header" data-year="2011">2011</div>
+    <div class="timeline-item" data-year="2011" data-categories="google,osjam,personal area networks,post-pc">
+      <div class="timeline-date">Jul 2011</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2011/07/implications-of-being-post-pc.html" target="_blank" rel="noopener">Implications of being post-PC</a></div>
+      <span class="timeline-tag">google</span>
+      <span class="timeline-tag">osjam</span>
+      <span class="timeline-tag">personal area networks</span>
+      <span class="timeline-tag">post-pc</span>
+    </div>
+    <div class="timeline-item" data-year="2011" data-categories="google">
+      <div class="timeline-date">May 2011</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2011/05/quadriga.html" target="_blank" rel="noopener">Quadriga</a></div>
+      <span class="timeline-tag">google</span>
+    </div>
+    <div class="timeline-item" data-year="2011" data-categories="developer experience,devexp,devrel">
+      <div class="timeline-date">May 2011</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2011/05/what-is-devexp.html" target="_blank" rel="noopener">What is Developer Experience?</a></div>
+      <span class="timeline-tag">developer experience</span>
+      <span class="timeline-tag">devexp</span>
+      <span class="timeline-tag">devrel</span>
+    </div>
+    <div class="timeline-item" data-year="2011" data-categories="buzz,developer experience,devexp">
+      <div class="timeline-date">Mar 2011</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2011/03/irony-and-tragedy-of-oauth-scopes.html" target="_blank" rel="noopener">The irony and the tragedy of OAuth scopes</a></div>
+      <span class="timeline-tag">buzz</span>
+      <span class="timeline-tag">developer experience</span>
+      <span class="timeline-tag">devexp</span>
+    </div>
+    <div class="timeline-item" data-year="2011" data-categories="atom,python,syndication">
+      <div class="timeline-date">Jan 2011</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2011/01/release-50-of-universal-feed-parser-for.html" target="_blank" rel="noopener">Release 5.0 of Universal Feed Parser for Python</a></div>
+      <span class="timeline-tag">atom</span>
+      <span class="timeline-tag">python</span>
+      <span class="timeline-tag">syndication</span>
+    </div>
+    <div class="timeline-item" data-year="2011" data-categories="software craftsmanship">
+      <div class="timeline-date">Jan 2011</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2011/01/software-craftsmanship-more-than-just.html" target="_blank" rel="noopener">Software Craftsmanship: More than just a manifesto</a></div>
+      <span class="timeline-tag">software craftsmanship</span>
+    </div>
+    <div class="timeline-item" data-year="2011" data-categories="books">
+      <div class="timeline-date">Jan 2011</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2011/01/only-paranoid-survive.html" target="_blank" rel="noopener">Only The Paranoid Survive</a></div>
+      <span class="timeline-tag">books</span>
+    </div>
+    <div class="timeline-item" data-year="2011" data-categories="books">
+      <div class="timeline-date">Jan 2011</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2011/01/building-my-working-library.html" target="_blank" rel="noopener">Building my working library</a></div>
+      <span class="timeline-tag">books</span>
+    </div>
+    <div class="year-header" data-year="2010">2010</div>
+    <div class="timeline-item" data-year="2010">
+      <div class="timeline-date">Dec 2010</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2010/12/2010-so-that-happened.html" target="_blank" rel="noopener">2010: So, that happened</a></div>
+    </div>
+    <div class="timeline-item" data-year="2010" data-categories="apprenticeship patterns,software craftsmanship,writing">
+      <div class="timeline-date">Aug 2010</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2010/08/on-translation.html" target="_blank" rel="noopener">On translation</a></div>
+      <span class="timeline-tag">apprenticeship patterns</span>
+      <span class="timeline-tag">software craftsmanship</span>
+      <span class="timeline-tag">writing</span>
+    </div>
+    <div class="timeline-item" data-year="2010" data-categories="52.0,photos">
+      <div class="timeline-date">Jul 2010</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2010/07/520-hackcampers.html" target="_blank" rel="noopener">52.0: HackCampers</a></div>
+      <span class="timeline-tag">52.0</span>
+      <span class="timeline-tag">photos</span>
+    </div>
+    <div class="timeline-item" data-year="2010" data-categories="social-web">
+      <div class="timeline-date">Jun 2010</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2010/06/spectrum-of-networks.html" target="_blank" rel="noopener">The spectrum of networks</a></div>
+      <span class="timeline-tag">social-web</span>
+    </div>
+    <div class="timeline-item" data-year="2010" data-categories="52.0,photos">
+      <div class="timeline-date">Jun 2010</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2010/06/51-dark-mirror.html" target="_blank" rel="noopener">51: Dark Mirror</a></div>
+      <span class="timeline-tag">52.0</span>
+      <span class="timeline-tag">photos</span>
+    </div>
+    <div class="timeline-item" data-year="2010" data-categories="software craftsmanship">
+      <div class="timeline-date">May 2010</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2010/05/wandering-book.html" target="_blank" rel="noopener">The Wandering Book</a></div>
+      <span class="timeline-tag">software craftsmanship</span>
+    </div>
+    <div class="timeline-item" data-year="2010" data-categories="52.0,photos">
+      <div class="timeline-date">May 2010</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2010/05/50-place-called-home.html" target="_blank" rel="noopener">50: A place called home</a></div>
+      <span class="timeline-tag">52.0</span>
+      <span class="timeline-tag">photos</span>
+    </div>
+    <div class="timeline-item" data-year="2010" data-categories="buzz,social-web">
+      <div class="timeline-date">May 2010</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2010/05/joining-social-web-team.html" target="_blank" rel="noopener">Joining the Social Web team</a></div>
+      <span class="timeline-tag">buzz</span>
+      <span class="timeline-tag">social-web</span>
+    </div>
+    <div class="timeline-item" data-year="2010" data-categories="52.0,photos">
+      <div class="timeline-date">May 2010</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2010/05/49-on-call-sam.html" target="_blank" rel="noopener">49: On-Call Sam</a></div>
+      <span class="timeline-tag">52.0</span>
+      <span class="timeline-tag">photos</span>
+    </div>
+    <div class="timeline-item" data-year="2010" data-categories="buzz">
+      <div class="timeline-date">May 2010</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2010/05/fiddling-with-google-buzz.html" target="_blank" rel="noopener">Fiddling with Google Buzz</a></div>
+      <span class="timeline-tag">buzz</span>
+    </div>
+    <div class="timeline-item" data-year="2010" data-categories="52.0,photos">
+      <div class="timeline-date">May 2010</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2010/05/48-crossing-streams.html" target="_blank" rel="noopener">48: Crossing the streams</a></div>
+      <span class="timeline-tag">52.0</span>
+      <span class="timeline-tag">photos</span>
+    </div>
+    <div class="timeline-item" data-year="2010" data-categories="52.0,photos">
+      <div class="timeline-date">May 2010</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2010/05/47-first-past-post.html" target="_blank" rel="noopener">47: First past the post</a></div>
+      <span class="timeline-tag">52.0</span>
+      <span class="timeline-tag">photos</span>
+    </div>
+    <div class="timeline-item" data-year="2010" data-categories="apprenticeship patterns,software craftsmanship,writing">
+      <div class="timeline-date">May 2010</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2010/05/apprenticeship-patterns-is-now-creative.html" target="_blank" rel="noopener">Apprenticeship Patterns is now Creative Commons licensed</a></div>
+      <span class="timeline-tag">apprenticeship patterns</span>
+      <span class="timeline-tag">software craftsmanship</span>
+      <span class="timeline-tag">writing</span>
+    </div>
+    <div class="timeline-item" data-year="2010" data-categories="atom">
+      <div class="timeline-date">May 2010</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2010/05/communicating-with-atoms.html" target="_blank" rel="noopener">Communicating with atoms</a></div>
+      <span class="timeline-tag">atom</span>
+    </div>
+    <div class="timeline-item" data-year="2010" data-categories="52.0,photos">
+      <div class="timeline-date">May 2010</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2010/05/46-shake-hands-forever.html" target="_blank" rel="noopener">46: Shake hands forever</a></div>
+      <span class="timeline-tag">52.0</span>
+      <span class="timeline-tag">photos</span>
+    </div>
+    <div class="timeline-item" data-year="2010" data-categories="52.0,photos">
+      <div class="timeline-date">May 2010</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2010/05/45-brand-new-day.html" target="_blank" rel="noopener">45: Brand New Day</a></div>
+      <span class="timeline-tag">52.0</span>
+      <span class="timeline-tag">photos</span>
+    </div>
+    <div class="timeline-item" data-year="2010" data-categories="52.0,photos">
+      <div class="timeline-date">May 2010</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2010/05/44-time-to-let-go.html" target="_blank" rel="noopener">44: Time to (let) go</a></div>
+      <span class="timeline-tag">52.0</span>
+      <span class="timeline-tag">photos</span>
+    </div>
+    <div class="timeline-item" data-year="2010" data-categories="52.0,photos">
+      <div class="timeline-date">Apr 2010</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2010/04/43-everything-must-go.html" target="_blank" rel="noopener">43: Everything must go</a></div>
+      <span class="timeline-tag">52.0</span>
+      <span class="timeline-tag">photos</span>
+    </div>
+    <div class="timeline-item" data-year="2010" data-categories="52.0,photos">
+      <div class="timeline-date">Apr 2010</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2010/04/42-hanging-by-thread-or-two.html" target="_blank" rel="noopener">42: Hanging by a thread (or two)</a></div>
+      <span class="timeline-tag">52.0</span>
+      <span class="timeline-tag">photos</span>
+    </div>
+    <div class="timeline-item" data-year="2010" data-categories="52.0,photos">
+      <div class="timeline-date">Mar 2010</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2010/03/41-into-light.html" target="_blank" rel="noopener">41: Into the light?</a></div>
+      <span class="timeline-tag">52.0</span>
+      <span class="timeline-tag">photos</span>
+    </div>
+    <div class="timeline-item" data-year="2010" data-categories="52.0,photos">
+      <div class="timeline-date">Mar 2010</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2010/03/40-charging-into-future.html" target="_blank" rel="noopener">40: Charging into the future</a></div>
+      <span class="timeline-tag">52.0</span>
+      <span class="timeline-tag">photos</span>
+    </div>
+    <div class="timeline-item" data-year="2010" data-categories="52.0,photos">
+      <div class="timeline-date">Mar 2010</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2010/03/39-other-picadilly.html" target="_blank" rel="noopener">39: The other Picadilly</a></div>
+      <span class="timeline-tag">52.0</span>
+      <span class="timeline-tag">photos</span>
+    </div>
+    <div class="timeline-item" data-year="2010" data-categories="52.0,photos">
+      <div class="timeline-date">Mar 2010</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2010/03/38-golden-lock.html" target="_blank" rel="noopener">38: The Golden Lock</a></div>
+      <span class="timeline-tag">52.0</span>
+      <span class="timeline-tag">photos</span>
+    </div>
+    <div class="timeline-item" data-year="2010" data-categories="xtc">
+      <div class="timeline-date">Mar 2010</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2010/03/mapping-personal-practices.html" target="_blank" rel="noopener">Mapping personal practices</a></div>
+      <span class="timeline-tag">xtc</span>
+    </div>
+    <div class="timeline-item" data-year="2010" data-categories="52.0,photos">
+      <div class="timeline-date">Mar 2010</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2010/03/37-intimacy-doesnt-scale.html" target="_blank" rel="noopener">37: Intimacy doesn't scale</a></div>
+      <span class="timeline-tag">52.0</span>
+      <span class="timeline-tag">photos</span>
+    </div>
+    <div class="timeline-item" data-year="2010" data-categories="52.0,photos">
+      <div class="timeline-date">Feb 2010</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2010/02/36-fine-and-private-place.html" target="_blank" rel="noopener">36: A fine and private place</a></div>
+      <span class="timeline-tag">52.0</span>
+      <span class="timeline-tag">photos</span>
+    </div>
+    <div class="timeline-item" data-year="2010" data-categories="pirate testing,tdd,testing">
+      <div class="timeline-date">Feb 2010</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2010/02/pirate-testing.html" target="_blank" rel="noopener">Pirate testing</a></div>
+      <span class="timeline-tag">pirate testing</span>
+      <span class="timeline-tag">tdd</span>
+      <span class="timeline-tag">testing</span>
+    </div>
+    <div class="timeline-item" data-year="2010" data-categories="52.0,photos">
+      <div class="timeline-date">Feb 2010</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2010/02/35-mothership.html" target="_blank" rel="noopener">35: The Mothership</a></div>
+      <span class="timeline-tag">52.0</span>
+      <span class="timeline-tag">photos</span>
+    </div>
+    <div class="timeline-item" data-year="2010" data-categories="52.0,photos">
+      <div class="timeline-date">Feb 2010</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2010/02/34-back-in-black.html" target="_blank" rel="noopener">34: Back In Black</a></div>
+      <span class="timeline-tag">52.0</span>
+      <span class="timeline-tag">photos</span>
+    </div>
+    <div class="timeline-item" data-year="2010" data-categories="refactoring,reftest,tdd">
+      <div class="timeline-date">Feb 2010</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2010/02/new-frontiers-tdd-and-refactoring.html" target="_blank" rel="noopener">New Frontiers: TDD and Refactoring Workshop at Brunel University</a></div>
+      <span class="timeline-tag">refactoring</span>
+      <span class="timeline-tag">reftest</span>
+      <span class="timeline-tag">tdd</span>
+    </div>
+    <div class="timeline-item" data-year="2010" data-categories="52.0,photos">
+      <div class="timeline-date">Jan 2010</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2010/01/33-brunel.html" target="_blank" rel="noopener">33: Brunel</a></div>
+      <span class="timeline-tag">52.0</span>
+      <span class="timeline-tag">photos</span>
+    </div>
+    <div class="timeline-item" data-year="2010" data-categories="52.0,photos">
+      <div class="timeline-date">Jan 2010</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2010/01/32-juxtaposition.html" target="_blank" rel="noopener">32: Juxtaposition</a></div>
+      <span class="timeline-tag">52.0</span>
+      <span class="timeline-tag">photos</span>
+    </div>
+    <div class="timeline-item" data-year="2010" data-categories="52.0,photos">
+      <div class="timeline-date">Jan 2010</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2010/01/31-flight-to-nowhere.html" target="_blank" rel="noopener">31: Flight to nowhere</a></div>
+      <span class="timeline-tag">52.0</span>
+      <span class="timeline-tag">photos</span>
+    </div>
+    <div class="timeline-item" data-year="2010" data-categories="52.0,photos">
+      <div class="timeline-date">Jan 2010</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2010/01/30-eventually.html" target="_blank" rel="noopener">30: Eventually</a></div>
+      <span class="timeline-tag">52.0</span>
+      <span class="timeline-tag">photos</span>
+    </div>
+    <div class="timeline-item" data-year="2010" data-categories="52.0,photos">
+      <div class="timeline-date">Jan 2010</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2010/01/29-elementary.html" target="_blank" rel="noopener">29: Elementary</a></div>
+      <span class="timeline-tag">52.0</span>
+      <span class="timeline-tag">photos</span>
+    </div>
+    <div class="timeline-item" data-year="2010" data-categories="retrospective">
+      <div class="timeline-date">Jan 2010</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2010/01/what-did-i-learn-in-2009.html" target="_blank" rel="noopener">What did I learn in 2009?</a></div>
+      <span class="timeline-tag">retrospective</span>
+    </div>
+    <div class="year-header" data-year="2009">2009</div>
+    <div class="timeline-item" data-year="2009" data-categories="52.0,photos">
+      <div class="timeline-date">Dec 2009</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2009/12/28-so-this-is-christmas.html" target="_blank" rel="noopener">28: So this is Christmas</a></div>
+      <span class="timeline-tag">52.0</span>
+      <span class="timeline-tag">photos</span>
+    </div>
+    <div class="timeline-item" data-year="2009" data-categories="conferences">
+      <div class="timeline-date">Dec 2009</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2009/12/xpday-uk-2009.html" target="_blank" rel="noopener">XPDay UK 2009</a></div>
+      <span class="timeline-tag">conferences</span>
+    </div>
+    <div class="timeline-item" data-year="2009" data-categories="52.0,photos,pimlico">
+      <div class="timeline-date">Dec 2009</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2009/12/27-this-is-how-autumn-ends.html" target="_blank" rel="noopener">27: This is how autumn ends</a></div>
+      <span class="timeline-tag">52.0</span>
+      <span class="timeline-tag">photos</span>
+      <span class="timeline-tag">pimlico</span>
+    </div>
+    <div class="timeline-item" data-year="2009" data-categories="52.0,photos">
+      <div class="timeline-date">Dec 2009</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2009/12/26-bonds.html" target="_blank" rel="noopener">26: Bonds</a></div>
+      <span class="timeline-tag">52.0</span>
+      <span class="timeline-tag">photos</span>
+    </div>
+    <div class="timeline-item" data-year="2009" data-categories="52.0,photos">
+      <div class="timeline-date">Dec 2009</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2009/12/25-we-are-all-in-gutter-but-some-of-us.html" target="_blank" rel="noopener">25: We are all in the gutter but some of us are looking at Christmas lights</a></div>
+      <span class="timeline-tag">52.0</span>
+      <span class="timeline-tag">photos</span>
+    </div>
+    <div class="timeline-item" data-year="2009" data-categories="conferences">
+      <div class="timeline-date">Dec 2009</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2009/12/scalecamp-uk-2009.html" target="_blank" rel="noopener">Scalecamp UK 2009</a></div>
+      <span class="timeline-tag">conferences</span>
+    </div>
+    <div class="timeline-item" data-year="2009">
+      <div class="timeline-date">Oct 2009</div>
+      <div class="timeline-title"><a href="https://blog.oshineye.com/2009/10/heuristic-outcomes.html" target="_blank" rel="noopener">Heuristic outcomes</a></div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var params = new URL(location.href).searchParams;
+      var theme = params.get('theme') || 'light';
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+      }
+
+      // Filter by ?years=N (default: 2). Use ?years=all to show full history.
+      var yearsParam = params.get('years');
+      if (yearsParam !== 'all') {
+        var n = parseInt(yearsParam, 10) || 2;
+        if (n > 0) {
+          var cutoff = new Date().getFullYear() - n;
+          var items = document.querySelectorAll('[data-year]');
+          for (var i = 0; i < items.length; i++) {
+            var year = parseInt(items[i].getAttribute('data-year'), 10);
+            if (year <= cutoff) {
+              items[i].style.display = 'none';
+            }
+          }
+        }
+      }
+
+      // Resize observer for postMessage-based auto-height
+      new ResizeObserver(function () {
+        window.parent.postMessage(
+          { type: 'embed.oshineye.resize', height: document.body.scrollHeight },
+          '*'
+        );
+      }).observe(document.body);
+    })();
+  </script>
+</body>
+</html>

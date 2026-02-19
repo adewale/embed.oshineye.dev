@@ -8,6 +8,7 @@ Self-contained interactive visualisations hosted on Cloudflare Workers, designed
 |-------|-------------|
 | **Avatar Stack** | An interactive avatar stack component with Keyboardia's "industrial warmth" aesthetic |
 | **GitHub Timeline** | A timeline of public GitHub projects for adewale, newest first |
+| **Blogging Timeline** | A timeline of blog posts from blog.oshineye.com, newest first |
 
 ## Viewing the Embeds Locally
 
@@ -22,6 +23,7 @@ Then open in your browser:
 - **Catalogue page:** http://localhost:8787/
 - **Avatar Stack:** http://localhost:8787/v1/avatar-stack
 - **GitHub Timeline:** http://localhost:8787/v1/github-timeline
+- **Blogging Timeline:** http://localhost:8787/v1/blogging-timeline
 
 Add `?theme=dark` or `?theme=light` to any embed URL to switch themes.
 
@@ -37,6 +39,25 @@ Examples:
 - Last 2 years, original repos only (default): `/v1/github-timeline`
 - Full history with forks: `/v1/github-timeline?years=all&forks=show`
 - Last 5 years, dark theme: `/v1/github-timeline?years=5&theme=dark`
+
+### Blogging Timeline query parameters
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `theme` | `light` | `light` or `dark` |
+| `years` | `2` | Show posts from the last N years. Use `years=all` for full history. |
+
+Timeline dots are color-coded by category: purple for presentations, cyan for web, amber for AI/ML, green for mobile.
+
+### Rebuilding timeline data
+
+Both timeline embeds bake in their data at build time. To refresh:
+
+```bash
+npm run build:timelines    # Rebuild both
+npm run build:github-timeline   # GitHub only
+npm run build:blogging-timeline # Blog only
+```
 
 ## Embedding on a Page
 

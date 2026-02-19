@@ -1,6 +1,7 @@
 import avatarStackHtml from "./v1/avatar-stack/index.html";
 import avatarStackPlaygroundHtml from "./v1/avatar-stack-playground/index.html";
 import githubTimelineHtml from "./v1/github-timeline/index.html";
+import bloggingTimelineHtml from "./v1/blogging-timeline/index.html";
 
 export interface EmbedEntry {
   slug: string;
@@ -27,6 +28,12 @@ export const embeds: EmbedEntry[] = [
     title: "GitHub Timeline",
     description: "A timeline of public GitHub projects for adewale, newest first. Shows last 2 years by default; use ?years=all for full history, ?forks=show to include forks.",
     html: githubTimelineHtml,
+  },
+  {
+    slug: "blogging-timeline",
+    title: "Blogging Timeline",
+    description: "A timeline of blog posts from blog.oshineye.com, newest first. Shows last 2 years by default; use ?years=all for full history.",
+    html: bloggingTimelineHtml,
   },
 ];
 
