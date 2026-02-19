@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 A TypeScript Cloudflare Workers service (using Hono) that hosts self-contained interactive visualisations, embedded via `<iframe>` in Blogger posts and other sites. Hosted at `embed.oshineye.dev`.
 
-The full spec is in `embeds.md` — read it before making architectural decisions.
+The full spec is in `specs/embeds.md` — read it before making architectural decisions.
 
 ## Commands
 
@@ -39,7 +39,7 @@ npm run test -- --testNamePattern "pattern"  # Run a single test
 
 ### Required response headers for `/v1/:slug`
 
-Every embed response must include `X-Frame-Options: ALLOWALL`, permissive `Content-Security-Policy` with `frame-ancestors *`, and `Access-Control-Allow-Origin: *`. See `embeds.md` for the full header set.
+Every embed response must include `X-Frame-Options: ALLOWALL`, permissive `Content-Security-Policy` with `frame-ancestors *`, and `Access-Control-Allow-Origin: *`. See `specs/embeds.md` for the full header set.
 
 ### Allowed CDN origins (CSP allowlist)
 
