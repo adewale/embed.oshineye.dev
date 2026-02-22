@@ -4,83 +4,100 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cloudflare Architecture</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=DM+Serif+Display&display=swap" rel="stylesheet">
   <style>
     :root {
-      /* Cloudflare official color system — light mode */
-      --bg: #ffffff;
-      --surface: #f7f7f8;
-      --surface-hover: #eaebeb;
-      --border: #d5d7d8;
-      --text: #1d1f20;
-      --text-muted: #62676a;
-      --accent: #f6821f;
-      --accent-light: #f8c296;
+      /* Warm cream/brown palette — light mode */
+      --bg: #fffcf6;
+      --surface: #ffffff;
+      --surface-hover: #f5efe5;
+      --border: #dccdbf;
+      --border-light: #ebe1d5;
+      --text: #2c1a14;
+      --text-muted: #6b5347;
+      --accent: #e85e2e;
+      --accent-dark: #c94d22;
+      --accent-glow: #e85e2e22;
+      --accent-light: #e85e2e33;
       --blue: #2c7cb0;
-      --blue-light: #add2eb;
+      --blue-light: #2c7cb022;
       --green: #398557;
-      --green-light: #b0ddc2;
+      --green-light: #39855722;
       --cyan: #2b818e;
-      --cyan-light: #a5dce4;
+      --cyan-light: #2b818e22;
       --indigo: #6373b6;
-      --indigo-light: #c8cde5;
+      --indigo-light: #6373b622;
       --violet: #9f5bb0;
-      --violet-light: #dbc1e1;
+      --violet-light: #9f5bb022;
       --red: #da304c;
-      --red-light: #f3bac3;
+      --red-light: #da304c22;
       --gold: #a26a09;
-      --gold-light: #f8cd81;
-      --gray-0: #1d1f20;
-      --gray-4: #72777b;
-      --gray-6: #b7bbbd;
-      --gray-8: #eaebeb;
-      --node-shadow: rgba(0,0,0,0.08);
-      --flow-color: #72777b;
-      --flow-active: #f6821f;
-      --selector-bg: #f7f7f8;
+      --gold-light: #a26a0922;
+      --gray-0: #2c1a14;
+      --gray-4: #6b5347;
+      --gray-6: #a09080;
+      --gray-8: #f5efe5;
+      --node-shadow: #2c1a140a;
+      --flow-color: #a09080;
+      --flow-active: #e85e2e;
+      --selector-bg: #f5efe5;
+      --shadow-card: 0 1px 3px #2c1a140f, 0 4px 16px #2c1a140a;
+      --shadow-card-hover: 0 2px 8px #2c1a141a, 0 8px 32px #2c1a140f;
+      --font-display: 'DM Serif Display', Georgia, 'Times New Roman', serif;
+      --font-body: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     }
 
     :root.dark {
-      /* Cloudflare dark mode — reversed luminosity */
-      --bg: #1d1f20;
-      --surface: #36393a;
-      --surface-hover: #4e5255;
-      --border: #4e5255;
-      --text: #eaebeb;
-      --text-muted: #b7bbbd;
-      --accent: #f6821f;
-      --accent-light: #5b2c06;
+      /* Warm dark mode */
+      --bg: #1a120e;
+      --surface: #2a1e18;
+      --surface-hover: #3a2c24;
+      --border: #4a3828;
+      --border-light: #3a2c24;
+      --text: #f5efe5;
+      --text-muted: #a08978;
+      --accent: #e85e2e;
+      --accent-dark: #c94d22;
+      --accent-glow: #e85e2e33;
+      --accent-light: #e85e2e44;
       --blue: #7cb7de;
-      --blue-light: #163d57;
+      --blue-light: #7cb7de22;
       --green: #79c698;
-      --green-light: #1c422b;
+      --green-light: #79c69822;
       --cyan: #66c3d1;
-      --cyan-light: #164249;
+      --cyan-light: #66c3d122;
       --indigo: #a5aed5;
-      --indigo-light: #2c365e;
+      --indigo-light: #a5aed522;
       --violet: #c9a2d2;
-      --violet-light: #502b5a;
+      --violet-light: #c9a2d222;
       --red: #e35f75;
-      --red-light: #711423;
+      --red-light: #e35f7522;
       --gold: #f4a929;
-      --gold-light: #573905;
-      --gray-0: #eaebeb;
-      --gray-4: #92979b;
-      --gray-6: #4e5255;
-      --gray-8: #36393a;
-      --node-shadow: rgba(0,0,0,0.3);
-      --flow-color: #92979b;
-      --flow-active: #f6821f;
-      --selector-bg: #36393a;
+      --gold-light: #f4a92922;
+      --gray-0: #f5efe5;
+      --gray-4: #a08978;
+      --gray-6: #4a3828;
+      --gray-8: #2a1e18;
+      --node-shadow: #0000004d;
+      --flow-color: #a08978;
+      --flow-active: #e85e2e;
+      --selector-bg: #2a1e18;
+      --shadow-card: 0 1px 3px #0000001a, 0 4px 16px #00000014;
+      --shadow-card-hover: 0 2px 8px #00000033, 0 8px 32px #0000001f;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-family: var(--font-body);
       background: var(--bg);
       color: var(--text);
       padding: 20px;
-      line-height: 1.5;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
 
     .header {
@@ -93,8 +110,9 @@
     }
 
     h1 {
-      font-size: 1.1rem;
-      font-weight: 700;
+      font-family: var(--font-display);
+      font-size: 1.2rem;
+      font-weight: 400;
       color: var(--accent);
     }
 
@@ -105,15 +123,15 @@
     }
 
     .project-btn {
-      padding: 5px 12px;
+      padding: 5px 14px;
       border: 1px solid var(--border);
-      border-radius: 6px;
+      border-radius: 100px;
       background: var(--selector-bg);
       color: var(--text-muted);
       font-size: 0.78rem;
       font-family: inherit;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     }
 
     .project-btn:hover {
@@ -131,14 +149,17 @@
       font-size: 0.82rem;
       color: var(--text-muted);
       margin-bottom: 20px;
+      line-height: 1.55;
     }
 
     .project-info a {
-      color: var(--blue);
+      color: var(--accent);
       text-decoration: none;
+      font-weight: 500;
     }
 
     .project-info a:hover {
+      color: var(--accent-dark);
       text-decoration: underline;
     }
 
@@ -148,13 +169,24 @@
       min-height: 320px;
     }
 
-    .arch-canvas svg {
+    .arch-canvas svg.arch-arrows {
       position: absolute;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
       pointer-events: none;
+      z-index: 0;
+    }
+
+    .arch-canvas svg.arch-labels {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 2;
     }
 
     .arch-canvas svg path.arch-flow {
@@ -178,18 +210,19 @@
       padding: 14px 18px;
       border-radius: 10px;
       background: var(--surface);
-      border: 2px solid var(--border);
+      border: 1.5px solid var(--border-light);
       cursor: default;
-      transition: all 0.25s;
+      transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
       position: relative;
       min-width: 100px;
       text-align: center;
-      box-shadow: 0 2px 8px var(--node-shadow);
+      box-shadow: var(--shadow-card);
     }
 
     .arch-node:hover {
       transform: translateY(-2px);
-      box-shadow: 0 4px 16px var(--node-shadow);
+      box-shadow: var(--shadow-card-hover);
+      border-color: var(--border);
     }
 
     .arch-node .node-icon {
@@ -202,6 +235,16 @@
       font-size: 18px;
       font-weight: 700;
       color: #ffffff;
+    }
+
+    .arch-node .node-icon svg {
+      width: 20px;
+      height: 20px;
+      stroke: #ffffff;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
     }
 
     .arch-node .node-label {
@@ -218,7 +261,7 @@
       text-align: center;
     }
 
-    /* Primitive-specific colors using Cloudflare palette */
+    /* Primitive-specific colors */
     .arch-node[data-primitive="workers"] .node-icon { background: var(--accent); }
     .arch-node[data-primitive="workers"] { border-color: var(--accent-light); }
     .arch-node[data-primitive="static-assets"] .node-icon { background: var(--gray-4); }
@@ -242,86 +285,55 @@
     .arch-node[data-primitive="client"] { border-color: var(--gray-6); }
     .arch-node[data-primitive="external"] .node-icon { background: var(--text-muted); }
 
-    /* Flow layer */
-    .flow-layer {
-      margin-top: 8px;
-    }
-
-    .flow-group {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 12px;
-    }
-
-    .flow-item {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 12px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      font-size: 0.72rem;
-      color: var(--text-muted);
-      transition: all 0.2s;
-    }
-
-    .flow-item:hover {
-      background: var(--surface-hover);
-      color: var(--text);
-      border-color: var(--flow-active);
-    }
-
-    .flow-item .flow-from,
-    .flow-item .flow-to {
-      font-weight: 600;
-      color: var(--text);
-    }
-
-    .flow-item .flow-arrow {
-      color: var(--accent);
-      font-size: 0.85rem;
-    }
-
-    .flow-item .flow-label {
-      color: var(--text-muted);
-      font-style: italic;
-    }
-
-    /* SVG flow arrows */
+    /* SVG flow arrows — CF reference architecture style */
     .arch-flow {
       fill: none;
       stroke: var(--flow-color);
-      stroke-width: 1.5;
-      opacity: 0.5;
+      stroke-width: 2.5;
+      stroke-linecap: round;
+      opacity: 0.4;
       transition: all 0.25s;
     }
 
     .arch-flow:hover,
     .arch-flow.active {
       stroke: var(--flow-active);
-      stroke-width: 2.5;
+      stroke-width: 3;
       opacity: 1;
     }
 
     .arch-flow-label {
       font-size: 10px;
       fill: var(--text-muted);
+      stroke: var(--bg);
+      stroke-width: 4px;
+      paint-order: stroke fill;
       text-anchor: middle;
+      font-family: var(--font-body);
+      font-weight: 500;
+      opacity: 0.7;
+      transition: all 0.2s;
+    }
+
+    .arch-flow-label.active {
+      fill: var(--text);
+      opacity: 1;
+      font-weight: 600;
     }
 
     /* Architecture tiers */
     .arch-tier {
       margin-bottom: 12px;
+      position: relative;
+      z-index: 1;
     }
 
     .tier-label {
       font-size: 0.7rem;
       font-weight: 600;
-      color: var(--text-muted);
+      color: var(--accent);
       text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.18em;
       margin-bottom: 8px;
       padding-left: 4px;
     }
@@ -333,16 +345,18 @@
       justify-content: center;
     }
 
-    /* Connector lines between tiers */
+    /* Connector lines between tiers — generous gap for arrow routing */
     .tier-connector {
       display: flex;
       justify-content: center;
-      padding: 4px 0;
+      padding: 14px 0;
+      position: relative;
+      z-index: 1;
     }
 
     .tier-connector .line {
       width: 2px;
-      height: 20px;
+      height: 32px;
       background: var(--border);
     }
 
@@ -353,7 +367,7 @@
       gap: 10px;
       margin-top: 16px;
       padding-top: 12px;
-      border-top: 1px solid var(--border);
+      border-top: 1px solid var(--border-light);
     }
 
     .legend-item {
@@ -376,7 +390,6 @@
       .arch-node .node-icon { width: 28px; height: 28px; font-size: 14px; }
       .arch-node .node-label { font-size: 0.7rem; }
       .arch-node .node-detail { font-size: 0.62rem; }
-      .flow-item { font-size: 0.65rem; padding: 4px 8px; }
     }
   </style>
 </head>
@@ -387,118 +400,22 @@
   </div>
   <div class="project-info" id="projectInfo"></div>
   <div class="arch-canvas" id="archCanvas"></div>
-  <div class="flow-layer" id="flowLayer"></div>
   <div class="legend" id="legend"></div>
 
   <script>
     var PROJECTS = [
       {
-        id: "embed-oshineye-dev",
-        name: "embed.oshineye.dev",
-        description: "Self-contained interactive visualisations hosted on Cloudflare Workers, embedded via iframe in Blogger posts. Features live presence via WebSocket-backed Durable Objects.",
-        url: "https://github.com/adewale/embed.oshineye.dev",
-        tiers: [
-          {
-            label: "Edge",
-            nodes: [
-              { primitive: "client", icon: "\uD83C\uDF10", label: "Browser", detail: "iframe embed" },
-              { primitive: "static-assets", icon: "SA", label: "Static Assets", detail: "loader.js, CSS" },
-              { primitive: "workers", icon: "W", label: "Workers", detail: "Hono router" }
-            ]
-          },
-          {
-            label: "State",
-            nodes: [
-              { primitive: "durable-objects", icon: "DO", label: "Durable Objects", detail: "PresenceRoom" }
-            ]
-          }
-        ],
-        flows: [
-          { from: "Browser", to: "Static Assets", label: "GET /static/*" },
-          { from: "Browser", to: "Workers", label: "GET /v1/:slug" },
-          { from: "Browser", to: "Durable Objects", label: "WebSocket" },
-          { from: "Workers", to: "Durable Objects", label: "stub.fetch()" },
-          { from: "Durable Objects", to: "Browser", label: "WS broadcast" }
-        ]
-      },
-      {
-        id: "keyboardia",
-        name: "keyboardia",
-        description: "A collaborative keyboard testing and sound sampling app. Uses KV for session storage, Durable Objects with SQLite for live collaborative sessions, and R2 for audio sample storage.",
-        url: "https://github.com/adewale/keyboardia",
-        tiers: [
-          {
-            label: "Edge",
-            nodes: [
-              { primitive: "client", icon: "\uD83C\uDF10", label: "Browser", detail: "SPA client" },
-              { primitive: "static-assets", icon: "SA", label: "Static Assets", detail: "./dist" },
-              { primitive: "workers", icon: "W", label: "Workers", detail: "API router" }
-            ]
-          },
-          {
-            label: "State",
-            nodes: [
-              { primitive: "kv", icon: "KV", label: "KV", detail: "Sessions" },
-              { primitive: "durable-objects", icon: "DO", label: "Durable Objects", detail: "LiveSession (SQLite)" },
-              { primitive: "r2", icon: "R2", label: "R2", detail: "Audio samples" }
-            ]
-          }
-        ],
-        flows: [
-          { from: "Browser", to: "Static Assets", label: "GET /" },
-          { from: "Browser", to: "Workers", label: "API requests" },
-          { from: "Workers", to: "KV", label: "Session lookup" },
-          { from: "Workers", to: "Durable Objects", label: "Live session" },
-          { from: "Workers", to: "R2", label: "Store/fetch samples" },
-          { from: "Durable Objects", to: "Browser", label: "WS sync" }
-        ]
-      },
-      {
-        id: "vaders",
-        name: "vaders",
-        description: "A multiplayer Space Invaders game built on Cloudflare Workers. Uses Durable Objects with SQLite for authoritative game state and a matchmaker pattern for lobby management.",
-        url: "https://github.com/adewale/vaders",
-        tiers: [
-          {
-            label: "Edge",
-            nodes: [
-              { primitive: "client", icon: "\uD83C\uDF10", label: "Browser", detail: "Game client" },
-              { primitive: "workers", icon: "W", label: "Workers", detail: "Entry point" }
-            ]
-          },
-          {
-            label: "Coordination",
-            nodes: [
-              { primitive: "durable-objects", icon: "DO", label: "Matchmaker", detail: "Lobby management" }
-            ]
-          },
-          {
-            label: "Game State",
-            nodes: [
-              { primitive: "durable-objects", icon: "DO", label: "GameRoom", detail: "SQLite state" }
-            ]
-          }
-        ],
-        flows: [
-          { from: "Browser", to: "Workers", label: "Join game" },
-          { from: "Workers", to: "Matchmaker", label: "Find/create room" },
-          { from: "Matchmaker", to: "GameRoom", label: "Route player" },
-          { from: "GameRoom", to: "Browser", label: "WS game state" },
-          { from: "Browser", to: "GameRoom", label: "Player input" }
-        ]
-      },
-      {
-        id: "planetcf",
+        id: "planet-cf",
         name: "Planet CF",
-        description: "A feed aggregator for the Cloudflare community, built with Python Workers. Uses D1 for storage, Queues for async feed fetching, Workers AI + Vectorize for semantic search, and Cron for scheduling.",
-        url: "https://github.com/adewale/planetcf",
+        description: "A feed aggregator for the Cloudflare community, built with Python Workers. Uses D1, Queues with dead-letter queue, Workers AI, Vectorize, and Cron Triggers.",
+        url: "https://github.com/adewale/planet_cf",
         tiers: [
           {
             label: "Edge",
             nodes: [
               { primitive: "client", icon: "\uD83C\uDF10", label: "Browser", detail: "Reader" },
-              { primitive: "static-assets", icon: "SA", label: "Static Assets", detail: "HTML/CSS" },
-              { primitive: "workers", icon: "W", label: "Workers", detail: "Python Worker" }
+              { primitive: "static-assets", icon: "SA", label: "Static Assets", detail: "HTML / CSS" },
+              { primitive: "workers", icon: "W", label: "Workers", detail: "Python" }
             ]
           },
           {
@@ -519,22 +436,160 @@
         ],
         flows: [
           { from: "Browser", to: "Static Assets", label: "GET /" },
-          { from: "Browser", to: "Workers", label: "Search/browse" },
+          { from: "Browser", to: "Workers", label: "Search / browse" },
           { from: "Cron Trigger", to: "Workers", label: "Scheduled event" },
           { from: "Workers", to: "Queues", label: "Enqueue feeds" },
           { from: "Queues", to: "Workers", label: "Consume batch" },
-          { from: "Workers", to: "D1", label: "Store entries" },
+          { from: "Workers", to: "D1", label: "Read / write entries" },
           { from: "Workers", to: "Workers AI", label: "Generate embeddings" },
           { from: "Workers AI", to: "Vectorize", label: "Index vectors" },
-          { from: "Workers", to: "Vectorize", label: "Semantic query" },
-          { from: "Workers", to: "D1", label: "Read entries" }
+          { from: "Workers", to: "Vectorize", label: "Semantic query" }
+        ]
+      },
+      {
+        id: "keyboardia",
+        name: "keyboardia",
+        description: "Multiplayer step sequencer with polyrhythmic patterns. Uses KV for sessions, Durable Objects with SQLite for live collaboration, and R2 for audio samples.",
+        url: "https://github.com/adewale/keyboardia",
+        tiers: [
+          {
+            label: "Edge",
+            nodes: [
+              { primitive: "client", icon: "\uD83C\uDF10", label: "Browser", detail: "SPA client" },
+              { primitive: "static-assets", icon: "SA", label: "Static Assets", detail: "Vite build" },
+              { primitive: "workers", icon: "W", label: "Workers", detail: "API router" }
+            ]
+          },
+          {
+            label: "State",
+            nodes: [
+              { primitive: "kv", icon: "KV", label: "KV", detail: "Sessions" },
+              { primitive: "durable-objects", icon: "DO", label: "Durable Objects", detail: "LiveSession (SQLite)" },
+              { primitive: "r2", icon: "R2", label: "R2", detail: "Audio samples" }
+            ]
+          }
+        ],
+        flows: [
+          { from: "Browser", to: "Static Assets", label: "GET /" },
+          { from: "Browser", to: "Workers", label: "API requests" },
+          { from: "Workers", to: "KV", label: "Session lookup" },
+          { from: "Workers", to: "Durable Objects", label: "Live session" },
+          { from: "Workers", to: "R2", label: "Store / fetch samples" },
+          { from: "Durable Objects", to: "Browser", label: "WS sync" }
+        ]
+      },
+      {
+        id: "vaders",
+        name: "vaders",
+        description: "Multiplayer Space Invaders synchronised via Durable Objects. Matchmaker DO for lobby management, GameRoom DOs with SQLite for authoritative game state.",
+        url: "https://github.com/adewale/vaders",
+        tiers: [
+          {
+            label: "Edge",
+            nodes: [
+              { primitive: "client", icon: "\uD83C\uDF10", label: "Browser", detail: "Game client" },
+              { primitive: "workers", icon: "W", label: "Workers", detail: "Entry point" }
+            ]
+          },
+          {
+            label: "Coordination",
+            nodes: [
+              { primitive: "durable-objects", icon: "DO", label: "Matchmaker", detail: "Lobby mgmt" }
+            ]
+          },
+          {
+            label: "Game State",
+            nodes: [
+              { primitive: "durable-objects", icon: "DO", label: "GameRoom", detail: "SQLite state" }
+            ]
+          }
+        ],
+        flows: [
+          { from: "Browser", to: "Workers", label: "Join game" },
+          { from: "Workers", to: "Matchmaker", label: "Find / create room" },
+          { from: "Matchmaker", to: "GameRoom", label: "Route player" },
+          { from: "GameRoom", to: "Browser", label: "WS game state" },
+          { from: "Browser", to: "GameRoom", label: "Player input" }
+        ]
+      },
+      {
+        id: "embed-oshineye-dev",
+        name: "embed.oshineye.dev",
+        description: "Interactive visualisations embedded via iframe. Hono on Workers with Durable Objects for live presence.",
+        url: "https://github.com/adewale/embed.oshineye.dev",
+        tiers: [
+          {
+            label: "Edge",
+            nodes: [
+              { primitive: "client", icon: "\uD83C\uDF10", label: "Browser", detail: "iframe embed" },
+              { primitive: "static-assets", icon: "SA", label: "Static Assets", detail: "loader.js" },
+              { primitive: "workers", icon: "W", label: "Workers", detail: "Hono router" }
+            ]
+          },
+          {
+            label: "State",
+            nodes: [
+              { primitive: "durable-objects", icon: "DO", label: "Durable Objects", detail: "PresenceRoom" }
+            ]
+          }
+        ],
+        flows: [
+          { from: "Browser", to: "Static Assets", label: "GET /static/*" },
+          { from: "Browser", to: "Workers", label: "GET /v1/:slug" },
+          { from: "Workers", to: "Durable Objects", label: "stub.fetch()" },
+          { from: "Durable Objects", to: "Browser", label: "WS broadcast" }
+        ]
+      },
+      {
+        id: "fibonacci-do",
+        name: "fibonacci DO",
+        description: "Minimal Durable Objects demo with SQLite storage, computing and caching Fibonacci sequences in a persistent actor.",
+        url: "https://github.com/adewale/fibonacci_durable_object",
+        tiers: [
+          {
+            label: "Edge",
+            nodes: [
+              { primitive: "client", icon: "\uD83C\uDF10", label: "Browser", detail: "Demo UI" },
+              { primitive: "static-assets", icon: "SA", label: "Static Assets", detail: "HTML" },
+              { primitive: "workers", icon: "W", label: "Workers", detail: "Router" }
+            ]
+          },
+          {
+            label: "State",
+            nodes: [
+              { primitive: "durable-objects", icon: "DO", label: "Durable Objects", detail: "Fibonacci (SQLite)" }
+            ]
+          }
+        ],
+        flows: [
+          { from: "Browser", to: "Static Assets", label: "GET /" },
+          { from: "Browser", to: "Workers", label: "Compute request" },
+          { from: "Workers", to: "Durable Objects", label: "stub.fetch()" }
+        ]
+      },
+      {
+        id: "oshineye-dev",
+        name: "oshineye.dev",
+        description: "Personal website hosted as a static-assets-only Worker with custom domain routing and auto trailing slash.",
+        url: "https://github.com/adewale/oshineye-dev",
+        tiers: [
+          {
+            label: "Edge",
+            nodes: [
+              { primitive: "client", icon: "\uD83C\uDF10", label: "Browser", detail: "oshineye.dev" },
+              { primitive: "static-assets", icon: "SA", label: "Static Assets", detail: "HTML / CSS / JS" }
+            ]
+          }
+        ],
+        flows: [
+          { from: "Browser", to: "Static Assets", label: "GET /*" }
         ]
       }
     ];
 
     var PRIMITIVE_COLORS = {
-      "workers": { bg: "#f6821f", label: "Workers" },
-      "static-assets": { bg: "#72777b", label: "Static Assets" },
+      "workers": { bg: "#e85e2e", label: "Workers" },
+      "static-assets": { bg: "#6b5347", label: "Static Assets" },
       "durable-objects": { bg: "#2c7cb0", label: "Durable Objects" },
       "kv": { bg: "#398557", label: "KV" },
       "d1": { bg: "#6373b6", label: "D1" },
@@ -543,18 +598,33 @@
       "ai": { bg: "#da304c", label: "Workers AI" },
       "vectorize": { bg: "#6373b6", label: "Vectorize" },
       "cron": { bg: "#a26a09", label: "Cron Triggers" },
-      "client": { bg: "#72777b", label: "Client" },
-      "external": { bg: "#62676a", label: "External" }
+      "client": { bg: "#6b5347", label: "Client" },
+      "external": { bg: "#6b5347", label: "External" }
+    };
+
+    // Lucide icon SVG paths (from gardener.ziki.boo)
+    var PRIMITIVE_ICONS = {
+      "workers": '<path d="M12 20v2m0-20v2m5 16v2m0-20v2M2 12h2m-2 5h2M2 7h2m16 5h2m-2 5h2M20 7h2M7 20v2M7 2v2"/><rect width="16" height="16" x="4" y="4" rx="2"/><rect width="8" height="8" x="8" y="8" rx="1"/>',
+      "static-assets": '<path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/>',
+      "durable-objects": '<rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+      "kv": '<path d="m15.5 7.5l2.3 2.3a1 1 0 0 0 1.4 0l2.1-2.1a1 1 0 0 0 0-1.4L19 4m2-2l-9.6 9.6"/><circle cx="7.5" cy="15.5" r="5.5"/>',
+      "d1": '<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/>',
+      "r2": '<rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8m-10 4h4"/>',
+      "queues": '<path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.84Z"/><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/>',
+      "ai": '<path d="M12 18V5m3 8a4.17 4.17 0 0 1-3-4 4.17 4.17 0 0 1-3 4m8.598-6.5A3 3 0 1 0 12 5a3 3 0 1 0-5.598 1.5"/><path d="M17.997 5.125a4 4 0 0 1 2.526 5.77"/><path d="M18 18a4 4 0 0 0 2-7.464"/><path d="M19.967 17.483A4 4 0 1 1 12 18a4 4 0 1 1-7.967-.517"/><path d="M6 18a4 4 0 0 1-2-7.464"/><path d="M6.003 5.125a4 4 0 0 0-2.526 5.77"/>',
+      "vectorize": '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
+      "cron": '<path d="M12 6v6l4 2"/><circle cx="12" cy="12" r="10"/>',
+      "client": '<circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/>',
+      "external": '<circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/>'
     };
 
     // Theme
     var params = new URL(location.href).searchParams;
     var theme = params.get('theme') || 'light';
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
-    }
+    if (theme === 'dark') document.documentElement.classList.add('dark');
 
     var activeProject = params.get('project') || PROJECTS[0].id;
+    var renderGen = 0;
 
     function renderProjectSelector() {
       var sel = document.getElementById('projectSelector');
@@ -563,7 +633,6 @@
         var btn = document.createElement('button');
         btn.className = 'project-btn' + (p.id === activeProject ? ' active' : '');
         btn.textContent = p.name;
-        btn.setAttribute('data-project', p.id);
         btn.onclick = function() { switchProject(p.id); };
         sel.appendChild(btn);
       });
@@ -576,14 +645,13 @@
     }
 
     function renderProject() {
+      renderGen++;
       var project = PROJECTS.find(function(p) { return p.id === activeProject; });
       if (!project) return;
 
-      // Project info
       var info = document.getElementById('projectInfo');
       info.innerHTML = '<a href="' + project.url + '" target="_blank" rel="noopener">' + project.name + '</a> &mdash; ' + project.description;
 
-      // Render architecture tiers
       var canvas = document.getElementById('archCanvas');
       canvas.innerHTML = '';
 
@@ -607,7 +675,13 @@
 
           var icon = document.createElement('div');
           icon.className = 'node-icon';
-          icon.textContent = node.icon;
+          if (PRIMITIVE_ICONS[node.primitive]) {
+            var tmp = document.createElement('div');
+            tmp.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + PRIMITIVE_ICONS[node.primitive] + '</svg>';
+            icon.appendChild(tmp.firstChild);
+          } else {
+            icon.textContent = node.icon;
+          }
           nodeEl.appendChild(icon);
 
           var lbl = document.createElement('div');
@@ -628,7 +702,6 @@
         tierEl.appendChild(nodesEl);
         canvas.appendChild(tierEl);
 
-        // Add connector between tiers
         if (ti < project.tiers.length - 1) {
           var conn = document.createElement('div');
           conn.className = 'tier-connector';
@@ -639,162 +712,561 @@
         }
       });
 
-      // Render SVG flow arrows
-      renderFlowArrows(project);
-
-      // Render flow list
-      renderFlows(project);
-
-      // Render legend
+      renderFlowArrows(project, renderGen);
       renderLegend(project);
     }
 
-    function renderFlowArrows(project) {
+    // ===== Orthogonal arrow routing (CF reference architecture style) =====
+
+    function getEdgePoint(node, side, index, total) {
+      var spacing = 18;
+      var offset = (index - (total - 1) / 2) * spacing;
+      switch (side) {
+        case 'bottom': return { x: node.x + offset, y: node.bottom };
+        case 'top':    return { x: node.x + offset, y: node.top };
+        case 'right':  return { x: node.right, y: node.y + offset };
+        case 'left':   return { x: node.left, y: node.y + offset };
+      }
+    }
+
+    // Build an SVG path through orthogonal waypoints with rounded corners
+    function buildWaypointPath(points) {
+      if (points.length < 2) return '';
+      var R = 14;
+      var d = 'M' + points[0].x + ' ' + points[0].y;
+
+      for (var i = 1; i < points.length - 1; i++) {
+        var prev = points[i - 1];
+        var curr = points[i];
+        var next = points[i + 1];
+
+        // Segment lengths to limit radius
+        var len1 = Math.abs(curr.x - prev.x) + Math.abs(curr.y - prev.y);
+        var len2 = Math.abs(next.x - curr.x) + Math.abs(next.y - curr.y);
+        var eR = Math.min(R, len1 / 2, len2 / 2);
+        if (eR < 1) { d += ' L' + curr.x + ' ' + curr.y; continue; }
+
+        // Approach direction (prev→curr)
+        var dx1 = curr.x - prev.x;
+        var dy1 = curr.y - prev.y;
+        // Departure direction (curr→next)
+        var dx2 = next.x - curr.x;
+        var dy2 = next.y - curr.y;
+
+        // Point before corner (approach)
+        var ax = dx1 !== 0 ? curr.x - Math.sign(dx1) * eR : curr.x;
+        var ay = dy1 !== 0 ? curr.y - Math.sign(dy1) * eR : curr.y;
+
+        // Point after corner (departure)
+        var bx = dx2 !== 0 ? curr.x + Math.sign(dx2) * eR : curr.x;
+        var by = dy2 !== 0 ? curr.y + Math.sign(dy2) * eR : curr.y;
+
+        // Line to approach, quadratic Bezier through corner
+        d += ' L' + ax + ' ' + ay;
+        d += ' Q' + curr.x + ' ' + curr.y + ' ' + bx + ' ' + by;
+      }
+
+      // Line to last point
+      var last = points[points.length - 1];
+      d += ' L' + last.x + ' ' + last.y;
+      return d;
+    }
+
+    function renderFlowArrows(project, gen) {
       var canvas = document.getElementById('archCanvas');
       var svgNS = 'http://www.w3.org/2000/svg';
-      var svg = document.createElementNS(svgNS, 'svg');
-      svg.setAttribute('class', 'flow-svg');
 
-      // Defer to allow layout
       requestAnimationFrame(function() {
+        if (gen !== renderGen) return;
+
         var rect = canvas.getBoundingClientRect();
-        svg.setAttribute('width', rect.width);
-        svg.setAttribute('height', rect.height);
-        svg.setAttribute('viewBox', '0 0 ' + rect.width + ' ' + rect.height);
-        svg.style.position = 'absolute';
-        svg.style.top = '0';
-        svg.style.left = '0';
-        svg.style.width = '100%';
-        svg.style.height = '100%';
-        svg.style.pointerEvents = 'none';
-        svg.style.overflow = 'visible';
+        var viewBox = '0 0 ' + rect.width + ' ' + rect.height;
 
-        // Arrowhead marker
+        // Two SVG layers: arrows behind nodes, labels above nodes
+        var svg = document.createElementNS(svgNS, 'svg');
+        svg.setAttribute('class', 'arch-arrows');
+        svg.setAttribute('viewBox', viewBox);
+        svg.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;overflow:visible';
+
+        var svgLabels = document.createElementNS(svgNS, 'svg');
+        svgLabels.setAttribute('class', 'arch-labels');
+        svgLabels.setAttribute('viewBox', viewBox);
+        svgLabels.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;overflow:visible';
+
+        // Arrowhead markers
         var defs = document.createElementNS(svgNS, 'defs');
-        var marker = document.createElementNS(svgNS, 'marker');
-        marker.setAttribute('id', 'arrowhead');
-        marker.setAttribute('markerWidth', '8');
-        marker.setAttribute('markerHeight', '6');
-        marker.setAttribute('refX', '8');
-        marker.setAttribute('refY', '3');
-        marker.setAttribute('orient', 'auto');
-        var poly = document.createElementNS(svgNS, 'polygon');
-        poly.setAttribute('points', '0 0, 8 3, 0 6');
-        poly.setAttribute('fill', 'var(--flow-color)');
-        marker.appendChild(poly);
-        defs.appendChild(marker);
-
-        var markerActive = document.createElementNS(svgNS, 'marker');
-        markerActive.setAttribute('id', 'arrowhead-active');
-        markerActive.setAttribute('markerWidth', '8');
-        markerActive.setAttribute('markerHeight', '6');
-        markerActive.setAttribute('refX', '8');
-        markerActive.setAttribute('refY', '3');
-        markerActive.setAttribute('orient', 'auto');
-        var polyActive = document.createElementNS(svgNS, 'polygon');
-        polyActive.setAttribute('points', '0 0, 8 3, 0 6');
-        polyActive.setAttribute('fill', 'var(--flow-active)');
-        markerActive.appendChild(polyActive);
-        defs.appendChild(markerActive);
+        function makeMarker(id, fill) {
+          var m = document.createElementNS(svgNS, 'marker');
+          m.setAttribute('id', id);
+          m.setAttribute('markerWidth', '6');
+          m.setAttribute('markerHeight', '5');
+          m.setAttribute('refX', '5.5');
+          m.setAttribute('refY', '2.5');
+          m.setAttribute('orient', 'auto');
+          var poly = document.createElementNS(svgNS, 'polygon');
+          poly.setAttribute('points', '0 0.5, 5 2.5, 0 4.5');
+          poly.setAttribute('fill', fill);
+          m.appendChild(poly);
+          return m;
+        }
+        defs.appendChild(makeMarker('arrow', 'var(--flow-color)'));
+        defs.appendChild(makeMarker('arrow-active', 'var(--flow-active)'));
         svg.appendChild(defs);
 
-        var nodes = canvas.querySelectorAll('.arch-node');
+        // Append svgLabels early so getBBox() works for text measurement
+        canvas.appendChild(svgLabels);
+
+        // Text measurement with caching via getBBox()
+        var textMeasureCache = {};
+        function measureText(text) {
+          if (textMeasureCache[text]) return textMeasureCache[text];
+          var t = document.createElementNS(svgNS, 'text');
+          t.setAttribute('class', 'arch-flow-label');
+          t.setAttribute('x', '0');
+          t.setAttribute('y', '0');
+          t.textContent = text;
+          svgLabels.appendChild(t);
+          var bbox = t.getBBox();
+          svgLabels.removeChild(t);
+          textMeasureCache[text] = { width: bbox.width + 4, height: bbox.height };
+          return textMeasureCache[text];
+        }
+
+        // Build node position map
+        var nodeEls = canvas.querySelectorAll('.arch-node');
         var nodeMap = {};
-        nodes.forEach(function(n) {
-          var label = n.getAttribute('data-label');
+        nodeEls.forEach(function(n) {
+          var lbl = n.getAttribute('data-label');
           var r = n.getBoundingClientRect();
-          nodeMap[label] = {
+          nodeMap[lbl] = {
             x: r.left - rect.left + r.width / 2,
             y: r.top - rect.top + r.height / 2,
             w: r.width,
             h: r.height,
             top: r.top - rect.top,
-            bottom: r.top - rect.top + r.height
+            bottom: r.top - rect.top + r.height,
+            left: r.left - rect.left,
+            right: r.left - rect.left + r.width
           };
         });
 
-        project.flows.forEach(function(flow) {
+        // Calculate tier gap channels for routing horizontal segments
+        // Each channel is the vertical midpoint between one tier's bottom and the next tier's top
+        var tierEls = canvas.querySelectorAll('.arch-tier');
+        var tierBounds = [];
+        tierEls.forEach(function(t) {
+          var r = t.getBoundingClientRect();
+          tierBounds.push({
+            top: r.top - rect.top,
+            bottom: r.top - rect.top + r.height
+          });
+        });
+        // channels[i] = midpoint of gap between tier i and tier i+1
+        var channels = [];
+        for (var ci = 0; ci < tierBounds.length - 1; ci++) {
+          channels.push((tierBounds[ci].bottom + tierBounds[ci + 1].top) / 2);
+        }
+
+        // Map each node label to its tier index
+        var nodeTierIndex = {};
+        project.tiers.forEach(function(tier, ti) {
+          tier.nodes.forEach(function(node) {
+            nodeTierIndex[node.label] = ti;
+          });
+        });
+
+        // Compute bounding box of nodes in each tier (for routing around them)
+        var tierNodeBounds = [];
+        project.tiers.forEach(function(tier) {
+          var left = Infinity, right = -Infinity;
+          tier.nodes.forEach(function(node) {
+            var nm = nodeMap[node.label];
+            if (nm) {
+              left = Math.min(left, nm.left);
+              right = Math.max(right, nm.right);
+            }
+          });
+          tierNodeBounds.push({ left: left, right: right });
+        });
+
+        // Determine exit/enter sides and collect connections per node edge
+        var connections = {};
+        var flowData = [];
+
+        project.flows.forEach(function(flow, fi) {
           var from = nodeMap[flow.from];
           var to = nodeMap[flow.to];
           if (!from || !to) return;
 
+          var fromTier = nodeTierIndex[flow.from];
+          var toTier = nodeTierIndex[flow.to];
+          var sameTier = fromTier === toTier;
+          var exitSide, enterSide;
+
+          if (sameTier) {
+            // Check for intermediate nodes that would obstruct a horizontal path
+            var minFlowX = Math.min(from.x, to.x);
+            var maxFlowX = Math.max(from.x, to.x);
+            var sameTierObstacle = false;
+            project.tiers[fromTier].nodes.forEach(function(n) {
+              if (n.label !== flow.from && n.label !== flow.to) {
+                var nm = nodeMap[n.label];
+                if (nm && nm.x > minFlowX && nm.x < maxFlowX) sameTierObstacle = true;
+              }
+            });
+            if (sameTierObstacle) {
+              // Route above the tier via top edges
+              exitSide = 'top';
+              enterSide = 'top';
+            } else {
+              exitSide = to.x > from.x ? 'right' : 'left';
+              enterSide = to.x > from.x ? 'left' : 'right';
+            }
+          } else if (to.y > from.y) {
+            exitSide = 'bottom';
+            enterSide = 'top';
+          } else {
+            exitSide = 'top';
+            enterSide = 'bottom';
+          }
+
+          if (!connections[flow.from]) connections[flow.from] = { bottom: [], top: [], left: [], right: [] };
+          if (!connections[flow.to]) connections[flow.to] = { bottom: [], top: [], left: [], right: [] };
+
+          connections[flow.from][exitSide].push({ fi: fi, type: 'exit', otherX: to.x, otherY: to.y });
+          connections[flow.to][enterSide].push({ fi: fi, type: 'enter', otherX: from.x, otherY: from.y });
+
+          flowData[fi] = { exitSide: exitSide, enterSide: enterSide, label: flow.label, fromLabel: flow.from, toLabel: flow.to };
+        });
+
+        // Sort connections on each edge to minimize crossings
+        Object.keys(connections).forEach(function(nodeLabel) {
+          ['bottom', 'top', 'left', 'right'].forEach(function(side) {
+            connections[nodeLabel][side].sort(function(a, b) {
+              if (side === 'left' || side === 'right') return a.otherY - b.otherY;
+              return a.otherX - b.otherX;
+            });
+          });
+        });
+
+        // Assign edge positions to each flow endpoint
+        var flowPoints = {};
+        Object.keys(connections).forEach(function(nodeLabel) {
+          var node = nodeMap[nodeLabel];
+          if (!node) return;
+          ['bottom', 'top', 'left', 'right'].forEach(function(side) {
+            var conns = connections[nodeLabel][side];
+            var total = conns.length;
+            conns.forEach(function(conn, i) {
+              var pt = getEdgePoint(node, side, i, total);
+              if (!flowPoints[conn.fi]) flowPoints[conn.fi] = {};
+              if (conn.type === 'exit') {
+                flowPoints[conn.fi].exitPt = pt;
+              } else {
+                flowPoints[conn.fi].enterPt = pt;
+              }
+            });
+          });
+        });
+
+        // Channel-based offset assignment: group adjacent-tier flows by channel
+        var channelOffsets = {};
+        var channelGroups = {};
+        flowData.forEach(function(fd, fi) {
+          if (!fd) return;
+          var fromTier = nodeTierIndex[fd.fromLabel];
+          var toTier = nodeTierIndex[fd.toLabel];
+          if (fromTier === toTier) return;
+          var startTier = Math.min(fromTier, toTier);
+          var endTier = Math.max(fromTier, toTier);
+          if (endTier - startTier !== 1) return;
+          var chIdx = startTier;
+          if (!channelGroups[chIdx]) channelGroups[chIdx] = [];
+          var pts = flowPoints[fi];
+          var span = pts ? Math.abs((pts.exitPt ? pts.exitPt.x : 0) - (pts.enterPt ? pts.enterPt.x : 0)) : 0;
+          channelGroups[chIdx].push({ fi: fi, span: span });
+        });
+        Object.keys(channelGroups).forEach(function(chIdx) {
+          var group = channelGroups[chIdx];
+          group.sort(function(a, b) { return a.span - b.span; });
+          var n = group.length;
+          var spacing = 5;
+          group.forEach(function(g, i) {
+            channelOffsets[g.fi] = (i - (n - 1) / 2) * spacing;
+          });
+        });
+
+        // Build waypoints for each flow
+        function computeWaypoints(fd, fi) {
+          var pts = flowPoints[fi];
+          if (!pts || !pts.exitPt || !pts.enterPt) return null;
+          var p1 = pts.exitPt;
+          var p2 = pts.enterPt;
+          var fromTier = nodeTierIndex[fd.fromLabel];
+          var toTier = nodeTierIndex[fd.toLabel];
+
+          // Same tier
+          if (fromTier === toTier) {
+            // If exit is 'top', this is an obstructed same-tier flow — route above
+            if (fd.exitSide === 'top' && fd.enterSide === 'top') {
+              var aboveY = tierBounds[fromTier].top - 16;
+              return [p1, { x: p1.x, y: aboveY }, { x: p2.x, y: aboveY }, p2];
+            }
+            return [p1, p2];
+          }
+
+          // Same X — straight vertical
+          if (Math.abs(p1.x - p2.x) < 2) {
+            return [p1, p2];
+          }
+
+          var goingDown = toTier > fromTier;
+          var startTier = Math.min(fromTier, toTier);
+          var endTier = Math.max(fromTier, toTier);
+          var tierGap = endTier - startTier;
+
+          // Adjacent tiers — single channel route with per-flow offset
+          if (tierGap === 1) {
+            var ch = channels[startTier];
+            if (ch == null) return [p1, p2];
+            // Offset each flow slightly so parallel routes don't overlap
+            var chOffset = channelOffsets[fi] || 0;
+            var adjCh = ch + chOffset;
+            return [
+              p1,
+              { x: p1.x, y: adjCh },
+              { x: p2.x, y: adjCh },
+              p2
+            ];
+          }
+
+          // Multi-tier flow — route via canvas-edge corridor to avoid intermediate nodes
+          var corridorMargin = 30;
+          var minLeft = Infinity, maxRight = -Infinity;
+          for (var t = startTier; t <= endTier; t++) {
+            if (tierNodeBounds[t]) {
+              minLeft = Math.min(minLeft, tierNodeBounds[t].left);
+              maxRight = Math.max(maxRight, tierNodeBounds[t].right);
+            }
+          }
+          var leftCorr = Math.max(10, minLeft - corridorMargin);
+          var rightCorr = Math.min(rect.width - 10, maxRight + corridorMargin);
+
+          // Pick corridor side closer to the midpoint of source+target
+          var midX = (p1.x + p2.x) / 2;
+          var corridorX = (Math.abs(midX - leftCorr) < Math.abs(midX - rightCorr)) ? leftCorr : rightCorr;
+
+          var waypoints = [p1];
+          // Channel adjacent to source tier (in direction of travel)
+          var firstCh = goingDown ? channels[fromTier] : channels[fromTier - 1];
+          // Channel adjacent to target tier (in direction of travel)
+          var lastCh = goingDown ? channels[toTier - 1] : channels[toTier];
+
+          if (firstCh != null) {
+            waypoints.push({ x: p1.x, y: firstCh });
+            waypoints.push({ x: corridorX, y: firstCh });
+          }
+          if (lastCh != null && lastCh !== firstCh) {
+            waypoints.push({ x: corridorX, y: lastCh });
+            waypoints.push({ x: p2.x, y: lastCh });
+          } else if (firstCh != null) {
+            waypoints.push({ x: p2.x, y: firstCh });
+          }
+          waypoints.push(p2);
+          return waypoints;
+        }
+
+        // --- Pass 1: compute paths and candidate label positions ---
+        var flowRenders = [];
+
+        // Build nodeBoxes array for overlap checking
+        var nodeBoxes = [];
+        Object.keys(nodeMap).forEach(function(nlbl) {
+          var nm = nodeMap[nlbl];
+          nodeBoxes.push({ left: nm.left, right: nm.right, top: nm.top, bottom: nm.bottom });
+        });
+
+        flowData.forEach(function(fd, fi) {
+          if (!fd) return;
+          var waypoints = computeWaypoints(fd, fi);
+          if (!waypoints || waypoints.length < 2) return;
+
+          var d = buildWaypointPath(waypoints);
+          var fromTier = nodeTierIndex[fd.fromLabel];
+          var toTier = nodeTierIndex[fd.toLabel];
+          var measured = measureText(fd.label);
+
+          // Generate candidate positions from segments
+          var candidates = [];
+          for (var wi = 0; wi < waypoints.length - 1; wi++) {
+            var wdx = Math.abs(waypoints[wi + 1].x - waypoints[wi].x);
+            var wdy = Math.abs(waypoints[wi + 1].y - waypoints[wi].y);
+            var segLen = wdx + wdy;
+            var isHorizontal = wdx > wdy;
+
+            if (isHorizontal && segLen > 20) {
+              var fracs = [0.5, 0.25, 0.75];
+              for (var fc = 0; fc < fracs.length; fc++) {
+                var frac = fracs[fc];
+                var mx = waypoints[wi].x + (waypoints[wi + 1].x - waypoints[wi].x) * frac;
+                var my = (waypoints[wi].y + waypoints[wi + 1].y) / 2;
+                candidates.push({ x: mx, y: my - 8, score: segLen * (frac === 0.5 ? 1.0 : 0.7) });
+                candidates.push({ x: mx, y: my + 14, score: segLen * (frac === 0.5 ? 0.6 : 0.4) });
+              }
+            } else if (!isHorizontal && segLen > 30) {
+              var mx2 = (waypoints[wi].x + waypoints[wi + 1].x) / 2;
+              var my2 = (waypoints[wi].y + waypoints[wi + 1].y) / 2;
+              candidates.push({ x: mx2 + measured.width / 2 + 6, y: my2, score: segLen * 0.5 });
+              candidates.push({ x: mx2 - measured.width / 2 - 6, y: my2, score: segLen * 0.4 });
+            }
+          }
+
+          // For same-tier flows, force label above the tier
+          if (fromTier === toTier) {
+            var aboveY = tierBounds[fromTier].top - 6;
+            var midX = (waypoints[0].x + waypoints[waypoints.length - 1].x) / 2;
+            candidates = [{ x: midX, y: aboveY, score: 100 }];
+          }
+
+          // Sort candidates by score (best first)
+          candidates.sort(function(a, b) { return b.score - a.score; });
+
+          // Pick first candidate that doesn't overlap any node box
+          var chosen = candidates[0] || { x: 0, y: 0 };
+          var hw = measured.width / 2;
+          var hh = measured.height / 2;
+          for (var ci2 = 0; ci2 < candidates.length; ci2++) {
+            var c = candidates[ci2];
+            var cRect = { left: c.x - hw, right: c.x + hw, top: c.y - hh, bottom: c.y + hh };
+            var overlaps = false;
+            for (var ni = 0; ni < nodeBoxes.length; ni++) {
+              if (cRect.left < nodeBoxes[ni].right && cRect.right > nodeBoxes[ni].left &&
+                  cRect.top < nodeBoxes[ni].bottom && cRect.bottom > nodeBoxes[ni].top) {
+                overlaps = true;
+                break;
+              }
+            }
+            if (!overlaps) { chosen = c; break; }
+          }
+
+          flowRenders.push({
+            fi: fi,
+            fd: fd,
+            d: d,
+            labelX: chosen.x,
+            labelY: chosen.y,
+            text: fd.label,
+            measured: measured
+          });
+        });
+
+        // --- Pass 2: bidirectional label deconfliction ---
+        function labelRect(lr) {
+          var m = lr.measured || measureText(lr.text);
+          return {
+            left: lr.labelX - m.width / 2,
+            right: lr.labelX + m.width / 2,
+            top: lr.labelY - m.height / 2,
+            bottom: lr.labelY + m.height / 2
+          };
+        }
+
+        function rectsOverlap(a, b) {
+          return a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+        }
+
+        // First pass: check each label against all nodes, shift above if overlapping
+        flowRenders.forEach(function(lr) {
+          var lr_rect = labelRect(lr);
+          for (var ni = 0; ni < nodeBoxes.length; ni++) {
+            if (rectsOverlap(lr_rect, nodeBoxes[ni])) {
+              lr.labelY = Math.min(lr.labelY, nodeBoxes[ni].top - (lr.measured || measureText(lr.text)).height / 2 - 4);
+              lr_rect = labelRect(lr);
+            }
+          }
+        });
+
+        // Sort by Y for iterative nudge
+        flowRenders.sort(function(a, b) { return a.labelY - b.labelY; });
+
+        // Iterative bidirectional nudge
+        for (var pass = 0; pass < 8; pass++) {
+          var moved = false;
+          for (var li = 0; li < flowRenders.length; li++) {
+            for (var lj = li + 1; lj < flowRenders.length; lj++) {
+              var ra = labelRect(flowRenders[li]);
+              var rb = labelRect(flowRenders[lj]);
+              if (!rectsOverlap(ra, rb)) continue;
+
+              var overlapX = Math.min(ra.right, rb.right) - Math.max(ra.left, rb.left);
+              var overlapY = Math.min(ra.bottom, rb.bottom) - Math.max(ra.top, rb.top);
+
+              if (overlapX < 40 && overlapX < overlapY) {
+                // X nudge
+                var nudge = (overlapX + 4) / 2;
+                if (flowRenders[li].labelX < flowRenders[lj].labelX) {
+                  flowRenders[li].labelX -= nudge;
+                  flowRenders[lj].labelX += nudge;
+                } else {
+                  flowRenders[li].labelX += nudge;
+                  flowRenders[lj].labelX -= nudge;
+                }
+              } else {
+                // Y nudge
+                var nudgeY = (overlapY + 4) / 2;
+                flowRenders[li].labelY -= nudgeY;
+                flowRenders[lj].labelY += nudgeY;
+              }
+              moved = true;
+            }
+          }
+          if (!moved) break;
+
+          // Re-check against nodes after each pass
+          flowRenders.forEach(function(lr) {
+            var lr_rect = labelRect(lr);
+            for (var ni = 0; ni < nodeBoxes.length; ni++) {
+              if (rectsOverlap(lr_rect, nodeBoxes[ni])) {
+                lr.labelY = Math.min(lr.labelY, nodeBoxes[ni].top - (lr.measured || measureText(lr.text)).height / 2 - 4);
+              }
+            }
+          });
+        }
+
+        // --- Pass 3: create SVG elements with final positions ---
+        flowRenders.forEach(function(lr) {
           var path = document.createElementNS(svgNS, 'path');
           path.setAttribute('class', 'arch-flow');
-          path.setAttribute('marker-end', 'url(#arrowhead)');
+          path.setAttribute('d', lr.d);
+          path.setAttribute('marker-end', 'url(#arrow)');
           path.style.pointerEvents = 'stroke';
           path.style.cursor = 'pointer';
 
-          // Calculate path
-          var x1 = from.x, y1 = from.bottom;
-          var x2 = to.x, y2 = to.top;
+          // Flow label — always visible (subtle), brighter on hover
+          var textEl = document.createElementNS(svgNS, 'text');
+          textEl.setAttribute('class', 'arch-flow-label');
+          textEl.setAttribute('x', lr.labelX);
+          textEl.setAttribute('y', lr.labelY);
+          textEl.textContent = lr.text;
 
-          // If on same tier, go sideways
-          if (Math.abs(y1 - (to.y + to.h/2 - from.h/2)) < 20) {
-            y1 = from.y;
-            y2 = to.y;
-            x1 = from.x + (to.x > from.x ? from.w/2 : -from.w/2);
-            x2 = to.x + (to.x > from.x ? -to.w/2 : to.w/2);
-            var d = 'M' + x1 + ',' + y1 + ' C' + ((x1+x2)/2) + ',' + y1 + ' ' + ((x1+x2)/2) + ',' + y2 + ' ' + x2 + ',' + y2;
-          } else if (y2 < y1) {
-            // Going upward
-            y1 = from.top;
-            y2 = to.bottom;
-            var d = 'M' + x1 + ',' + y1 + ' C' + x1 + ',' + ((y1+y2)/2) + ' ' + x2 + ',' + ((y1+y2)/2) + ' ' + x2 + ',' + y2;
-          } else {
-            var d = 'M' + x1 + ',' + y1 + ' C' + x1 + ',' + ((y1+y2)/2) + ' ' + x2 + ',' + ((y1+y2)/2) + ' ' + x2 + ',' + y2;
-          }
-
-          path.setAttribute('d', d);
-
-          // Hover to show label
           path.addEventListener('mouseenter', function() {
             path.classList.add('active');
-            path.setAttribute('marker-end', 'url(#arrowhead-active)');
+            path.setAttribute('marker-end', 'url(#arrow-active)');
+            textEl.classList.add('active');
           });
           path.addEventListener('mouseleave', function() {
             path.classList.remove('active');
-            path.setAttribute('marker-end', 'url(#arrowhead)');
+            path.setAttribute('marker-end', 'url(#arrow)');
+            textEl.classList.remove('active');
           });
 
           svg.appendChild(path);
-
-          // Flow label on path
-          var textEl = document.createElementNS(svgNS, 'text');
-          textEl.setAttribute('class', 'arch-flow-label flow-label');
-          textEl.setAttribute('x', (x1 + x2) / 2);
-          textEl.setAttribute('y', ((y1 + y2) / 2) - 4);
-          textEl.textContent = flow.label;
-          textEl.style.opacity = '0';
-          textEl.style.transition = 'opacity 0.2s';
-
-          path.addEventListener('mouseenter', function() { textEl.style.opacity = '1'; });
-          path.addEventListener('mouseleave', function() { textEl.style.opacity = '0'; });
-
-          svg.appendChild(textEl);
+          svgLabels.appendChild(textEl);
         });
 
         canvas.appendChild(svg);
+        canvas.appendChild(svgLabels);
       });
-    }
-
-    function renderFlows(project) {
-      var layer = document.getElementById('flowLayer');
-      layer.innerHTML = '<div class="tier-label">Data Flows</div>';
-
-      var group = document.createElement('div');
-      group.className = 'flow-group';
-
-      project.flows.forEach(function(flow) {
-        var item = document.createElement('div');
-        item.className = 'flow-item';
-        item.innerHTML = '<span class="flow-from">' + flow.from + '</span>' +
-          '<span class="flow-arrow">\u2192</span>' +
-          '<span class="flow-to">' + flow.to + '</span>' +
-          '<span class="flow-label">' + flow.label + '</span>';
-        group.appendChild(item);
-      });
-
-      layer.appendChild(group);
     }
 
     function renderLegend(project) {

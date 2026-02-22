@@ -34,7 +34,7 @@ describe("embed response headers", () => {
     expect(csp).toContain("style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com");
     expect(csp).toContain("img-src 'self' data: blob:");
     expect(csp).toContain("connect-src 'self' https:");
-    expect(csp).toContain("font-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net;");
+    expect(csp).toContain("font-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://fonts.gstatic.com;");
   });
 
   it("sets Access-Control-Allow-Origin: * on /v1/* responses", async () => {
@@ -418,10 +418,10 @@ describe("GET /v1/cloudflare-architecture-viz", () => {
   it("uses Cloudflare official color palette", async () => {
     const res = await app.request("/v1/cloudflare-architecture-viz");
     const body = await res.text();
-    // Uses Cloudflare orange from their official color system
-    expect(body).toContain("#f6821f");
-    // Uses Cloudflare dark background gray
-    expect(body).toContain("#1d1f20");
+    // Uses accent orange from the design system
+    expect(body).toContain("#e85e2e");
+    // Uses warm dark brown for dark mode background
+    expect(body).toContain("#1a120e");
   });
 
   it("renders Cloudflare primitives as distinct visual nodes", async () => {
@@ -457,7 +457,7 @@ describe("GET /v1/cloudflare-architecture-viz", () => {
     // Project selector
     expect(body).toContain("project-selector");
     // Multiple projects baked in
-    expect(body).toContain("data-project");
+    expect(body).toContain("switchProject");
   });
 
   it("highlights active data flows on hover", async () => {
