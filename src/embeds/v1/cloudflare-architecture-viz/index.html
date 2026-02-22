@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cloudflare Architecture</title>
+  <style>
+    :root {
+      /* Cloudflare official color system — light mode */
+      --bg: #ffffff;
+      --surface: #f7f7f8;
+      --surface-hover: #eaebeb;
+      --border: #d5d7d8;
+      --text: #1d1f20;
+      --text-muted: #62676a;
+      --accent: #f6821f;
+      --accent-light: #f8c296;
+      --blue: #2c7cb0;
+      --blue-light: #add2eb;
+      --green: #398557;
+      --green-light: #b0ddc2;
+      --cyan: #2b818e;
+      --cyan-light: #a5dce4;
+      --indigo: #6373b6;
+      --indigo-light: #c8cde5;
+      --violet: #9f5bb0;
+      --violet-light: #dbc1e1;
+      --red: #da304c;
+      --red-light: #f3bac3;
+      --gold: #a26a09;
+      --gold-light: #f8cd81;
+      --gray-0: #1d1f20;
+      --gray-4: #72777b;
+      --gray-6: #b7bbbd;
+      --gray-8: #eaebeb;
+      --node-shadow: rgba(0,0,0,0.08);
+      --flow-color: #72777b;
+      --flow-active: #f6821f;
+      --selector-bg: #f7f7f8;
+    }
+
+    :root.dark {
+      /* Cloudflare dark mode — reversed luminosity */
+      --bg: #1d1f20;
+      --surface: #36393a;
+      --surface-hover: #4e5255;
+      --border: #4e5255;
+      --text: #eaebeb;
+      --text-muted: #b7bbbd;
+      --accent: #f6821f;
+      --accent-light: #5b2c06;
+      --blue: #7cb7de;
+      --blue-light: #163d57;
+      --green: #79c698;
+      --green-light: #1c422b;
+      --cyan: #66c3d1;
+      --cyan-light: #164249;
+      --indigo: #a5aed5;
+      --indigo-light: #2c365e;
+      --violet: #c9a2d2;
+      --violet-light: #502b5a;
+      --red: #e35f75;
+      --red-light: #711423;
+      --gold: #f4a929;
+      --gold-light: #573905;
+      --gray-0: #eaebeb;
+      --gray-4: #92979b;
+      --gray-6: #4e5255;
+      --gray-8: #36393a;
+      --node-shadow: rgba(0,0,0,0.3);
+      --flow-color: #92979b;
+      --flow-active: #f6821f;
+      --selector-bg: #36393a;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 20px;
+      line-height: 1.5;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    h1 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .project-selector {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .project-btn {
+      padding: 5px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--selector-bg);
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .project-btn:hover {
+      background: var(--surface-hover);
+      color: var(--text);
+    }
+
+    .project-btn.active {
+      background: var(--accent);
+      color: #ffffff;
+      border-color: var(--accent);
+    }
+
+    .project-info {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+
+    .project-info a {
+      color: var(--blue);
+      text-decoration: none;
+    }
+
+    .project-info a:hover {
+      text-decoration: underline;
+    }
+
+    .arch-canvas {
+      position: relative;
+      width: 100%;
+      min-height: 320px;
+    }
+
+    .arch-canvas svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    .arch-canvas svg path.arch-flow {
+      pointer-events: stroke;
+    }
+
+    .arch-nodes {
+      position: relative;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      justify-content: center;
+      padding: 16px 0;
+    }
+
+    .arch-node {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 18px;
+      border-radius: 10px;
+      background: var(--surface);
+      border: 2px solid var(--border);
+      cursor: default;
+      transition: all 0.25s;
+      position: relative;
+      min-width: 100px;
+      text-align: center;
+      box-shadow: 0 2px 8px var(--node-shadow);
+    }
+
+    .arch-node:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px var(--node-shadow);
+    }
+
+    .arch-node .node-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .arch-node .node-label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text);
+      white-space: nowrap;
+    }
+
+    .arch-node .node-detail {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      max-width: 120px;
+      text-align: center;
+    }
+
+    /* Primitive-specific colors using Cloudflare palette */
+    .arch-node[data-primitive="workers"] .node-icon { background: var(--accent); }
+    .arch-node[data-primitive="workers"] { border-color: var(--accent-light); }
+    .arch-node[data-primitive="static-assets"] .node-icon { background: var(--gray-4); }
+    .arch-node[data-primitive="durable-objects"] .node-icon { background: var(--blue); }
+    .arch-node[data-primitive="durable-objects"] { border-color: var(--blue-light); }
+    .arch-node[data-primitive="kv"] .node-icon { background: var(--green); }
+    .arch-node[data-primitive="kv"] { border-color: var(--green-light); }
+    .arch-node[data-primitive="d1"] .node-icon { background: var(--indigo); }
+    .arch-node[data-primitive="d1"] { border-color: var(--indigo-light); }
+    .arch-node[data-primitive="r2"] .node-icon { background: var(--cyan); }
+    .arch-node[data-primitive="r2"] { border-color: var(--cyan-light); }
+    .arch-node[data-primitive="queues"] .node-icon { background: var(--violet); }
+    .arch-node[data-primitive="queues"] { border-color: var(--violet-light); }
+    .arch-node[data-primitive="ai"] .node-icon { background: var(--red); }
+    .arch-node[data-primitive="ai"] { border-color: var(--red-light); }
+    .arch-node[data-primitive="vectorize"] .node-icon { background: var(--indigo); }
+    .arch-node[data-primitive="vectorize"] { border-color: var(--indigo-light); }
+    .arch-node[data-primitive="cron"] .node-icon { background: var(--gold); }
+    .arch-node[data-primitive="cron"] { border-color: var(--gold-light); }
+    .arch-node[data-primitive="client"] .node-icon { background: var(--gray-4); }
+    .arch-node[data-primitive="client"] { border-color: var(--gray-6); }
+    .arch-node[data-primitive="external"] .node-icon { background: var(--text-muted); }
+
+    /* Flow layer */
+    .flow-layer {
+      margin-top: 8px;
+    }
+
+    .flow-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .flow-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      transition: all 0.2s;
+    }
+
+    .flow-item:hover {
+      background: var(--surface-hover);
+      color: var(--text);
+      border-color: var(--flow-active);
+    }
+
+    .flow-item .flow-from,
+    .flow-item .flow-to {
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .flow-item .flow-arrow {
+      color: var(--accent);
+      font-size: 0.85rem;
+    }
+
+    .flow-item .flow-label {
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    /* SVG flow arrows */
+    .arch-flow {
+      fill: none;
+      stroke: var(--flow-color);
+      stroke-width: 1.5;
+      opacity: 0.5;
+      transition: all 0.25s;
+    }
+
+    .arch-flow:hover,
+    .arch-flow.active {
+      stroke: var(--flow-active);
+      stroke-width: 2.5;
+      opacity: 1;
+    }
+
+    .arch-flow-label {
+      font-size: 10px;
+      fill: var(--text-muted);
+      text-anchor: middle;
+    }
+
+    /* Architecture tiers */
+    .arch-tier {
+      margin-bottom: 12px;
+    }
+
+    .tier-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+      padding-left: 4px;
+    }
+
+    .tier-nodes {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      justify-content: center;
+    }
+
+    /* Connector lines between tiers */
+    .tier-connector {
+      display: flex;
+      justify-content: center;
+      padding: 4px 0;
+    }
+
+    .tier-connector .line {
+      width: 2px;
+      height: 20px;
+      background: var(--border);
+    }
+
+    /* Legend */
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 16px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.68rem;
+      color: var(--text-muted);
+    }
+
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 3px;
+    }
+
+    @media (max-width: 500px) {
+      body { padding: 12px; }
+      .arch-node { min-width: 80px; padding: 10px 12px; }
+      .arch-node .node-icon { width: 28px; height: 28px; font-size: 14px; }
+      .arch-node .node-label { font-size: 0.7rem; }
+      .arch-node .node-detail { font-size: 0.62rem; }
+      .flow-item { font-size: 0.65rem; padding: 4px 8px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Cloudflare Architecture</h1>
+    <div class="project-selector" id="projectSelector"></div>
+  </div>
+  <div class="project-info" id="projectInfo"></div>
+  <div class="arch-canvas" id="archCanvas"></div>
+  <div class="flow-layer" id="flowLayer"></div>
+  <div class="legend" id="legend"></div>
+
+  <script>
+    var PROJECTS = [
+      {
+        id: "embed-oshineye-dev",
+        name: "embed.oshineye.dev",
+        description: "Self-contained interactive visualisations hosted on Cloudflare Workers, embedded via iframe in Blogger posts. Features live presence via WebSocket-backed Durable Objects.",
+        url: "https://github.com/adewale/embed.oshineye.dev",
+        tiers: [
+          {
+            label: "Edge",
+            nodes: [
+              { primitive: "client", icon: "\uD83C\uDF10", label: "Browser", detail: "iframe embed" },
+              { primitive: "static-assets", icon: "SA", label: "Static Assets", detail: "loader.js, CSS" },
+              { primitive: "workers", icon: "W", label: "Workers", detail: "Hono router" }
+            ]
+          },
+          {
+            label: "State",
+            nodes: [
+              { primitive: "durable-objects", icon: "DO", label: "Durable Objects", detail: "PresenceRoom" }
+            ]
+          }
+        ],
+        flows: [
+          { from: "Browser", to: "Static Assets", label: "GET /static/*" },
+          { from: "Browser", to: "Workers", label: "GET /v1/:slug" },
+          { from: "Browser", to: "Durable Objects", label: "WebSocket" },
+          { from: "Workers", to: "Durable Objects", label: "stub.fetch()" },
+          { from: "Durable Objects", to: "Browser", label: "WS broadcast" }
+        ]
+      },
+      {
+        id: "keyboardia",
+        name: "keyboardia",
+        description: "A collaborative keyboard testing and sound sampling app. Uses KV for session storage, Durable Objects with SQLite for live collaborative sessions, and R2 for audio sample storage.",
+        url: "https://github.com/adewale/keyboardia",
+        tiers: [
+          {
+            label: "Edge",
+            nodes: [
+              { primitive: "client", icon: "\uD83C\uDF10", label: "Browser", detail: "SPA client" },
+              { primitive: "static-assets", icon: "SA", label: "Static Assets", detail: "./dist" },
+              { primitive: "workers", icon: "W", label: "Workers", detail: "API router" }
+            ]
+          },
+          {
+            label: "State",
+            nodes: [
+              { primitive: "kv", icon: "KV", label: "KV", detail: "Sessions" },
+              { primitive: "durable-objects", icon: "DO", label: "Durable Objects", detail: "LiveSession (SQLite)" },
+              { primitive: "r2", icon: "R2", label: "R2", detail: "Audio samples" }
+            ]
+          }
+        ],
+        flows: [
+          { from: "Browser", to: "Static Assets", label: "GET /" },
+          { from: "Browser", to: "Workers", label: "API requests" },
+          { from: "Workers", to: "KV", label: "Session lookup" },
+          { from: "Workers", to: "Durable Objects", label: "Live session" },
+          { from: "Workers", to: "R2", label: "Store/fetch samples" },
+          { from: "Durable Objects", to: "Browser", label: "WS sync" }
+        ]
+      },
+      {
+        id: "vaders",
+        name: "vaders",
+        description: "A multiplayer Space Invaders game built on Cloudflare Workers. Uses Durable Objects with SQLite for authoritative game state and a matchmaker pattern for lobby management.",
+        url: "https://github.com/adewale/vaders",
+        tiers: [
+          {
+            label: "Edge",
+            nodes: [
+              { primitive: "client", icon: "\uD83C\uDF10", label: "Browser", detail: "Game client" },
+              { primitive: "workers", icon: "W", label: "Workers", detail: "Entry point" }
+            ]
+          },
+          {
+            label: "Coordination",
+            nodes: [
+              { primitive: "durable-objects", icon: "DO", label: "Matchmaker", detail: "Lobby management" }
+            ]
+          },
+          {
+            label: "Game State",
+            nodes: [
+              { primitive: "durable-objects", icon: "DO", label: "GameRoom", detail: "SQLite state" }
+            ]
+          }
+        ],
+        flows: [
+          { from: "Browser", to: "Workers", label: "Join game" },
+          { from: "Workers", to: "Matchmaker", label: "Find/create room" },
+          { from: "Matchmaker", to: "GameRoom", label: "Route player" },
+          { from: "GameRoom", to: "Browser", label: "WS game state" },
+          { from: "Browser", to: "GameRoom", label: "Player input" }
+        ]
+      },
+      {
+        id: "planetcf",
+        name: "Planet CF",
+        description: "A feed aggregator for the Cloudflare community, built with Python Workers. Uses D1 for storage, Queues for async feed fetching, Workers AI + Vectorize for semantic search, and Cron for scheduling.",
+        url: "https://github.com/adewale/planetcf",
+        tiers: [
+          {
+            label: "Edge",
+            nodes: [
+              { primitive: "client", icon: "\uD83C\uDF10", label: "Browser", detail: "Reader" },
+              { primitive: "static-assets", icon: "SA", label: "Static Assets", detail: "HTML/CSS" },
+              { primitive: "workers", icon: "W", label: "Workers", detail: "Python Worker" }
+            ]
+          },
+          {
+            label: "Scheduling",
+            nodes: [
+              { primitive: "cron", icon: "\u23F0", label: "Cron Trigger", detail: "Hourly" },
+              { primitive: "queues", icon: "Q", label: "Queues", detail: "Feed queue + DLQ" }
+            ]
+          },
+          {
+            label: "Storage & AI",
+            nodes: [
+              { primitive: "d1", icon: "D1", label: "D1", detail: "Feed entries" },
+              { primitive: "ai", icon: "AI", label: "Workers AI", detail: "Embeddings" },
+              { primitive: "vectorize", icon: "V", label: "Vectorize", detail: "Search index" }
+            ]
+          }
+        ],
+        flows: [
+          { from: "Browser", to: "Static Assets", label: "GET /" },
+          { from: "Browser", to: "Workers", label: "Search/browse" },
+          { from: "Cron Trigger", to: "Workers", label: "Scheduled event" },
+          { from: "Workers", to: "Queues", label: "Enqueue feeds" },
+          { from: "Queues", to: "Workers", label: "Consume batch" },
+          { from: "Workers", to: "D1", label: "Store entries" },
+          { from: "Workers", to: "Workers AI", label: "Generate embeddings" },
+          { from: "Workers AI", to: "Vectorize", label: "Index vectors" },
+          { from: "Workers", to: "Vectorize", label: "Semantic query" },
+          { from: "Workers", to: "D1", label: "Read entries" }
+        ]
+      }
+    ];
+
+    var PRIMITIVE_COLORS = {
+      "workers": { bg: "#f6821f", label: "Workers" },
+      "static-assets": { bg: "#72777b", label: "Static Assets" },
+      "durable-objects": { bg: "#2c7cb0", label: "Durable Objects" },
+      "kv": { bg: "#398557", label: "KV" },
+      "d1": { bg: "#6373b6", label: "D1" },
+      "r2": { bg: "#2b818e", label: "R2" },
+      "queues": { bg: "#9f5bb0", label: "Queues" },
+      "ai": { bg: "#da304c", label: "Workers AI" },
+      "vectorize": { bg: "#6373b6", label: "Vectorize" },
+      "cron": { bg: "#a26a09", label: "Cron Triggers" },
+      "client": { bg: "#72777b", label: "Client" },
+      "external": { bg: "#62676a", label: "External" }
+    };
+
+    // Theme
+    var params = new URL(location.href).searchParams;
+    var theme = params.get('theme') || 'light';
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    }
+
+    var activeProject = params.get('project') || PROJECTS[0].id;
+
+    function renderProjectSelector() {
+      var sel = document.getElementById('projectSelector');
+      sel.innerHTML = '';
+      PROJECTS.forEach(function(p) {
+        var btn = document.createElement('button');
+        btn.className = 'project-btn' + (p.id === activeProject ? ' active' : '');
+        btn.textContent = p.name;
+        btn.setAttribute('data-project', p.id);
+        btn.onclick = function() { switchProject(p.id); };
+        sel.appendChild(btn);
+      });
+    }
+
+    function switchProject(id) {
+      activeProject = id;
+      renderProjectSelector();
+      renderProject();
+    }
+
+    function renderProject() {
+      var project = PROJECTS.find(function(p) { return p.id === activeProject; });
+      if (!project) return;
+
+      // Project info
+      var info = document.getElementById('projectInfo');
+      info.innerHTML = '<a href="' + project.url + '" target="_blank" rel="noopener">' + project.name + '</a> &mdash; ' + project.description;
+
+      // Render architecture tiers
+      var canvas = document.getElementById('archCanvas');
+      canvas.innerHTML = '';
+
+      project.tiers.forEach(function(tier, ti) {
+        var tierEl = document.createElement('div');
+        tierEl.className = 'arch-tier';
+
+        var label = document.createElement('div');
+        label.className = 'tier-label';
+        label.textContent = tier.label;
+        tierEl.appendChild(label);
+
+        var nodesEl = document.createElement('div');
+        nodesEl.className = 'tier-nodes';
+
+        tier.nodes.forEach(function(node) {
+          var nodeEl = document.createElement('div');
+          nodeEl.className = 'arch-node';
+          nodeEl.setAttribute('data-primitive', node.primitive);
+          nodeEl.setAttribute('data-label', node.label);
+
+          var icon = document.createElement('div');
+          icon.className = 'node-icon';
+          icon.textContent = node.icon;
+          nodeEl.appendChild(icon);
+
+          var lbl = document.createElement('div');
+          lbl.className = 'node-label';
+          lbl.textContent = node.label;
+          nodeEl.appendChild(lbl);
+
+          if (node.detail) {
+            var det = document.createElement('div');
+            det.className = 'node-detail';
+            det.textContent = node.detail;
+            nodeEl.appendChild(det);
+          }
+
+          nodesEl.appendChild(nodeEl);
+        });
+
+        tierEl.appendChild(nodesEl);
+        canvas.appendChild(tierEl);
+
+        // Add connector between tiers
+        if (ti < project.tiers.length - 1) {
+          var conn = document.createElement('div');
+          conn.className = 'tier-connector';
+          var line = document.createElement('div');
+          line.className = 'line';
+          conn.appendChild(line);
+          canvas.appendChild(conn);
+        }
+      });
+
+      // Render SVG flow arrows
+      renderFlowArrows(project);
+
+      // Render flow list
+      renderFlows(project);
+
+      // Render legend
+      renderLegend(project);
+    }
+
+    function renderFlowArrows(project) {
+      var canvas = document.getElementById('archCanvas');
+      var svgNS = 'http://www.w3.org/2000/svg';
+      var svg = document.createElementNS(svgNS, 'svg');
+      svg.setAttribute('class', 'flow-svg');
+
+      // Defer to allow layout
+      requestAnimationFrame(function() {
+        var rect = canvas.getBoundingClientRect();
+        svg.setAttribute('width', rect.width);
+        svg.setAttribute('height', rect.height);
+        svg.setAttribute('viewBox', '0 0 ' + rect.width + ' ' + rect.height);
+        svg.style.position = 'absolute';
+        svg.style.top = '0';
+        svg.style.left = '0';
+        svg.style.width = '100%';
+        svg.style.height = '100%';
+        svg.style.pointerEvents = 'none';
+        svg.style.overflow = 'visible';
+
+        // Arrowhead marker
+        var defs = document.createElementNS(svgNS, 'defs');
+        var marker = document.createElementNS(svgNS, 'marker');
+        marker.setAttribute('id', 'arrowhead');
+        marker.setAttribute('markerWidth', '8');
+        marker.setAttribute('markerHeight', '6');
+        marker.setAttribute('refX', '8');
+        marker.setAttribute('refY', '3');
+        marker.setAttribute('orient', 'auto');
+        var poly = document.createElementNS(svgNS, 'polygon');
+        poly.setAttribute('points', '0 0, 8 3, 0 6');
+        poly.setAttribute('fill', 'var(--flow-color)');
+        marker.appendChild(poly);
+        defs.appendChild(marker);
+
+        var markerActive = document.createElementNS(svgNS, 'marker');
+        markerActive.setAttribute('id', 'arrowhead-active');
+        markerActive.setAttribute('markerWidth', '8');
+        markerActive.setAttribute('markerHeight', '6');
+        markerActive.setAttribute('refX', '8');
+        markerActive.setAttribute('refY', '3');
+        markerActive.setAttribute('orient', 'auto');
+        var polyActive = document.createElementNS(svgNS, 'polygon');
+        polyActive.setAttribute('points', '0 0, 8 3, 0 6');
+        polyActive.setAttribute('fill', 'var(--flow-active)');
+        markerActive.appendChild(polyActive);
+        defs.appendChild(markerActive);
+        svg.appendChild(defs);
+
+        var nodes = canvas.querySelectorAll('.arch-node');
+        var nodeMap = {};
+        nodes.forEach(function(n) {
+          var label = n.getAttribute('data-label');
+          var r = n.getBoundingClientRect();
+          nodeMap[label] = {
+            x: r.left - rect.left + r.width / 2,
+            y: r.top - rect.top + r.height / 2,
+            w: r.width,
+            h: r.height,
+            top: r.top - rect.top,
+            bottom: r.top - rect.top + r.height
+          };
+        });
+
+        project.flows.forEach(function(flow) {
+          var from = nodeMap[flow.from];
+          var to = nodeMap[flow.to];
+          if (!from || !to) return;
+
+          var path = document.createElementNS(svgNS, 'path');
+          path.setAttribute('class', 'arch-flow');
+          path.setAttribute('marker-end', 'url(#arrowhead)');
+          path.style.pointerEvents = 'stroke';
+          path.style.cursor = 'pointer';
+
+          // Calculate path
+          var x1 = from.x, y1 = from.bottom;
+          var x2 = to.x, y2 = to.top;
+
+          // If on same tier, go sideways
+          if (Math.abs(y1 - (to.y + to.h/2 - from.h/2)) < 20) {
+            y1 = from.y;
+            y2 = to.y;
+            x1 = from.x + (to.x > from.x ? from.w/2 : -from.w/2);
+            x2 = to.x + (to.x > from.x ? -to.w/2 : to.w/2);
+            var d = 'M' + x1 + ',' + y1 + ' C' + ((x1+x2)/2) + ',' + y1 + ' ' + ((x1+x2)/2) + ',' + y2 + ' ' + x2 + ',' + y2;
+          } else if (y2 < y1) {
+            // Going upward
+            y1 = from.top;
+            y2 = to.bottom;
+            var d = 'M' + x1 + ',' + y1 + ' C' + x1 + ',' + ((y1+y2)/2) + ' ' + x2 + ',' + ((y1+y2)/2) + ' ' + x2 + ',' + y2;
+          } else {
+            var d = 'M' + x1 + ',' + y1 + ' C' + x1 + ',' + ((y1+y2)/2) + ' ' + x2 + ',' + ((y1+y2)/2) + ' ' + x2 + ',' + y2;
+          }
+
+          path.setAttribute('d', d);
+
+          // Hover to show label
+          path.addEventListener('mouseenter', function() {
+            path.classList.add('active');
+            path.setAttribute('marker-end', 'url(#arrowhead-active)');
+          });
+          path.addEventListener('mouseleave', function() {
+            path.classList.remove('active');
+            path.setAttribute('marker-end', 'url(#arrowhead)');
+          });
+
+          svg.appendChild(path);
+
+          // Flow label on path
+          var textEl = document.createElementNS(svgNS, 'text');
+          textEl.setAttribute('class', 'arch-flow-label flow-label');
+          textEl.setAttribute('x', (x1 + x2) / 2);
+          textEl.setAttribute('y', ((y1 + y2) / 2) - 4);
+          textEl.textContent = flow.label;
+          textEl.style.opacity = '0';
+          textEl.style.transition = 'opacity 0.2s';
+
+          path.addEventListener('mouseenter', function() { textEl.style.opacity = '1'; });
+          path.addEventListener('mouseleave', function() { textEl.style.opacity = '0'; });
+
+          svg.appendChild(textEl);
+        });
+
+        canvas.appendChild(svg);
+      });
+    }
+
+    function renderFlows(project) {
+      var layer = document.getElementById('flowLayer');
+      layer.innerHTML = '<div class="tier-label">Data Flows</div>';
+
+      var group = document.createElement('div');
+      group.className = 'flow-group';
+
+      project.flows.forEach(function(flow) {
+        var item = document.createElement('div');
+        item.className = 'flow-item';
+        item.innerHTML = '<span class="flow-from">' + flow.from + '</span>' +
+          '<span class="flow-arrow">\u2192</span>' +
+          '<span class="flow-to">' + flow.to + '</span>' +
+          '<span class="flow-label">' + flow.label + '</span>';
+        group.appendChild(item);
+      });
+
+      layer.appendChild(group);
+    }
+
+    function renderLegend(project) {
+      var legendEl = document.getElementById('legend');
+      legendEl.innerHTML = '';
+
+      var seen = {};
+      project.tiers.forEach(function(tier) {
+        tier.nodes.forEach(function(node) {
+          if (!seen[node.primitive] && PRIMITIVE_COLORS[node.primitive]) {
+            seen[node.primitive] = true;
+            var item = document.createElement('div');
+            item.className = 'legend-item';
+            var dot = document.createElement('div');
+            dot.className = 'legend-dot';
+            dot.style.background = PRIMITIVE_COLORS[node.primitive].bg;
+            item.appendChild(dot);
+            var lbl = document.createElement('span');
+            lbl.textContent = PRIMITIVE_COLORS[node.primitive].label;
+            item.appendChild(lbl);
+            legendEl.appendChild(item);
+          }
+        });
+      });
+    }
+
+    // Initialize
+    renderProjectSelector();
+    renderProject();
+
+    // ResizeObserver for iframe auto-height
+    new ResizeObserver(function() {
+      window.parent.postMessage(
+        { type: 'embed.oshineye.resize', height: document.body.scrollHeight },
+        '*'
+      );
+    }).observe(document.body);
+  </script>
+</body>
+</html>

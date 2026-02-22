@@ -382,6 +382,98 @@ describe("GET /v1/blogging-timeline", () => {
   });
 });
 
+describe("GET /v1/cloudflare-architecture-viz", () => {
+  it("returns 200 with correct HTML", async () => {
+    const res = await app.request("/v1/cloudflare-architecture-viz");
+    expect(res.status).toBe(200);
+    const body = await res.text();
+    expect(body).toContain("Cloudflare Architecture");
+    expect(body).toContain("<!DOCTYPE html>");
+    expect(body).toContain("ResizeObserver");
+  });
+
+  it("sets correct response headers", async () => {
+    const res = await app.request("/v1/cloudflare-architecture-viz");
+    expect(res.headers.get("X-Frame-Options")).toBe("ALLOWALL");
+    expect(res.headers.get("Access-Control-Allow-Origin")).toBe("*");
+    const csp = res.headers.get("Content-Security-Policy");
+    expect(csp).toContain("frame-ancestors *");
+  });
+
+  it("HTML contains theme reading logic", async () => {
+    const res = await app.request("/v1/cloudflare-architecture-viz");
+    const body = await res.text();
+    expect(body).toContain(".get('theme')");
+    expect(body).toContain("'light'");
+    expect(body).toContain("'dark'");
+  });
+
+  it("HTML contains postMessage resize contract", async () => {
+    const res = await app.request("/v1/cloudflare-architecture-viz");
+    const body = await res.text();
+    expect(body).toContain("embed.oshineye.resize");
+    expect(body).toContain("document.body.scrollHeight");
+  });
+
+  it("uses Cloudflare official color palette", async () => {
+    const res = await app.request("/v1/cloudflare-architecture-viz");
+    const body = await res.text();
+    // Uses Cloudflare orange from their official color system
+    expect(body).toContain("#f6821f");
+    // Uses Cloudflare dark background gray
+    expect(body).toContain("#1d1f20");
+  });
+
+  it("renders Cloudflare primitives as distinct visual nodes", async () => {
+    const res = await app.request("/v1/cloudflare-architecture-viz");
+    const body = await res.text();
+    // Each primitive is a node with a data-primitive attribute
+    expect(body).toContain("data-primitive");
+    expect(body).toContain("arch-node");
+  });
+
+  it("renders data flow arrows between primitives", async () => {
+    const res = await app.request("/v1/cloudflare-architecture-viz");
+    const body = await res.text();
+    // Creates SVG flow arrows dynamically
+    expect(body).toContain("createElementNS");
+    expect(body).toContain("arch-flow");
+  });
+
+  it("contains baked-in architecture data for Adewale's projects", async () => {
+    const res = await app.request("/v1/cloudflare-architecture-viz");
+    const body = await res.text();
+    // embed.oshineye.dev project
+    expect(body).toContain("embed.oshineye.dev");
+    // Should contain known Cloudflare primitives
+    expect(body).toContain("Workers");
+    expect(body).toContain("Durable Objects");
+    expect(body).toContain("Static Assets");
+  });
+
+  it("supports switching between projects", async () => {
+    const res = await app.request("/v1/cloudflare-architecture-viz");
+    const body = await res.text();
+    // Project selector
+    expect(body).toContain("project-selector");
+    // Multiple projects baked in
+    expect(body).toContain("data-project");
+  });
+
+  it("highlights active data flows on hover", async () => {
+    const res = await app.request("/v1/cloudflare-architecture-viz");
+    const body = await res.text();
+    expect(body).toContain(":hover");
+    expect(body).toContain("arch-flow");
+  });
+
+  it("shows labels on data flow arrows", async () => {
+    const res = await app.request("/v1/cloudflare-architecture-viz");
+    const body = await res.text();
+    expect(body).toContain("flow-label");
+  });
+});
+
 describe("catalogue page", () => {
   it("contains links to each embed", async () => {
     const res = await app.request("/");
@@ -390,6 +482,7 @@ describe("catalogue page", () => {
     expect(body).toContain('href="/v1/avatar-stack-playground"');
     expect(body).toContain('href="/v1/github-timeline"');
     expect(body).toContain('href="/v1/blogging-timeline"');
+    expect(body).toContain('href="/v1/cloudflare-architecture-viz"');
   });
 
   it("returns HTML content type", async () => {

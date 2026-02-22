@@ -2,6 +2,7 @@ import avatarStackHtml from "./v1/avatar-stack/index.html";
 import avatarStackPlaygroundHtml from "./v1/avatar-stack-playground/index.html";
 import githubTimelineHtml from "./v1/github-timeline/index.html";
 import bloggingTimelineHtml from "./v1/blogging-timeline/index.html";
+import cloudflareArchitectureVizHtml from "./v1/cloudflare-architecture-viz/index.html";
 
 export interface EmbedEntry {
   slug: string;
@@ -34,6 +35,12 @@ export const embeds: EmbedEntry[] = [
     title: "Blogging Timeline",
     description: "A timeline of blog posts from blog.oshineye.com, newest first. Shows last 2 years by default; use ?years=all for full history.",
     html: bloggingTimelineHtml,
+  },
+  {
+    slug: "cloudflare-architecture-viz",
+    title: "Cloudflare Architecture",
+    description: "Interactive architecture diagrams showing Cloudflare primitives and data flows for real projects. Switch between projects to compare architectures.",
+    html: cloudflareArchitectureVizHtml,
   },
 ];
 
