@@ -4,34 +4,33 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cloudflare Architecture</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=DM+Serif+Display&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #fffcf6;
-      --fg: #2c1a14;
-
-      /* Derived structural colors */
-      --surface: color-mix(in srgb, var(--bg) 92%, var(--fg));
-      --surface-hover: color-mix(in srgb, var(--bg) 85%, var(--fg));
-      --border: color-mix(in srgb, var(--bg) 75%, var(--fg));
-      --text: var(--fg);
-      --text-muted: color-mix(in srgb, var(--fg) 60%, var(--bg));
-      --selector-bg: color-mix(in srgb, var(--bg) 85%, var(--fg));
-
-      /* Accent */
-      --accent: #e85e2e;
-      --accent-dark: #c94d22;
-
-      --font-display: 'DM Serif Display', Georgia, 'Times New Roman', serif;
-      --font-body: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --bg: #f9fafb;
+      --fg: #111827;
+      --surface: #ffffff;
+      --surface-hover: #f9fafb;
+      --border: #e5e7eb;
+      --text: #111827;
+      --text-muted: #6b7280;
+      --selector-bg: #ffffff;
+      --accent: #f97316;
+      --accent-dark: #ea580c;
+      --font-display: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-body: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
     }
 
     :root.dark {
-      --bg: #1a120e;
-      --fg: #f5efe5;
-      --accent: #e85e2e;  --accent-dark: #c94d22;
+      --bg: #111827;
+      --fg: #f9fafb;
+      --surface: #1f2937;
+      --surface-hover: #374151;
+      --border: #374151;
+      --text: #f9fafb;
+      --text-muted: #9ca3af;
+      --selector-bg: #1f2937;
+      --accent: #f97316;
+      --accent-dark: #ea580c;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -58,8 +57,8 @@
     h1 {
       font-family: var(--font-display);
       font-size: 1.2rem;
-      font-weight: 400;
-      color: var(--accent);
+      font-weight: 700;
+      color: var(--fg);
     }
 
     .project-selector {
@@ -69,15 +68,16 @@
     }
 
     .project-btn {
-      padding: 5px 14px;
+      padding: 6px 16px;
       border: 1px solid var(--border);
-      border-radius: 100px;
+      border-radius: 9999px;
       background: var(--selector-bg);
       color: var(--text-muted);
-      font-size: 0.78rem;
+      font-size: 0.875rem;
+      font-weight: 500;
       font-family: inherit;
       cursor: pointer;
-      transition: all 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .project-btn:hover {
@@ -86,9 +86,15 @@
     }
 
     .project-btn.active {
-      background: var(--accent);
-      color: #ffffff;
-      border-color: var(--accent);
+      background: #fff7ed;
+      color: #ea580c;
+      border-color: #fed7aa;
+    }
+
+    :root.dark .project-btn.active {
+      background: #431407;
+      color: #fb923c;
+      border-color: #7c2d12;
     }
 
     .project-info {
@@ -105,15 +111,17 @@
     }
 
     .project-info a:hover {
-      color: var(--accent-dark);
       text-decoration: underline;
+      text-underline-offset: 2px;
     }
 
     .diagram-code {
       margin-top: 20px;
       border: 1px solid var(--border);
-      border-radius: 10px;
+      border-radius: 8px;
       overflow: hidden;
+      background: var(--surface);
+      box-shadow: 0 1px 3px 0 rgba(0,0,0,0.1), 0 1px 2px -1px rgba(0,0,0,0.1);
     }
     .diagram-code:first-of-type {
       margin-top: 0;
@@ -123,7 +131,7 @@
       justify-content: space-between;
       align-items: center;
       padding: 8px 14px;
-      background: var(--surface);
+      background: var(--bg);
       border-bottom: 1px solid var(--border);
     }
     .diagram-code-title {
@@ -134,22 +142,28 @@
       color: var(--text-muted);
     }
     .copy-btn {
-      padding: 3px 10px;
+      padding: 4px 12px;
       font-size: 0.75rem;
+      font-weight: 500;
       border: 1px solid var(--border);
       border-radius: 6px;
-      background: var(--bg);
-      color: var(--text);
+      background: var(--surface);
+      color: var(--text-muted);
       cursor: pointer;
+      transition: background 0.15s;
+    }
+    .copy-btn:hover {
+      background: var(--surface-hover);
+      color: var(--text);
     }
     .diagram-code-block {
       margin: 0;
       padding: 14px;
-      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
       font-size: 0.78rem;
       line-height: 1.5;
       overflow-x: auto;
-      background: var(--bg);
+      background: var(--surface);
       color: var(--text);
       white-space: pre;
     }
@@ -159,10 +173,40 @@
       overflow-x: auto;
       display: flex;
       justify-content: center;
+      background: var(--surface);
     }
     .mermaid-container svg {
       max-width: 100%;
       height: auto;
+    }
+    .mermaid-flows {
+      padding: 12px 14px;
+      border-top: 1px solid var(--border);
+      font-size: 0.875rem;
+      line-height: 1.7;
+      color: var(--text-muted);
+      background: var(--surface);
+    }
+    .mermaid-flows-title {
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-size: 0.72rem;
+      margin-bottom: 4px;
+      color: var(--text-muted);
+    }
+    .mermaid-flow-item {
+      display: flex;
+      gap: 6px;
+      align-items: baseline;
+    }
+    .mermaid-flow-arrow {
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+    .mermaid-flow-label {
+      color: var(--text-muted);
+      opacity: 0.75;
     }
 
     @media (max-width: 500px) {
@@ -180,11 +224,11 @@
   <div class="diagram-code" id="mermaidDiagram">
     <div class="diagram-code-header">
       <span class="diagram-code-title">Mermaid</span>
-      <button class="copy-btn" id="copyMermaid">Copy</button>
     </div>
     <div class="mermaid-container">
       <!-- MERMAID_DIAGRAMS -->
     </div>
+    <div class="mermaid-flows" id="mermaidFlows"></div>
   </div>
 
   <div class="diagram-code" id="asciiDiagram">
@@ -213,20 +257,20 @@
             label: "Edge",
             nodes: [
               { label: "Static Assets", detail: "HTML / CSS" },
-              { label: "Workers", detail: "Python" }
+              { label: "Workers", detail: "Python" },
+              { label: "Cron Trigger", detail: "Hourly" }
             ]
           },
           {
-            label: "Scheduling",
+            label: "Storage",
             nodes: [
-              { label: "Cron Trigger", detail: "Hourly" },
+              { label: "D1", detail: "Feed entries" },
               { label: "Queues", detail: "Feed queue + DLQ" }
             ]
           },
           {
-            label: "Storage & AI",
+            label: "AI",
             nodes: [
-              { label: "D1", detail: "Feed entries" },
               { label: "Workers AI", detail: "Embeddings" },
               { label: "Vectorize", detail: "Search index" }
             ]
@@ -264,10 +308,15 @@
             ]
           },
           {
-            label: "State",
+            label: "Compute",
+            nodes: [
+              { label: "Durable Objects", detail: "LiveSession (SQLite)" }
+            ]
+          },
+          {
+            label: "Storage",
             nodes: [
               { label: "KV", detail: "Sessions" },
-              { label: "Durable Objects", detail: "LiveSession (SQLite)" },
               { label: "R2", detail: "Audio samples" }
             ]
           }
@@ -288,21 +337,21 @@
         url: "https://github.com/adewale/vaders",
         tiers: [
           {
+            label: "Client",
+            nodes: [
+              { label: "Terminal", detail: "TUI client" }
+            ]
+          },
+          {
             label: "Edge",
             nodes: [
-              { label: "Terminal", detail: "TUI client" },
               { label: "Workers", detail: "Entry point" }
             ]
           },
           {
-            label: "Coordination",
+            label: "Compute",
             nodes: [
-              { label: "Matchmaker", detail: "Lobby mgmt" }
-            ]
-          },
-          {
-            label: "Game State",
-            nodes: [
+              { label: "Matchmaker", detail: "Lobby mgmt" },
               { label: "GameRoom", detail: "SQLite state" }
             ]
           }
@@ -335,7 +384,7 @@
             ]
           },
           {
-            label: "State",
+            label: "Compute",
             nodes: [
               { label: "Durable Objects", detail: "PresenceRoom" }
             ]
@@ -363,13 +412,13 @@
           {
             label: "Edge",
             nodes: [
-              { label: "Static Assets", detail: "HTML" }
+              { label: "Static Assets", detail: "HTML" },
+              { label: "Workers", detail: "Router" }
             ]
           },
           {
             label: "Compute",
             nodes: [
-              { label: "Workers", detail: "Router" },
               { label: "Durable Objects", detail: "Fibonacci (SQLite)" }
             ]
           }
@@ -576,6 +625,19 @@
       mermaidSvgs.forEach(function(el) {
         el.style.display = el.getAttribute('data-mermaid-project') === activeProject ? '' : 'none';
       });
+
+      // Generate Mermaid flows list
+      var flowsEl = document.getElementById('mermaidFlows');
+      flowsEl.innerHTML = '<div class="mermaid-flows-title">Flows</div>';
+      project.flows.forEach(function(flow) {
+        var item = document.createElement('div');
+        item.className = 'mermaid-flow-item';
+        item.innerHTML = '<span>' + flow.from + '</span>' +
+          '<span class="mermaid-flow-arrow">\u2192</span>' +
+          '<span>' + flow.to + '</span>' +
+          '<span class="mermaid-flow-label">' + flow.label + '</span>';
+        flowsEl.appendChild(item);
+      });
     }
 
     // Initialize
@@ -586,16 +648,6 @@
     document.getElementById('copyAscii').addEventListener('click', function() {
       var btn = this;
       navigator.clipboard.writeText(document.getElementById('asciiCode').textContent).then(function() {
-        btn.textContent = 'Copied!';
-        setTimeout(function() { btn.textContent = 'Copy'; }, 1500);
-      });
-    });
-
-    document.getElementById('copyMermaid').addEventListener('click', function() {
-      var btn = this;
-      var active = document.querySelector('.mermaid-project-svg[data-mermaid-project="' + activeProject + '"]');
-      var src = active ? active.getAttribute('data-mermaid-source') : '';
-      navigator.clipboard.writeText(src || '').then(function() {
         btn.textContent = 'Copied!';
         setTimeout(function() { btn.textContent = 'Copy'; }, 1500);
       });

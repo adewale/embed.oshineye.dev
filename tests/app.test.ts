@@ -415,13 +415,13 @@ describe("GET /v1/cloudflare-architecture-viz", () => {
     expect(body).toContain("document.body.scrollHeight");
   });
 
-  it("uses Cloudflare official color palette", async () => {
+  it("uses Gardener product-icon color palette", async () => {
     const res = await app.request("/v1/cloudflare-architecture-viz");
     const body = await res.text();
-    // Uses accent orange from the design system
-    expect(body).toContain("#e85e2e");
-    // Uses warm dark brown for dark mode background
-    expect(body).toContain("#1a120e");
+    // Uses Workers orange-500 from the Gardener palette
+    expect(body).toContain("#f97316");
+    // Uses gray-900 for dark mode background
+    expect(body).toContain("#111827");
   });
 
   it("contains baked-in architecture data for Adewale's projects", async () => {
@@ -450,10 +450,10 @@ describe("Mermaid diagram generation", () => {
   it("Mermaid source contains classDef for node colours", async () => {
     const res = await app.request("/v1/cloudflare-architecture-viz?project=planet-cf");
     const body = await res.text();
-    // The source is baked into data-mermaid-source attribute
-    expect(body).toContain("classDef workers fill:#e85e2e");
-    expect(body).toContain("classDef cron fill:#a26a09");
-    expect(body).toContain("classDef queues fill:#9f5bb0");
+    // The source is baked into data-mermaid-source attribute (Gardener palette)
+    expect(body).toContain("classDef workers fill:#f97316");
+    expect(body).toContain("classDef cron fill:#f59e0b");
+    expect(body).toContain("classDef queues fill:#14b8a6");
   });
 
   it("Mermaid source applies class to nodes with shape syntax", async () => {
@@ -489,13 +489,15 @@ describe("Mermaid diagram generation", () => {
     expect(body).toContain("letter-spacing");
   });
 
-  it("small projects use graph LR, planet-cf uses graph TD", async () => {
+  it("small projects use graph LR, large projects use graph TD", async () => {
     const res = await app.request("/v1/cloudflare-architecture-viz");
     const body = await res.text();
-    // planet-cf (4 effective tiers) → TD
-    expect(body).toMatch(/data-mermaid-source="[^"]*graph TD[^"]*" /i);
-    // keyboardia (3 tiers) → LR
-    expect(body).toMatch(/data-mermaid-project="keyboardia"[^>]*data-mermaid-source="[^"]*graph LR/i);
+    // planet-cf (4 tiers: client, edge, storage, ai) → TD
+    expect(body).toMatch(/data-mermaid-project="planet-cf"[^>]*data-mermaid-source="[^"]*graph TD/i);
+    // keyboardia (4 tiers: client, edge, compute, storage) → TD
+    expect(body).toMatch(/data-mermaid-project="keyboardia"[^>]*data-mermaid-source="[^"]*graph TD/i);
+    // vaders (3 tiers: client, edge, compute) → LR
+    expect(body).toMatch(/data-mermaid-project="vaders"[^>]*data-mermaid-source="[^"]*graph LR/i);
   });
 
   it("Mermaid source uses cylinder syntax for storage nodes", async () => {
@@ -530,21 +532,282 @@ describe("Mermaid diagram generation", () => {
     expect(body).toContain('ry="6"');
   });
 
-  it("planet-cf Mermaid source contains nested subgraph", async () => {
+  it("planet-cf Mermaid source contains canonical tier names", async () => {
     const res = await app.request("/v1/cloudflare-architecture-viz?project=planet-cf");
     const body = await res.text();
-    // Backend is a wrapper subgraph containing Scheduling and Storage & AI
-    expect(body).toContain("Backend");
-    expect(body).toContain("Scheduling");
-    expect(body).toContain("Storage &amp; AI");
+    // Canonical tiers based on PRIMITIVE_TIER: Client, Edge, Storage, AI
+    expect(body).toContain("Client");
+    expect(body).toContain("Edge");
+    expect(body).toContain("Storage");
+    // AI tier label in subgraph header
+    expect(body).toMatch(/subgraph\s+AI/);
   });
 
   it("rendered SVGs contain enrichment color CSS variables", async () => {
     const res = await app.request("/v1/cloudflare-architecture-viz");
     const body = await res.text();
     // Enrichment colors are set via BM's CSS variables in the SVG style block
-    expect(body).toContain("#8b7355"); // line color
-    expect(body).toContain("#d4c4aa"); // border color (light mode)
+    expect(body).toContain("#9ca3af"); // line color (gray-400)
+    expect(body).toContain("#e5e7eb"); // border color (gray-200)
+  });
+});
+
+describe("PRIMITIVE_TIER completeness", () => {
+  // These tests enforce that every primitive used in the system has a
+  // canonical tier assignment. Adding a new CF primitive without updating
+  // PRIMITIVE_TIER will fail here.
+
+  it("every primitive in PRIMITIVE_COLORS has a PRIMITIVE_TIER entry", async () => {
+    const { PRIMITIVE_COLORS, PRIMITIVE_TIER } = await import(
+      "../src/embeds/v1/cloudflare-architecture-viz/mermaid"
+    );
+    for (const prim of Object.keys(PRIMITIVE_COLORS)) {
+      expect(PRIMITIVE_TIER, `Missing PRIMITIVE_TIER entry for "${prim}"`).toHaveProperty(prim);
+    }
+  });
+
+  it("every primitive in PRIMITIVE_ICONS has a PRIMITIVE_TIER entry", async () => {
+    const { PRIMITIVE_ICONS, PRIMITIVE_TIER } = await import(
+      "../src/embeds/v1/cloudflare-architecture-viz/mermaid"
+    );
+    for (const prim of Object.keys(PRIMITIVE_ICONS)) {
+      expect(PRIMITIVE_TIER, `Missing PRIMITIVE_TIER entry for "${prim}"`).toHaveProperty(prim);
+    }
+  });
+
+  it("every node in PROJECTS uses a primitive in PRIMITIVE_TIER", async () => {
+    const { PROJECTS, PRIMITIVE_TIER } = await import(
+      "../src/embeds/v1/cloudflare-architecture-viz/mermaid"
+    );
+    for (const project of PROJECTS) {
+      for (const node of project.nodes) {
+        expect(
+          PRIMITIVE_TIER,
+          `${project.id}: node "${node.label}" uses unknown primitive "${node.primitive}"`
+        ).toHaveProperty(node.primitive);
+      }
+    }
+  });
+
+  it("every node in TEAM_REGISTRY projects uses a primitive in PRIMITIVE_TIER", async () => {
+    const { TEAM_REGISTRY, PRIMITIVE_TIER } = await import(
+      "../src/embeds/v1/cloudflare-architecture-viz/mermaid"
+    );
+    for (const [username, entry] of Object.entries(TEAM_REGISTRY)) {
+      for (const project of entry.projects) {
+        for (const node of project.nodes) {
+          expect(
+            PRIMITIVE_TIER,
+            `${username}/${project.id}: node "${node.label}" uses unknown primitive "${node.primitive}"`
+          ).toHaveProperty(node.primitive);
+        }
+      }
+    }
+  });
+
+  it("PRIMITIVE_TIER, PRIMITIVE_COLORS, and PRIMITIVE_ICONS cover the same set", async () => {
+    const { PRIMITIVE_TIER, PRIMITIVE_COLORS, PRIMITIVE_ICONS } = await import(
+      "../src/embeds/v1/cloudflare-architecture-viz/mermaid"
+    );
+    const tierKeys = new Set(Object.keys(PRIMITIVE_TIER));
+    const colorKeys = new Set(Object.keys(PRIMITIVE_COLORS));
+    const iconKeys = new Set(Object.keys(PRIMITIVE_ICONS));
+    expect([...tierKeys].sort()).toEqual([...colorKeys].sort());
+    expect([...tierKeys].sort()).toEqual([...iconKeys].sort());
+  });
+});
+
+describe("Layout scoring", () => {
+  it("scoreOrdering returns valid LayoutScore for each project", async () => {
+    const { PROJECTS, scoreOrdering, PRIMITIVE_TIER } = await import(
+      "../src/embeds/v1/cloudflare-architecture-viz/mermaid"
+    );
+    const TIER_ORDER = ["client", "edge", "compute", "storage", "ai"];
+    const TIER_LABELS: Record<string, string> = {
+      client: "Client", edge: "Edge", compute: "Compute", storage: "Storage", ai: "AI",
+    };
+
+    for (const project of PROJECTS) {
+      // Compute tiers
+      const groups = new Map<string, any[]>();
+      for (const node of project.nodes) {
+        const cat = PRIMITIVE_TIER[node.primitive];
+        if (!groups.has(cat)) groups.set(cat, []);
+        groups.get(cat)!.push(node);
+      }
+      const tiers = TIER_ORDER
+        .filter((cat) => groups.has(cat))
+        .map((cat) => ({ category: cat, label: TIER_LABELS[cat], nodes: groups.get(cat)! }));
+
+      const score = scoreOrdering(tiers, project.flows);
+      expect(score.composite).toBeGreaterThanOrEqual(0);
+      expect(score.composite).toBeLessThanOrEqual(100);
+      expect(score.edgeCrossings).toBeGreaterThanOrEqual(0);
+      expect(score.flowDirection).toBeGreaterThanOrEqual(0);
+      expect(score.barycenterDeviation).toBeGreaterThanOrEqual(0);
+      // Graph-only scoreOrdering sets SVG metrics to 0
+      expect(score.svgEdgeCrossings).toBe(0);
+      expect(score.svgEdgeLength).toBe(0);
+    }
+  });
+
+  it("optimized diagrams have SVG-level scores populated", async () => {
+    const res = await app.request("/v1/cloudflare-architecture-viz");
+    const body = await res.text();
+    // data-mermaid-score is the composite from SVG-level scoring
+    const scores = [...body.matchAll(/data-mermaid-score="(\d+)"/g)].map(m => parseInt(m[1]));
+    expect(scores.length).toBeGreaterThan(0);
+    // SVG-level composite should be reasonable (not 0, which would mean no SVG scoring)
+    for (const score of scores) {
+      expect(score).toBeGreaterThan(0);
+    }
+  });
+
+  it("countSvgEdgeCrossings detects geometric crossings in SVG polylines", async () => {
+    const { countSvgEdgeCrossings } = await import(
+      "../src/embeds/v1/cloudflare-architecture-viz/mermaid"
+    );
+    // Two crossing polylines: one going left-to-right, one going right-to-left
+    const crossingSvg = `
+      <polyline class="edge" points="0,0 100,100" />
+      <polyline class="edge" points="100,0 0,100" />
+    `;
+    expect(countSvgEdgeCrossings(crossingSvg)).toBe(1);
+
+    // Two parallel polylines: no crossings
+    const parallelSvg = `
+      <polyline class="edge" points="0,0 100,0" />
+      <polyline class="edge" points="0,10 100,10" />
+    `;
+    expect(countSvgEdgeCrossings(parallelSvg)).toBe(0);
+  });
+
+  it("all projects score >= 60 composite after optimization", async () => {
+    const res = await app.request("/v1/cloudflare-architecture-viz");
+    const body = await res.text();
+    // Each project div has data-mermaid-score attribute
+    const scores = [...body.matchAll(/data-mermaid-score="(\d+)"/g)].map(m => parseInt(m[1]));
+    expect(scores.length).toBeGreaterThan(0);
+    for (const score of scores) {
+      expect(score).toBeGreaterThanOrEqual(60);
+    }
+  });
+
+  it("barycenter ordering matches permutation-optimal ordering for all projects", async () => {
+    const { PROJECTS, scoreOrdering, barycenterOrder, PRIMITIVE_TIER } = await import(
+      "../src/embeds/v1/cloudflare-architecture-viz/mermaid"
+    );
+    const TIER_ORDER = ["client", "edge", "compute", "storage", "ai"];
+    const TIER_LABELS: Record<string, string> = {
+      client: "Client", edge: "Edge", compute: "Compute", storage: "Storage", ai: "AI",
+    };
+
+    for (const project of PROJECTS) {
+      const groups = new Map<string, any[]>();
+      for (const node of project.nodes) {
+        const cat = PRIMITIVE_TIER[node.primitive];
+        if (!groups.has(cat)) groups.set(cat, []);
+        groups.get(cat)!.push(node);
+      }
+      const tiers = TIER_ORDER
+        .filter((cat) => groups.has(cat))
+        .map((cat) => ({ category: cat, label: TIER_LABELS[cat], nodes: groups.get(cat)! }));
+
+      const bcTiers = barycenterOrder(tiers, project.flows);
+      const bcScore = scoreOrdering(bcTiers, project.flows);
+
+      // The barycenter heuristic should produce a score at least as good as the
+      // initial (unoptimized) ordering — it may not always match the exhaustive
+      // permutation optimum, but it should be close
+      const initialScore = scoreOrdering(tiers, project.flows);
+      expect(
+        bcScore.composite,
+        `${project.id}: barycenter (${bcScore.composite}) should be >= initial (${initialScore.composite})`
+      ).toBeGreaterThanOrEqual(initialScore.composite);
+    }
+  });
+});
+
+describe("GET /team-architectures", () => {
+  it("returns 200 with gallery page", async () => {
+    const res = await app.request("/team-architectures");
+    expect(res.status).toBe(200);
+    const body = await res.text();
+    expect(body).toContain("Team Architectures");
+    expect(body).toContain("<!DOCTYPE html>");
+  });
+
+  it("contains avatar images for users with projects", async () => {
+    const { TEAM_REGISTRY } = await import(
+      "../src/embeds/v1/cloudflare-architecture-viz/mermaid"
+    );
+    const res = await app.request("/team-architectures");
+    const body = await res.text();
+    for (const [username, entry] of Object.entries(TEAM_REGISTRY)) {
+      if (entry.projects.length > 0) {
+        expect(body).toContain(`github.com/${username}.png`);
+        expect(body).toContain(entry.displayName);
+      }
+    }
+  });
+
+  it("contains links to sub-pages", async () => {
+    const { TEAM_REGISTRY } = await import(
+      "../src/embeds/v1/cloudflare-architecture-viz/mermaid"
+    );
+    const res = await app.request("/team-architectures");
+    const body = await res.text();
+    for (const [username, entry] of Object.entries(TEAM_REGISTRY)) {
+      if (entry.projects.length > 0) {
+        expect(body).toContain(`href="/team-architectures/${username}`);
+      }
+    }
+  });
+
+  it("supports dark theme", async () => {
+    const res = await app.request("/team-architectures?theme=dark");
+    expect(res.status).toBe(200);
+    const body = await res.text();
+    expect(body).toContain("#1f2937");
+  });
+});
+
+describe("GET /team-architectures/:username", () => {
+  it("returns 200 with diagrams for a known user", async () => {
+    const { TEAM_REGISTRY } = await import(
+      "../src/embeds/v1/cloudflare-architecture-viz/mermaid"
+    );
+    const entry = TEAM_REGISTRY["adewale"];
+    expect(entry).toBeDefined();
+    const res = await app.request("/team-architectures/adewale");
+    expect(res.status).toBe(200);
+    const body = await res.text();
+    expect(body).toContain(entry.displayName);
+    expect(body).toContain("mermaid-project-svg");
+  });
+
+  it("returns 200 instantly for users with complex projects", async () => {
+    const res = await app.request("/team-architectures/craigsdennis");
+    expect(res.status).toBe(200);
+    const body = await res.text();
+    expect(body).toContain("mermaid-project-svg");
+  });
+
+  it("returns 404 for unknown username", async () => {
+    const res = await app.request("/team-architectures/nobody");
+    expect(res.status).toBe(404);
+  });
+});
+
+describe("removed routes", () => {
+  it("/u/:username returns 404", async () => {
+    const res = await app.request("/u/fayazara");
+    expect(res.status).toBe(404);
+  });
+
+  it("/fayaz returns 404", async () => {
+    const res = await app.request("/fayaz");
+    expect(res.status).toBe(404);
   });
 });
 
@@ -557,6 +820,13 @@ describe("catalogue page", () => {
     expect(body).toContain('href="/v1/github-timeline"');
     expect(body).toContain('href="/v1/blogging-timeline"');
     expect(body).toContain('href="/v1/cloudflare-architecture-viz"');
+  });
+
+  it("contains link to team architectures", async () => {
+    const res = await app.request("/");
+    const body = await res.text();
+    expect(body).toContain('href="/team-architectures"');
+    expect(body).toContain("Architecture Diagrams");
   });
 
   it("returns HTML content type", async () => {

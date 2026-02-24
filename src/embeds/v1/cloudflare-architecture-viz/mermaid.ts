@@ -1,46 +1,80 @@
 import { renderMermaidSVG } from "beautiful-mermaid";
+export { TEAM_REGISTRY } from "./team-data";
 
-interface Node {
+export interface Node {
   label: string;
   primitive: string;
   detail: string;
 }
 
-interface Tier {
-  label: string;
-  nodes: Node[];
-  children?: Tier[];
-}
-
-interface Flow {
+export interface Flow {
   from: string;
   to: string;
   label: string;
 }
 
-interface Project {
+export interface Project {
   id: string;
-  tiers: Tier[];
+  nodes: Node[];
   flows: Flow[];
   direction?: "TD" | "LR";
 }
 
-const PRIMITIVE_COLORS: Record<string, { bg: string; stroke: string; fg: string }> = {
-  "workers":          { bg: "#e85e2e", stroke: "#c94d22", fg: "#fff" },
-  "static-assets":    { bg: "#6b5347", stroke: "#5a4539", fg: "#fff" },
-  "durable-objects":  { bg: "#2c7cb0", stroke: "#236897", fg: "#fff" },
-  "kv":               { bg: "#398557", stroke: "#2d6b46", fg: "#fff" },
-  "d1":               { bg: "#6373b6", stroke: "#505f9a", fg: "#fff" },
-  "r2":               { bg: "#2b818e", stroke: "#226a75", fg: "#fff" },
-  "queues":           { bg: "#9f5bb0", stroke: "#854a94", fg: "#fff" },
-  "ai":               { bg: "#da304c", stroke: "#b8283f", fg: "#fff" },
-  "vectorize":        { bg: "#6373b6", stroke: "#505f9a", fg: "#fff" },
-  "cron":             { bg: "#a26a09", stroke: "#875808", fg: "#fff" },
-  "client":           { bg: "#6b5347", stroke: "#5a4539", fg: "#fff" },
-  "terminal":         { bg: "#6b5347", stroke: "#5a4539", fg: "#fff" },
+// Canonical tier assignment based on Cloudflare's product categories.
+// See: https://developers.cloudflare.com/.well-known/skills/cloudflare/SKILL.md
+//   Client          — external consumers (not a CF product)
+//   Edge            — Compute & Runtime, stateless (Workers, Static Assets, Cron Triggers)
+//   Compute         — Compute & Runtime, stateful (Durable Objects)
+//   Storage         — Storage & Data (KV, D1, R2, Queues)
+//   AI              — AI & Machine Learning (Workers AI, Vectorize)
+type TierCategory = "client" | "edge" | "compute" | "storage" | "ai";
+
+export const PRIMITIVE_TIER: Record<string, TierCategory> = {
+  "client":           "client",
+  "terminal":         "client",
+  "workers":          "edge",
+  "static-assets":    "edge",
+  "cron":             "edge",
+  "durable-objects":  "compute",
+  "workflows":        "compute",
+  "browser":          "compute",
+  "kv":               "storage",
+  "d1":               "storage",
+  "r2":               "storage",
+  "queues":           "storage",
+  "ai":               "ai",
+  "vectorize":        "ai",
 };
 
-const PRIMITIVE_ICONS: Record<string, string> = {
+const TIER_ORDER: TierCategory[] = ["client", "edge", "compute", "storage", "ai"];
+
+const TIER_LABELS: Record<TierCategory, string> = {
+  "client":  "Client",
+  "edge":    "Edge",
+  "compute": "Compute",
+  "storage": "Storage",
+  "ai":      "AI",
+};
+
+// Gardener product-icon palette (Tailwind hex values from gardener.ziki.boo)
+export const PRIMITIVE_COLORS: Record<string, { bg: string; stroke: string; fg: string }> = {
+  "workers":          { bg: "#f97316", stroke: "#ea580c", fg: "#fff" },
+  "static-assets":    { bg: "#6b7280", stroke: "#4b5563", fg: "#fff" },
+  "durable-objects":  { bg: "#16a34a", stroke: "#15803d", fg: "#fff" },
+  "kv":               { bg: "#ca8a04", stroke: "#a16207", fg: "#fff" },
+  "d1":               { bg: "#3b82f6", stroke: "#2563eb", fg: "#fff" },
+  "r2":               { bg: "#a855f7", stroke: "#9333ea", fg: "#fff" },
+  "queues":           { bg: "#14b8a6", stroke: "#0d9488", fg: "#fff" },
+  "ai":               { bg: "#8b5cf6", stroke: "#7c3aed", fg: "#fff" },
+  "vectorize":        { bg: "#6366f1", stroke: "#4f46e5", fg: "#fff" },
+  "cron":             { bg: "#f59e0b", stroke: "#d97706", fg: "#fff" },
+  "workflows":        { bg: "#0ea5e9", stroke: "#0284c7", fg: "#fff" },
+  "browser":          { bg: "#ec4899", stroke: "#db2777", fg: "#fff" },
+  "client":           { bg: "#6b7280", stroke: "#4b5563", fg: "#fff" },
+  "terminal":         { bg: "#6b7280", stroke: "#4b5563", fg: "#fff" },
+};
+
+export const PRIMITIVE_ICONS: Record<string, string> = {
   "workers": '<path d="M12 20v2m0-20v2m5 16v2m0-20v2M2 12h2m-2 5h2M2 7h2m16 5h2m-2 5h2M20 7h2M7 20v2M7 2v2"/><rect width="16" height="16" x="4" y="4" rx="2"/><rect width="8" height="8" x="8" y="8" rx="1"/>',
   "static-assets": '<path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/>',
   "durable-objects": '<rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
@@ -51,6 +85,8 @@ const PRIMITIVE_ICONS: Record<string, string> = {
   "ai": '<path d="M12 18V5m3 8a4.17 4.17 0 0 1-3-4 4.17 4.17 0 0 1-3 4m8.598-6.5A3 3 0 1 0 12 5a3 3 0 1 0-5.598 1.5"/><path d="M17.997 5.125a4 4 0 0 1 2.526 5.77"/><path d="M18 18a4 4 0 0 0 2-7.464"/><path d="M19.967 17.483A4 4 0 1 1 12 18a4 4 0 1 1-7.967-.517"/><path d="M6 18a4 4 0 0 1-2-7.464"/><path d="M6.003 5.125a4 4 0 0 0-2.526 5.77"/>',
   "vectorize": '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
   "cron": '<path d="M12 6v6l4 2"/><circle cx="12" cy="12" r="10"/>',
+  "workflows": '<rect width="8" height="8" x="3" y="3" rx="2"/><path d="M7 11v4a2 2 0 0 0 2 2h4"/><rect width="8" height="8" x="13" y="13" rx="2"/>',
+  "browser": '<rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/>',
   "client": '<circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/>',
   "terminal": '<path d="m4 17 6-6-6-6"/><path d="M12 19h8"/>',
 };
@@ -66,6 +102,8 @@ const PRIMITIVE_SHAPES: Record<string, "cylinder" | "rounded" | "stadium"> = {
   "ai": "rounded",
   "queues": "stadium",
   "cron": "stadium",
+  "workflows": "stadium",
+  "browser": "rounded",
 };
 
 function nodeShapeSyntax(id: string, label: string, primitive: string): string {
@@ -78,41 +116,19 @@ function nodeShapeSyntax(id: string, label: string, primitive: string): string {
   }
 }
 
-// Architecture data mirroring the client-side PROJECTS in index.html.
-// Kept in sync manually — only the fields needed for Mermaid generation.
-const PROJECTS: Project[] = [
+// Architecture data — flat node lists. Tiers are computed from PRIMITIVE_TIER.
+export const PROJECTS: Project[] = [
   {
     id: "planet-cf",
-    tiers: [
-      { label: "Client", nodes: [{ label: "Browser", primitive: "client", detail: "Reader" }] },
-      {
-        label: "Edge",
-        nodes: [
-          { label: "Static Assets", primitive: "static-assets", detail: "HTML / CSS" },
-          { label: "Workers", primitive: "workers", detail: "Python" },
-        ],
-      },
-      {
-        label: "Backend",
-        nodes: [],
-        children: [
-          {
-            label: "Scheduling",
-            nodes: [
-              { label: "Cron Trigger", primitive: "cron", detail: "Hourly" },
-              { label: "Queues", primitive: "queues", detail: "Feed queue + DLQ" },
-            ],
-          },
-          {
-            label: "Storage & AI",
-            nodes: [
-              { label: "D1", primitive: "d1", detail: "Feed entries" },
-              { label: "Workers AI", primitive: "ai", detail: "Embeddings" },
-              { label: "Vectorize", primitive: "vectorize", detail: "Search index" },
-            ],
-          },
-        ],
-      },
+    nodes: [
+      { label: "Browser", primitive: "client", detail: "Reader" },
+      { label: "Static Assets", primitive: "static-assets", detail: "HTML / CSS" },
+      { label: "Workers", primitive: "workers", detail: "Python" },
+      { label: "Cron Trigger", primitive: "cron", detail: "Hourly" },
+      { label: "D1", primitive: "d1", detail: "Feed entries" },
+      { label: "Queues", primitive: "queues", detail: "Feed queue + DLQ" },
+      { label: "Workers AI", primitive: "ai", detail: "Embeddings" },
+      { label: "Vectorize", primitive: "vectorize", detail: "Search index" },
     ],
     flows: [
       { from: "Browser", to: "Static Assets", label: "GET /" },
@@ -128,23 +144,13 @@ const PROJECTS: Project[] = [
   },
   {
     id: "keyboardia",
-    tiers: [
-      { label: "Client", nodes: [{ label: "Browser", primitive: "client", detail: "SPA client" }] },
-      {
-        label: "Edge",
-        nodes: [
-          { label: "Static Assets", primitive: "static-assets", detail: "Vite build" },
-          { label: "Workers", primitive: "workers", detail: "API router" },
-        ],
-      },
-      {
-        label: "State",
-        nodes: [
-          { label: "KV", primitive: "kv", detail: "Sessions" },
-          { label: "Durable Objects", primitive: "durable-objects", detail: "LiveSession (SQLite)" },
-          { label: "R2", primitive: "r2", detail: "Audio samples" },
-        ],
-      },
+    nodes: [
+      { label: "Browser", primitive: "client", detail: "SPA client" },
+      { label: "Static Assets", primitive: "static-assets", detail: "Vite build" },
+      { label: "Workers", primitive: "workers", detail: "API router" },
+      { label: "Durable Objects", primitive: "durable-objects", detail: "LiveSession (SQLite)" },
+      { label: "KV", primitive: "kv", detail: "Sessions" },
+      { label: "R2", primitive: "r2", detail: "Audio samples" },
     ],
     flows: [
       { from: "Browser", to: "Static Assets", label: "GET /" },
@@ -157,16 +163,11 @@ const PROJECTS: Project[] = [
   },
   {
     id: "vaders",
-    tiers: [
-      {
-        label: "Edge",
-        nodes: [
-          { label: "Terminal", primitive: "terminal", detail: "TUI client" },
-          { label: "Workers", primitive: "workers", detail: "Entry point" },
-        ],
-      },
-      { label: "Coordination", nodes: [{ label: "Matchmaker", primitive: "durable-objects", detail: "Lobby mgmt" }] },
-      { label: "Game State", nodes: [{ label: "GameRoom", primitive: "durable-objects", detail: "SQLite state" }] },
+    nodes: [
+      { label: "Terminal", primitive: "terminal", detail: "TUI client" },
+      { label: "Workers", primitive: "workers", detail: "Entry point" },
+      { label: "Matchmaker", primitive: "durable-objects", detail: "Lobby mgmt" },
+      { label: "GameRoom", primitive: "durable-objects", detail: "SQLite state" },
     ],
     flows: [
       { from: "Terminal", to: "Workers", label: "Join game" },
@@ -178,16 +179,11 @@ const PROJECTS: Project[] = [
   },
   {
     id: "embed-oshineye-dev",
-    tiers: [
-      { label: "Client", nodes: [{ label: "Browser", primitive: "client", detail: "iframe embed" }] },
-      {
-        label: "Edge",
-        nodes: [
-          { label: "Static Assets", primitive: "static-assets", detail: "loader.js" },
-          { label: "Workers", primitive: "workers", detail: "Hono router" },
-        ],
-      },
-      { label: "State", nodes: [{ label: "Durable Objects", primitive: "durable-objects", detail: "PresenceRoom" }] },
+    nodes: [
+      { label: "Browser", primitive: "client", detail: "iframe embed" },
+      { label: "Static Assets", primitive: "static-assets", detail: "loader.js" },
+      { label: "Workers", primitive: "workers", detail: "Hono router" },
+      { label: "Durable Objects", primitive: "durable-objects", detail: "PresenceRoom" },
     ],
     flows: [
       { from: "Browser", to: "Static Assets", label: "GET /static/*" },
@@ -198,16 +194,11 @@ const PROJECTS: Project[] = [
   },
   {
     id: "fibonacci-do",
-    tiers: [
-      { label: "Client", nodes: [{ label: "Browser", primitive: "client", detail: "Demo UI" }] },
-      { label: "Edge", nodes: [{ label: "Static Assets", primitive: "static-assets", detail: "HTML" }] },
-      {
-        label: "Compute",
-        nodes: [
-          { label: "Workers", primitive: "workers", detail: "Router" },
-          { label: "Durable Objects", primitive: "durable-objects", detail: "Fibonacci (SQLite)" },
-        ],
-      },
+    nodes: [
+      { label: "Browser", primitive: "client", detail: "Demo UI" },
+      { label: "Static Assets", primitive: "static-assets", detail: "HTML" },
+      { label: "Workers", primitive: "workers", detail: "Router" },
+      { label: "Durable Objects", primitive: "durable-objects", detail: "Fibonacci (SQLite)" },
     ],
     flows: [
       { from: "Browser", to: "Static Assets", label: "GET /" },
@@ -217,13 +208,19 @@ const PROJECTS: Project[] = [
   },
   {
     id: "oshineye-dev",
-    tiers: [
-      { label: "Client", nodes: [{ label: "Browser", primitive: "client", detail: "oshineye.dev" }] },
-      { label: "Edge", nodes: [{ label: "Static Assets", primitive: "static-assets", detail: "HTML / CSS / JS" }] },
+    nodes: [
+      { label: "Browser", primitive: "client", detail: "oshineye.dev" },
+      { label: "Static Assets", primitive: "static-assets", detail: "HTML / CSS / JS" },
     ],
     flows: [{ from: "Browser", to: "Static Assets", label: "GET /*" }],
   },
 ];
+
+// User entry type — maps a display name + project set for a developer
+export interface UserEntry {
+  displayName: string;
+  projects: Project[];
+}
 
 function nodeId(label: string): string {
   return label.replace(/[^a-zA-Z0-9]/g, "");
@@ -233,53 +230,308 @@ function primitiveClass(primitive: string): string {
   return primitive.replace(/-/g, "");
 }
 
-// Count tiers with actual nodes (ignoring pure wrapper tiers)
-function countEffectiveTiers(tiers: Tier[]): number {
-  let count = 0;
-  for (const tier of tiers) {
-    if (tier.nodes.length > 0) count++;
-    if (tier.children) count += countEffectiveTiers(tier.children);
-  }
-  return count;
+// Group a flat node list into ordered tiers based on PRIMITIVE_TIER
+interface ComputedTier {
+  category: TierCategory;
+  label: string;
+  nodes: Node[];
 }
 
-// Collect all unique primitives recursively
-function collectPrimitives(tiers: Tier[], out: Set<string>): void {
-  for (const tier of tiers) {
-    for (const node of tier.nodes) {
-      out.add(node.primitive);
+function computeTiers(nodes: Node[]): ComputedTier[] {
+  const groups = new Map<TierCategory, Node[]>();
+  for (const node of nodes) {
+    const cat = PRIMITIVE_TIER[node.primitive];
+    if (!groups.has(cat)) groups.set(cat, []);
+    groups.get(cat)!.push(node);
+  }
+  return TIER_ORDER
+    .filter((cat) => groups.has(cat))
+    .map((cat) => ({ category: cat, label: TIER_LABELS[cat], nodes: groups.get(cat)! }));
+}
+
+// --- SVG-level scoring ---
+
+interface Point { x: number; y: number; }
+interface Segment { p1: Point; p2: Point; }
+
+function parsePolylinePoints(points: string): Point[] {
+  return points.trim().split(/\s+/).map(pair => {
+    const [x, y] = pair.split(",").map(Number);
+    return { x, y };
+  });
+}
+
+function segmentsFromPoints(points: Point[]): Segment[] {
+  const segs: Segment[] = [];
+  for (let i = 0; i < points.length - 1; i++) {
+    segs.push({ p1: points[i], p2: points[i + 1] });
+  }
+  return segs;
+}
+
+// Proper intersection test for two line segments (not counting shared endpoints)
+function segmentsIntersect(a: Segment, b: Segment): boolean {
+  function ccw(A: Point, B: Point, C: Point): number {
+    return (B.x - A.x) * (C.y - A.y) - (B.y - A.y) * (C.x - A.x);
+  }
+  const d1 = ccw(a.p1, a.p2, b.p1);
+  const d2 = ccw(a.p1, a.p2, b.p2);
+  const d3 = ccw(b.p1, b.p2, a.p1);
+  const d4 = ccw(b.p1, b.p2, a.p2);
+  if (((d1 > 0 && d2 < 0) || (d1 < 0 && d2 > 0)) &&
+      ((d3 > 0 && d4 < 0) || (d3 < 0 && d4 > 0))) {
+    return true;
+  }
+  return false;
+}
+
+// Count actual geometric edge crossings in the rendered SVG
+export function countSvgEdgeCrossings(svg: string): number {
+  const polylines = [...svg.matchAll(/<polyline[^>]*class="edge"[^>]*points="([^"]*)"[^>]*\/?>/g)];
+  const edgeSegments: Segment[][] = polylines.map(m => segmentsFromPoints(parsePolylinePoints(m[1])));
+
+  let crossings = 0;
+  for (let i = 0; i < edgeSegments.length; i++) {
+    for (let j = i + 1; j < edgeSegments.length; j++) {
+      for (const segA of edgeSegments[i]) {
+        for (const segB of edgeSegments[j]) {
+          if (segmentsIntersect(segA, segB)) crossings++;
+        }
+      }
     }
-    if (tier.children) collectPrimitives(tier.children, out);
   }
+  return crossings;
 }
 
-function projectToMermaid(project: Project): string {
-  // Determine direction: LR for small diagrams, TD for large ones
-  const direction = project.direction || (countEffectiveTiers(project.tiers) <= 3 ? "LR" : "TD");
+// Compute total edge length (Manhattan distance) from rendered SVG polylines
+export function computeSvgTotalEdgeLength(svg: string): number {
+  const polylines = [...svg.matchAll(/<polyline[^>]*class="edge"[^>]*points="([^"]*)"[^>]*\/?>/g)];
+  let total = 0;
+  for (const m of polylines) {
+    const points = parsePolylinePoints(m[1]);
+    for (let i = 0; i < points.length - 1; i++) {
+      total += Math.abs(points[i + 1].x - points[i].x) + Math.abs(points[i + 1].y - points[i].y);
+    }
+  }
+  return total;
+}
+
+// --- Graph-level scoring ---
+
+// Count edge crossings between adjacent tiers.
+// Two edges (u1→v1) and (u2→v2) cross iff u1 is left of u2 but v1 is right of v2 (or vice versa).
+function countEdgeCrossings(tiers: ComputedTier[], flows: Flow[]): number {
+  // Build node→(tierIndex, positionInTier) lookup
+  const nodePos = new Map<string, { tier: number; pos: number }>();
+  for (let t = 0; t < tiers.length; t++) {
+    for (let p = 0; p < tiers[t].nodes.length; p++) {
+      nodePos.set(tiers[t].nodes[p].label, { tier: t, pos: p });
+    }
+  }
+
+  let crossings = 0;
+  // For each pair of adjacent tiers, collect edges that span them
+  for (let t = 0; t < tiers.length - 1; t++) {
+    const edges: { fromPos: number; toPos: number }[] = [];
+    for (const flow of flows) {
+      const from = nodePos.get(flow.from);
+      const to = nodePos.get(flow.to);
+      if (!from || !to) continue;
+      // Edge spans tier t → t+1 (either direction)
+      if ((from.tier === t && to.tier === t + 1) ||
+          (from.tier === t + 1 && to.tier === t)) {
+        const upper = from.tier === t ? from : to;
+        const lower = from.tier === t ? to : from;
+        edges.push({ fromPos: upper.pos, toPos: lower.pos });
+      }
+    }
+    // Count crossing pairs
+    for (let i = 0; i < edges.length; i++) {
+      for (let j = i + 1; j < edges.length; j++) {
+        const a = edges[i], b = edges[j];
+        if ((a.fromPos < b.fromPos && a.toPos > b.toPos) ||
+            (a.fromPos > b.fromPos && a.toPos < b.toPos)) {
+          crossings++;
+        }
+      }
+    }
+  }
+  return crossings;
+}
+
+// Compute flow direction score: % of flows where source tier < target tier
+function computeFlowDirection(tiers: ComputedTier[], flows: Flow[]): number {
+  const tierIndex = new Map<string, number>();
+  for (let t = 0; t < tiers.length; t++) {
+    for (const node of tiers[t].nodes) {
+      tierIndex.set(node.label, t);
+    }
+  }
+  if (flows.length === 0) return 100;
+  let forward = 0;
+  for (const flow of flows) {
+    const fromTier = tierIndex.get(flow.from);
+    const toTier = tierIndex.get(flow.to);
+    if (fromTier !== undefined && toTier !== undefined && fromTier < toTier) {
+      forward++;
+    }
+  }
+  return Math.round((forward / flows.length) * 100);
+}
+
+// Kendall tau distance: count inversions between two permutations
+function kendallTau(a: number[], b: number[]): number {
+  const n = a.length;
+  if (n <= 1) return 0;
+  // Build rank of each element in b
+  const rankB = new Map<number, number>();
+  for (let i = 0; i < n; i++) rankB.set(b[i], i);
+  let inversions = 0;
+  for (let i = 0; i < n; i++) {
+    for (let j = i + 1; j < n; j++) {
+      const ri = rankB.get(a[i])!;
+      const rj = rankB.get(a[j])!;
+      if (ri > rj) inversions++;
+    }
+  }
+  const maxInversions = (n * (n - 1)) / 2;
+  return inversions / maxInversions; // 0 = identical, 1 = reversed
+}
+
+// Compute barycenter deviation: how far the actual order is from barycenter-optimal
+function computeBarycenterDeviation(tiers: ComputedTier[], flows: Flow[]): number {
+  const nodePos = new Map<string, { tier: number; pos: number }>();
+  for (let t = 0; t < tiers.length; t++) {
+    for (let p = 0; p < tiers[t].nodes.length; p++) {
+      nodePos.set(tiers[t].nodes[p].label, { tier: t, pos: p });
+    }
+  }
+
+  let totalDeviation = 0;
+  let tiersScored = 0;
+
+  for (let t = 0; t < tiers.length; t++) {
+    const tier = tiers[t];
+    if (tier.nodes.length < 2) continue;
+
+    // Compute barycenter for each node (mean position of neighbors in adjacent tiers)
+    const barycenters: { index: number; bc: number }[] = [];
+    for (let p = 0; p < tier.nodes.length; p++) {
+      const label = tier.nodes[p].label;
+      const neighborPositions: number[] = [];
+
+      for (const flow of flows) {
+        if (flow.from === label) {
+          const toPos = nodePos.get(flow.to);
+          if (toPos && toPos.tier !== t) neighborPositions.push(toPos.pos);
+        }
+        if (flow.to === label) {
+          const fromPos = nodePos.get(flow.from);
+          if (fromPos && fromPos.tier !== t) neighborPositions.push(fromPos.pos);
+        }
+      }
+
+      const bc = neighborPositions.length > 0
+        ? neighborPositions.reduce((a, b) => a + b, 0) / neighborPositions.length
+        : p; // no neighbors → keep original position
+      barycenters.push({ index: p, bc });
+    }
+
+    // Ideal order: sort by barycenter
+    const idealOrder = [...barycenters].sort((a, b) => a.bc - b.bc).map(b => b.index);
+    const actualOrder = barycenters.map(b => b.index);
+
+    totalDeviation += kendallTau(actualOrder, idealOrder);
+    tiersScored++;
+  }
+
+  if (tiersScored === 0) return 100;
+  return Math.round((1 - totalDeviation / tiersScored) * 100);
+}
+
+export interface LayoutScore {
+  composite: number;           // 0-100 weighted sum
+  edgeCrossings: number;       // 0-100 graph-level (fewer = better)
+  flowDirection: number;       // 0-100 (% forward flows)
+  barycenterDeviation: number; // 0-100 (closer to ideal = better)
+  svgEdgeCrossings: number;    // 0-100 SVG-level (fewer geometric crossings = better)
+  svgEdgeLength: number;       // 0-100 SVG-level (shorter total edge length = better)
+}
+
+// Graph-only scoring (used by barycenterOrder tests and as fallback)
+export function scoreOrdering(tiers: ComputedTier[], flows: Flow[]): LayoutScore {
+  const crossings = countEdgeCrossings(tiers, flows);
+  const edgeCrossings = Math.round(100 / (1 + crossings));
+  const flowDirection = computeFlowDirection(tiers, flows);
+  const barycenterDeviation = computeBarycenterDeviation(tiers, flows);
+
+  const composite = Math.round(
+    edgeCrossings * 0.50 +
+    flowDirection * 0.15 +
+    barycenterDeviation * 0.35
+  );
+
+  return { composite, edgeCrossings, flowDirection, barycenterDeviation, svgEdgeCrossings: 0, svgEdgeLength: 0 };
+}
+
+// Full scoring including SVG-level metrics from a rendered SVG
+function scoreWithSvg(tiers: ComputedTier[], flows: Flow[], svg: string): LayoutScore {
+  const crossings = countEdgeCrossings(tiers, flows);
+  const edgeCrossings = Math.round(100 / (1 + crossings));
+  const flowDirection = computeFlowDirection(tiers, flows);
+  const barycenterDeviation = computeBarycenterDeviation(tiers, flows);
+
+  const svgCrossings = countSvgEdgeCrossings(svg);
+  const svgEdgeCrossings = Math.round(100 / (1 + svgCrossings));
+
+  const svgLength = computeSvgTotalEdgeLength(svg);
+  // Normalize: 100 for 0 length, decays with a 2000px baseline
+  const svgEdgeLength = Math.round(100 / (1 + svgLength / 2000));
+
+  const composite = Math.round(
+    svgEdgeCrossings * 0.40 +
+    svgEdgeLength * 0.15 +
+    flowDirection * 0.10 +
+    barycenterDeviation * 0.20 +
+    edgeCrossings * 0.15
+  );
+
+  return { composite, edgeCrossings, flowDirection, barycenterDeviation, svgEdgeCrossings, svgEdgeLength };
+}
+
+// Generate all permutations of an array
+function permutations<T>(arr: T[]): T[][] {
+  if (arr.length <= 1) return [arr];
+  const result: T[][] = [];
+  for (let i = 0; i < arr.length; i++) {
+    const rest = [...arr.slice(0, i), ...arr.slice(i + 1)];
+    for (const perm of permutations(rest)) {
+      result.push([arr[i], ...perm]);
+    }
+  }
+  return result;
+}
+
+// Generate Mermaid source notation from tiers (pure, no optimization)
+function generateMermaidSource(project: Project, tiers: ComputedTier[]): string {
+  const direction = project.direction || (tiers.length <= 3 ? "LR" : "TD");
   const lines: string[] = [`graph ${direction}`];
 
-  // Collect unique primitives used in this project for classDef generation
   const usedPrimitives = new Set<string>();
-  collectPrimitives(project.tiers, usedPrimitives);
-
-  // Recursively emit subgraph blocks
-  function emitTiers(tiers: Tier[], indent: string): void {
-    for (const tier of tiers) {
-      const sgId = nodeId(tier.label);
-      lines.push(`${indent}subgraph ${sgId}["${tier.label}"]`);
-      for (const node of tier.nodes) {
-        const id = nodeId(node.label);
-        const cls = primitiveClass(node.primitive);
-        lines.push(`${indent}  ${nodeShapeSyntax(id, node.label, node.primitive)}:::${cls}`);
-      }
-      if (tier.children) {
-        emitTiers(tier.children, indent + "  ");
-      }
-      lines.push(`${indent}end`);
-    }
+  for (const node of project.nodes) {
+    usedPrimitives.add(node.primitive);
   }
 
-  emitTiers(project.tiers, "  ");
+  for (const tier of tiers) {
+    const sgId = nodeId(tier.label);
+    lines.push(`  subgraph ${sgId}["${tier.label}"]`);
+    for (const node of tier.nodes) {
+      const id = nodeId(node.label);
+      const cls = primitiveClass(node.primitive);
+      lines.push(`    ${nodeShapeSyntax(id, node.label, node.primitive)}:::${cls}`);
+    }
+    lines.push("  end");
+  }
 
   for (const flow of project.flows) {
     lines.push(
@@ -287,7 +539,6 @@ function projectToMermaid(project: Project): string {
     );
   }
 
-  // Emit classDef lines for each primitive used
   for (const prim of usedPrimitives) {
     const colors = PRIMITIVE_COLORS[prim];
     if (colors) {
@@ -299,27 +550,112 @@ function projectToMermaid(project: Project): string {
   return lines.join("\n");
 }
 
+interface RenderOpts {
+  bg: string; fg: string; font: string; nodeSpacing: number; layerSpacing: number;
+  line: string; accent: string; muted: string; surface: string; border: string;
+}
+
+// Max permutation combinations before falling back to barycenter heuristic
+const MAX_PERM_COMBOS = 5000;
+
+// Optimize layout with SVG-level scoring: render in the loop
+function optimizeLayout(project: Project, renderOpts: RenderOpts): { source: string; svg: string; score: LayoutScore } {
+  const rawTiers = computeTiers(project.nodes);
+
+  // Check total permutation space — fall back to barycenter for complex projects
+  const totalCombos = rawTiers.reduce((acc, tier) => {
+    let f = 1;
+    for (let i = 2; i <= tier.nodes.length; i++) f *= i;
+    return acc * f;
+  }, 1);
+
+  if (totalCombos > MAX_PERM_COMBOS) {
+    const bcTiers = barycenterOrder(rawTiers, project.flows);
+    const source = generateMermaidSource(project, bcTiers);
+    const svg = renderMermaidSVG(source, renderOpts);
+    const score = scoreWithSvg(bcTiers, project.flows, svg);
+    return { source, svg, score };
+  }
+
+  const tierPerms = rawTiers.map(tier => permutations(tier.nodes));
+
+  let bestSource = generateMermaidSource(project, rawTiers);
+  let bestSvg = renderMermaidSVG(bestSource, renderOpts);
+  let bestScore = scoreWithSvg(rawTiers, project.flows, bestSvg);
+
+  function search(tierIdx: number, current: ComputedTier[]): void {
+    if (tierIdx === rawTiers.length) {
+      const source = generateMermaidSource(project, current);
+      const svg = renderMermaidSVG(source, renderOpts);
+      const score = scoreWithSvg(current, project.flows, svg);
+      if (score.composite > bestScore.composite) {
+        bestScore = score;
+        bestSource = source;
+        bestSvg = svg;
+      }
+      return;
+    }
+    for (const perm of tierPerms[tierIdx]) {
+      current[tierIdx] = { ...rawTiers[tierIdx], nodes: perm };
+      search(tierIdx + 1, current);
+    }
+  }
+
+  search(0, [...rawTiers]);
+  return { source: bestSource, svg: bestSvg, score: bestScore };
+}
+
+// Compute barycenter-sorted ordering for a set of tiers (deterministic heuristic)
+export function barycenterOrder(tiers: ComputedTier[], flows: Flow[]): ComputedTier[] {
+  const nodePos = new Map<string, { tier: number; pos: number }>();
+  for (let t = 0; t < tiers.length; t++) {
+    for (let p = 0; p < tiers[t].nodes.length; p++) {
+      nodePos.set(tiers[t].nodes[p].label, { tier: t, pos: p });
+    }
+  }
+
+  return tiers.map((tier, t) => {
+    if (tier.nodes.length < 2) return tier;
+
+    const scored = tier.nodes.map((node, p) => {
+      const neighborPositions: number[] = [];
+      for (const flow of flows) {
+        if (flow.from === node.label) {
+          const toPos = nodePos.get(flow.to);
+          if (toPos && toPos.tier !== t) neighborPositions.push(toPos.pos);
+        }
+        if (flow.to === node.label) {
+          const fromPos = nodePos.get(flow.from);
+          if (fromPos && fromPos.tier !== t) neighborPositions.push(fromPos.pos);
+        }
+      }
+      const bc = neighborPositions.length > 0
+        ? neighborPositions.reduce((a, b) => a + b, 0) / neighborPositions.length
+        : p;
+      return { node, bc };
+    });
+
+    scored.sort((a, b) => a.bc - b.bc);
+    return { ...tier, nodes: scored.map(s => s.node) };
+  });
+}
+
 interface RenderedDiagram {
   svg: string;
   source: string;
+  score: LayoutScore;
 }
 
 export interface RenderedDiagrams {
   [projectId: string]: RenderedDiagram;
 }
 
-// Build a lookup from nodeId -> Node for post-processing (recursive)
+// Build a lookup from nodeId -> Node for post-processing
 function buildNodeMap(project: Project): Map<string, Node> {
   const map = new Map<string, Node>();
-  function walk(tiers: Tier[]): void {
-    for (const tier of tiers) {
-      for (const node of tier.nodes) {
-        map.set(nodeId(node.label), node);
-      }
-      if (tier.children) walk(tier.children);
-    }
+  for (const node of project.nodes) {
+    map.set(nodeId(node.label), node);
   }
-  walk(project.tiers);
   return map;
 }
 
@@ -399,7 +735,6 @@ function postProcessSvg(svg: string, project: Project, isDark: boolean): string 
     /(<g\s+class="subgraph"[^>]*>\s*<rect\b)([^>]*?)(\/?>)/g,
     (_match, before, attrs, close) => {
       let newAttrs = attrs;
-      // Replace existing rx/ry="0" or add if missing
       if (/\brx="/.test(newAttrs)) {
         newAttrs = newAttrs.replace(/\brx="[^"]*"/, 'rx="6"');
         newAttrs = newAttrs.replace(/\bry="[^"]*"/, 'ry="6"');
@@ -426,40 +761,44 @@ function postProcessSvg(svg: string, project: Project, isDark: boolean): string 
   return result;
 }
 
-export function renderAllMermaidSvgs(theme: string): RenderedDiagrams {
+function themeRenderOpts(isDark: boolean): RenderOpts {
+  return {
+    bg: isDark ? "#1f2937" : "#ffffff",
+    fg: isDark ? "#f9fafb" : "#111827",
+    font: "ui-sans-serif, system-ui, sans-serif",
+    nodeSpacing: 32,
+    layerSpacing: 72,
+    line: isDark ? "#6b7280" : "#9ca3af",
+    accent: isDark ? "#d1d5db" : "#374151",
+    muted: isDark ? "#4b5563" : "#6b7280",
+    surface: isDark ? "#1f2937" : "#f3f4f6",
+    border: isDark ? "#374151" : "#e5e7eb",
+  };
+}
+
+export function renderAllMermaidSvgs(theme: string, projects: Project[] = PROJECTS): RenderedDiagrams {
   const isDark = theme === "dark";
+  const renderOpts = themeRenderOpts(isDark);
   const result: RenderedDiagrams = {};
 
-  for (const project of PROJECTS) {
-    const source = projectToMermaid(project);
-    const svg = renderMermaidSVG(source, {
-      bg: isDark ? "#1a120e" : "#fffcf6",
-      fg: isDark ? "#f5efe5" : "#2c1a14",
-      font: "DM Sans",
-      nodeSpacing: 32,
-      layerSpacing: 72,
-      line: isDark ? "#8b7355" : "#8b7355",
-      accent: isDark ? "#c9b896" : "#5c4a32",
-      muted: isDark ? "#7a6b55" : "#9e8c74",
-      surface: isDark ? "#2a1e16" : "#f5efe5",
-      border: isDark ? "#4a3828" : "#d4c4aa",
-    });
+  for (const project of projects) {
+    const { source, svg, score } = optimizeLayout(project, renderOpts);
     const processed = postProcessSvg(svg, project, isDark);
-    result[project.id] = { svg: processed, source };
+    result[project.id] = { svg: processed, source, score };
   }
 
   return result;
 }
 
-function escapeAttr(s: string): string {
+export function escapeAttr(s: string): string {
   return s.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
 }
 
 export function buildMermaidHtml(diagrams: RenderedDiagrams, defaultProject: string): string {
   return Object.entries(diagrams)
     .map(
-      ([id, { svg, source }]) =>
-        `<div class="mermaid-project-svg" data-mermaid-project="${id}" data-mermaid-source="${escapeAttr(source)}" style="${id !== defaultProject ? "display: none" : ""}">${svg}</div>`
+      ([id, { svg, source, score }]) =>
+        `<div class="mermaid-project-svg" data-mermaid-project="${id}" data-mermaid-source="${escapeAttr(source)}" data-mermaid-score="${score.composite}" style="${id !== defaultProject ? "display: none" : ""}">${svg}</div>`
     )
     .join("\n");
 }

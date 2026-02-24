@@ -2,27 +2,34 @@ import { test, expect } from "@playwright/test";
 
 // Expected architecture per project — used to verify the diagram renders
 // the right components in the right tiers.
+// Canonical tiers based on PRIMITIVE_TIER mapping from Cloudflare's product categories:
+//   Client  — external consumers (Browser, Terminal)
+//   Edge    — stateless compute (Workers, Static Assets, Cron Triggers)
+//   Compute — stateful compute (Durable Objects)
+//   Storage — data services (KV, D1, R2, Queues)
+//   AI      — ML services (Workers AI, Vectorize)
 const EXPECTED_PROJECTS = {
   "planet-cf": {
     tiers: [
       { label: "Client", nodes: ["Browser"] },
-      { label: "Edge", nodes: ["Static Assets", "Workers"] },
-      { label: "Scheduling", nodes: ["Cron Trigger", "Queues"] },
-      { label: "Storage & AI", nodes: ["D1", "Workers AI", "Vectorize"] },
+      { label: "Edge", nodes: ["Static Assets", "Workers", "Cron Trigger"] },
+      { label: "Storage", nodes: ["D1", "Queues"] },
+      { label: "AI", nodes: ["Workers AI", "Vectorize"] },
     ],
   },
   keyboardia: {
     tiers: [
       { label: "Client", nodes: ["Browser"] },
       { label: "Edge", nodes: ["Static Assets", "Workers"] },
-      { label: "State", nodes: ["KV", "Durable Objects", "R2"] },
+      { label: "Compute", nodes: ["Durable Objects"] },
+      { label: "Storage", nodes: ["KV", "R2"] },
     ],
   },
   vaders: {
     tiers: [
-      { label: "Edge", nodes: ["Terminal", "Workers"] },
-      { label: "Coordination", nodes: ["Matchmaker"] },
-      { label: "Game State", nodes: ["GameRoom"] },
+      { label: "Client", nodes: ["Terminal"] },
+      { label: "Edge", nodes: ["Workers"] },
+      { label: "Compute", nodes: ["Matchmaker", "GameRoom"] },
     ],
   },
   "oshineye-dev": {
@@ -34,15 +41,15 @@ const EXPECTED_PROJECTS = {
   "fibonacci-do": {
     tiers: [
       { label: "Client", nodes: ["Browser"] },
-      { label: "Edge", nodes: ["Static Assets"] },
-      { label: "Compute", nodes: ["Workers", "Durable Objects"] },
+      { label: "Edge", nodes: ["Static Assets", "Workers"] },
+      { label: "Compute", nodes: ["Durable Objects"] },
     ],
   },
   "embed-oshineye-dev": {
     tiers: [
       { label: "Client", nodes: ["Browser"] },
       { label: "Edge", nodes: ["Static Assets", "Workers"] },
-      { label: "State", nodes: ["Durable Objects"] },
+      { label: "Compute", nodes: ["Durable Objects"] },
     ],
   },
 };
@@ -334,12 +341,11 @@ test.describe("/v1/cloudflare-architecture-viz", () => {
     expect(errors).toEqual([]);
   });
 
-  test("Mermaid copy button exists", async ({ page }) => {
+  test("Mermaid section has no copy button", async ({ page }) => {
     await page.goto("/v1/cloudflare-architecture-viz");
     await page.waitForSelector(".mermaid-project-svg", { state: "attached" });
 
-    await expect(page.locator("#copyMermaid")).toBeVisible();
-    await expect(page.locator("#copyMermaid")).toHaveText("Copy");
+    await expect(page.locator("#copyMermaid")).toHaveCount(0);
   });
 
   for (const pid of ALL_PROJECTS) {
@@ -413,12 +419,43 @@ test.describe("/v1/cloudflare-architecture-viz", () => {
     expect(svgHtml).toContain("letter-spacing");
   });
 
-  test("Mermaid SVG uses DM Sans font", async ({ page }) => {
+  test("Mermaid SVG uses system font", async ({ page }) => {
     await page.goto("/v1/cloudflare-architecture-viz?project=planet-cf");
     await page.waitForSelector(".mermaid-project-svg", { state: "attached" });
 
     const svgHtml = await page.locator("#mermaidDiagram svg").first().innerHTML();
-    expect(svgHtml).toContain("DM Sans");
+    expect(svgHtml).toContain("ui-sans-serif");
+  });
+
+  test("Mermaid flows section lists all flows for active project", async ({ page }) => {
+    await page.goto("/v1/cloudflare-architecture-viz?project=planet-cf");
+    await page.waitForSelector(".mermaid-project-svg", { state: "attached" });
+
+    const flowsEl = page.locator("#mermaidFlows");
+    await expect(flowsEl).toBeVisible();
+
+    const text = await flowsEl.textContent();
+    expect(text).toContain("Flows");
+    expect(text).toContain("Browser");
+    expect(text).toContain("Workers");
+    expect(text).toContain("GET /");
+
+    // Should have 9 flow items for planet-cf
+    const items = await flowsEl.locator(".mermaid-flow-item").count();
+    expect(items).toBe(9);
+  });
+
+  test("Mermaid flows section updates when switching projects", async ({ page }) => {
+    await page.goto("/v1/cloudflare-architecture-viz?project=planet-cf");
+    await page.waitForSelector(".mermaid-project-svg", { state: "attached" });
+
+    const flowsEl = page.locator("#mermaidFlows");
+    await expect(flowsEl).toContainText("Cron Trigger");
+
+    await page.locator(".project-btn", { hasText: "vaders" }).click();
+
+    await expect(flowsEl).toContainText("Matchmaker");
+    await expect(flowsEl).not.toContainText("Cron Trigger");
   });
 
   test("Mermaid SVG contains drop shadow filter", async ({ page }) => {
@@ -509,5 +546,34 @@ test.describe("/v1/cloudflare-architecture-viz", () => {
       violations,
       `Diagonal path segments in Mermaid SVG: ${JSON.stringify(violations)}`
     ).toEqual([]);
+  });
+});
+
+test.describe("/team-architectures", () => {
+  test("gallery page renders without console errors", async ({ page }) => {
+    const errors: string[] = [];
+    page.on("pageerror", (err) => errors.push(err.message));
+
+    await page.goto("/team-architectures");
+    await expect(page.locator("body")).not.toBeEmpty();
+    expect(errors).toEqual([]);
+  });
+
+  test("gallery page contains user cards", async ({ page }) => {
+    await page.goto("/team-architectures");
+    const cards = await page.locator(".card").count();
+    expect(cards).toBeGreaterThan(0);
+  });
+
+  test("unknown user returns 404", async ({ page }) => {
+    const res = await page.goto("/team-architectures/nobody-here-12345");
+    expect(res?.status()).toBe(404);
+  });
+
+  test("removed routes return 404", async ({ page }) => {
+    const res1 = await page.goto("/u/fayazara");
+    expect(res1?.status()).toBe(404);
+    const res2 = await page.goto("/fayaz");
+    expect(res2?.status()).toBe(404);
   });
 });
