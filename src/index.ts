@@ -248,7 +248,11 @@ app.get("/team-architectures", (c) => {
       gap: 16px;
     }
     @media (max-width: 768px) { .grid { grid-template-columns: repeat(2, 1fr); } }
-    @media (max-width: 480px) { .grid { grid-template-columns: 1fr; } }
+    @media (max-width: 480px) {
+      .grid { grid-template-columns: 1fr; }
+      body { padding: 20px 16px; }
+      h1 { font-size: 1.25rem; }
+    }
     .card {
       display: flex; align-items: flex-start; gap: 12px;
       padding: 16px; border-radius: 8px;
@@ -256,13 +260,15 @@ app.get("/team-architectures", (c) => {
       text-decoration: none; color: var(--text);
       transition: border-color 0.15s;
       cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
     }
     .card:hover { border-color: var(--accent); }
+    .card:active { border-color: var(--accent); background: var(--surface-hover); }
     .avatar { border-radius: 50%; flex-shrink: 0; }
     .card-body { min-width: 0; flex: 1; }
     .card-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
     .name { color: var(--accent); font-size: 0.95rem; }
-    .gh-link { color: var(--text-muted); display: flex; align-items: center; transition: color 0.15s; flex-shrink: 0; }
+    .gh-link { color: var(--text-muted); display: flex; align-items: center; transition: color 0.15s; flex-shrink: 0; padding: 4px; margin: -4px; }
     .gh-link:hover { color: var(--accent); }
     .meta { display: block; font-size: 0.8rem; color: var(--text-muted); margin: 2px 0 6px; }
     .badges { display: flex; flex-wrap: wrap; gap: 4px; }

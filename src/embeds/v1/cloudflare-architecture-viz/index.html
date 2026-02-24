@@ -211,8 +211,61 @@
       opacity: 0.75;
     }
 
-    @media (max-width: 500px) {
-      body { padding: 12px; }
+    /* ---- Mobile-friendly overrides ---- */
+    @media (max-width: 640px) {
+      body { padding: 14px; }
+      .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+      .project-selector {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        max-width: 100%;
+        scrollbar-width: none;          /* Firefox */
+        padding-bottom: 4px;
+      }
+      .project-selector::-webkit-scrollbar { display: none; }
+      .project-btn {
+        padding: 10px 16px;
+        font-size: 0.8rem;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+      .diagram-code-header {
+        padding: 8px 12px;
+      }
+      .diagram-code-block {
+        padding: 12px;
+        font-size: 0.7rem;
+      }
+      .mermaid-container {
+        padding: 8px;
+      }
+      .mermaid-flows {
+        padding: 10px 12px;
+        font-size: 0.8rem;
+      }
+      .mermaid-flow-item {
+        flex-wrap: wrap;
+        gap: 4px;
+      }
+      .project-info {
+        font-size: 0.78rem;
+      }
+      /* Hide ASCII diagram on small screens — box-drawing chars unreadable */
+      #asciiDiagram { display: none; }
+    }
+
+    @media (max-width: 380px) {
+      body { padding: 10px; }
+      h1 { font-size: 1rem; }
+      .project-btn {
+        padding: 8px 12px;
+        font-size: 0.75rem;
+      }
     }
   </style>
 </head>
