@@ -40,7 +40,7 @@ function toClientProjects(entry: UserEntry, username: string) {
   });
 }
 
-// Build mermaid HTML from pre-rendered SVG data (no runtime rendering)
+// Build mermaid HTML from pre-rendered SVG data — ALL projects (for embed route)
 function buildPreRenderedHtml(diagrams: PreRenderedDiagrams, defaultProject: string): string {
   return Object.entries(diagrams)
     .map(
@@ -50,21 +50,31 @@ function buildPreRenderedHtml(diagrams: PreRenderedDiagrams, defaultProject: str
     .join("\n");
 }
 
-// Render a user's architecture page using pre-rendered SVGs
-function renderUserPage(entry: UserEntry, username: string, theme: string, projectId?: string) {
+// Build mermaid HTML for a SINGLE project (for paginated team pages)
+function buildSingleProjectHtml(diagrams: PreRenderedDiagrams, projectId: string): string {
+  const diagram = diagrams[projectId];
+  if (!diagram) return "";
+  return `<div class="mermaid-project-svg" data-mermaid-project="${projectId}" data-mermaid-source="${escapeAttr(diagram.source)}" data-mermaid-score="${diagram.composite}">${diagram.svg}</div>`;
+}
+
+// Render a single project page for a team member (paginated — one SVG per page)
+function renderProjectPage(entry: UserEntry, username: string, theme: string, projectId: string) {
   const rendered = TEAM_RENDERED[username];
   if (!rendered) return null;
-  const defaultProject = projectId || entry.projects[0].id;
   const diagrams = theme === "dark" ? rendered.dark : rendered.light;
-  const mermaidHtml = buildPreRenderedHtml(diagrams, defaultProject);
-  const clientProjects = toClientProjects(entry, username);
+  if (!diagrams[projectId]) return null;
+
+  const mermaidHtml = buildSingleProjectHtml(diagrams, projectId);
+  const navProjects = entry.projects.map((p) => ({ id: p.id, name: p.id }));
+  const activeProject = toClientProjects(entry, username).find((p) => p.id === projectId);
+
   return archVizHtml
     .replace("<!-- MERMAID_DIAGRAMS -->", mermaidHtml)
     .replace(
       "var PROJECTS = [",
-      `var PROJECTS = ${JSON.stringify(clientProjects)};var _IGNORE = [`
+      `var ACTIVE_PROJECT = ${JSON.stringify(activeProject)};var NAV_PROJECTS = ${JSON.stringify(navProjects)};var _THEME = "${theme}";var _USERNAME = "${username}";var _IGNORE = [`
     )
-    .replace("<title>Cloudflare Architecture</title>", `<title>${entry.displayName}'s Cloudflare Architecture</title>`)
+    .replace("<title>Cloudflare Architecture</title>", `<title>${entry.displayName}'s ${projectId}</title>`)
     .replace(">Cloudflare Architecture</h1>", `>${entry.displayName}'s Cloudflare Architecture</h1>`);
 }
 
@@ -177,7 +187,9 @@ app.get("/team-architectures", (c) => {
       const badges = [...uniquePrims]
         .map((p) => `<span class="badge">${p}</span>`)
         .join(" ");
-      return `<div class="card" onclick="window.location='/team-architectures/${username}?theme=${theme}'" role="link" tabindex="0">
+      const firstProject = entry.projects[0].id;
+      const themeParam = theme !== "light" ? `?theme=${theme}` : "";
+      return `<div class="card" onclick="window.location='/team-architectures/${username}/${firstProject}${themeParam}'" role="link" tabindex="0">
         <img src="https://github.com/${username}.png?size=80" alt="${entry.displayName}" width="48" height="48" class="avatar" />
         <div class="card-body">
           <div class="card-header">
@@ -274,7 +286,7 @@ app.get("/team-architectures", (c) => {
   return c.html(html);
 });
 
-// Team architectures user sub-page (serves pre-rendered SVGs — no runtime rendering)
+// Team architectures user page — redirect to first project (or ?project= backward compat)
 app.get("/team-architectures/:username", (c) => {
   const username = c.req.param("username");
   const entry = TEAM_REGISTRY[username];
@@ -282,7 +294,22 @@ app.get("/team-architectures/:username", (c) => {
 
   const theme = c.req.query("theme") || "light";
   const project = c.req.query("project");
-  const html = renderUserPage(entry, username, theme, project);
+  const targetProject = (project && entry.projects.some((p) => p.id === project))
+    ? project : entry.projects[0].id;
+  const themeParam = theme !== "light" ? `?theme=${theme}` : "";
+  return c.redirect(`/team-architectures/${username}/${targetProject}${themeParam}`, 302);
+});
+
+// Team architectures single project page (paginated — one SVG per page)
+app.get("/team-architectures/:username/:projectId", (c) => {
+  const username = c.req.param("username");
+  const projectId = c.req.param("projectId");
+  const entry = TEAM_REGISTRY[username];
+  if (!entry || entry.projects.length === 0) return c.text("Not Found", 404);
+  if (!entry.projects.some((p) => p.id === projectId)) return c.text("Not Found", 404);
+
+  const theme = c.req.query("theme") || "light";
+  const html = renderProjectPage(entry, username, theme, projectId);
   if (!html) return c.text("Not Found", 404);
   return c.html(html);
 });

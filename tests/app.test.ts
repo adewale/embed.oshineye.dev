@@ -785,30 +785,21 @@ describe("GET /team-architectures", () => {
   });
 });
 
-describe("GET /team-architectures/:username", () => {
-  it("returns 200 for every user in TEAM_REGISTRY", async () => {
+describe("GET /team-architectures/:username (redirect)", () => {
+  it("302 redirects to first project for every user", async () => {
     const { TEAM_REGISTRY } = await import(
       "../src/embeds/v1/cloudflare-architecture-viz/mermaid"
     );
     for (const [username, entry] of Object.entries(TEAM_REGISTRY)) {
       if (entry.projects.length === 0) continue;
       const res = await app.request(`/team-architectures/${username}`);
-      expect(res.status, `${username} should return 200`).toBe(200);
-      const body = await res.text();
-      expect(body).toContain(entry.displayName);
-      expect(body).toContain("mermaid-project-svg");
+      expect(res.status, `${username} should return 302`).toBe(302);
+      const location = res.headers.get("location");
+      expect(location).toBe(`/team-architectures/${username}/${entry.projects[0].id}`);
     }
   });
 
-  it("returns dark-themed SVGs for ?theme=dark", async () => {
-    const res = await app.request("/team-architectures/adewale?theme=dark");
-    expect(res.status).toBe(200);
-    const body = await res.text();
-    expect(body).toContain("#1f2937");
-    expect(body).toContain("mermaid-project-svg");
-  });
-
-  it("selects specific project via ?project= query param", async () => {
+  it("?project= redirects to that project's path", async () => {
     const { TEAM_REGISTRY } = await import(
       "../src/embeds/v1/cloudflare-architecture-viz/mermaid"
     );
@@ -816,25 +807,90 @@ describe("GET /team-architectures/:username", () => {
     const secondProject = entry.projects[1]?.id;
     if (!secondProject) return;
     const res = await app.request(`/team-architectures/adewale?project=${secondProject}`);
-    expect(res.status).toBe(200);
-    const body = await res.text();
-    // The selected project should NOT have display:none
-    expect(body).not.toMatch(
-      new RegExp(`data-mermaid-project="${secondProject}"[^>]*style="display: none"`)
-    );
+    expect(res.status).toBe(302);
+    expect(res.headers.get("location")).toBe(`/team-architectures/adewale/${secondProject}`);
   });
 
-  it("pre-rendered SVGs contain icon badges and detail text", async () => {
-    const res = await app.request("/team-architectures/adewale");
-    const body = await res.text();
-    expect(body).toContain("node-icon-badge");
-    expect(body).toContain("node-detail-text");
-    expect(body).toContain("text-transform: uppercase");
+  it("preserves theme param through redirect", async () => {
+    const { TEAM_REGISTRY } = await import(
+      "../src/embeds/v1/cloudflare-architecture-viz/mermaid"
+    );
+    const entry = TEAM_REGISTRY["adewale"];
+    const res = await app.request("/team-architectures/adewale?theme=dark");
+    expect(res.status).toBe(302);
+    expect(res.headers.get("location")).toBe(`/team-architectures/adewale/${entry.projects[0].id}?theme=dark`);
   });
 
   it("returns 404 for unknown username", async () => {
     const res = await app.request("/team-architectures/nobody");
     expect(res.status).toBe(404);
+  });
+});
+
+describe("GET /team-architectures/:username/:projectId (paginated)", () => {
+  it("returns 200 with single SVG for every user's first project", async () => {
+    const { TEAM_REGISTRY } = await import(
+      "../src/embeds/v1/cloudflare-architecture-viz/mermaid"
+    );
+    for (const [username, entry] of Object.entries(TEAM_REGISTRY)) {
+      if (entry.projects.length === 0) continue;
+      const projectId = entry.projects[0].id;
+      const res = await app.request(`/team-architectures/${username}/${projectId}`);
+      expect(res.status, `${username}/${projectId} should return 200`).toBe(200);
+      const body = await res.text();
+      expect(body).toContain(entry.displayName);
+      expect(body).toContain("mermaid-project-svg");
+    }
+  });
+
+  it("contains exactly ONE mermaid-project-svg div", async () => {
+    const res = await app.request("/team-architectures/adewale/planet-cf");
+    const body = await res.text();
+    const matches = body.match(/class="mermaid-project-svg"/g);
+    expect(matches).not.toBeNull();
+    expect(matches!.length).toBe(1);
+  });
+
+  it("contains ACTIVE_PROJECT and NAV_PROJECTS instead of PROJECTS array", async () => {
+    const res = await app.request("/team-architectures/adewale/planet-cf");
+    const body = await res.text();
+    expect(body).toContain("ACTIVE_PROJECT");
+    expect(body).toContain("NAV_PROJECTS");
+    expect(body).toContain("_USERNAME");
+    expect(body).toContain("_THEME");
+  });
+
+  it("returns dark-themed SVGs for ?theme=dark", async () => {
+    const res = await app.request("/team-architectures/adewale/planet-cf?theme=dark");
+    expect(res.status).toBe(200);
+    const body = await res.text();
+    expect(body).toContain("#1f2937");
+    expect(body).toContain("mermaid-project-svg");
+  });
+
+  it("pre-rendered SVGs contain icon badges and detail text", async () => {
+    const res = await app.request("/team-architectures/adewale/planet-cf");
+    const body = await res.text();
+    expect(body).toContain("node-icon-badge");
+    expect(body).toContain("node-detail-text");
+  });
+
+  it("returns 404 for unknown project ID", async () => {
+    const res = await app.request("/team-architectures/adewale/nonexistent");
+    expect(res.status).toBe(404);
+  });
+
+  it("returns 404 for unknown username", async () => {
+    const res = await app.request("/team-architectures/nobody/planet-cf");
+    expect(res.status).toBe(404);
+  });
+
+  it("project selector links contain path-based URLs", async () => {
+    const res = await app.request("/team-architectures/adewale/planet-cf");
+    const body = await res.text();
+    // NAV_PROJECTS should be in the injected JS
+    expect(body).toContain("/team-architectures/");
+    expect(body).toContain('"adewale"');
   });
 });
 
@@ -954,7 +1010,7 @@ describe("Gallery HTML structure", () => {
   });
 
   it("rendered user pages include mermaid source in data attributes", async () => {
-    const res = await app.request("/team-architectures/adewale");
+    const res = await app.request("/team-architectures/adewale/planet-cf");
     const body = await res.text();
     // Each SVG div should have data-mermaid-source with actual mermaid syntax
     const sources = body.match(/data-mermaid-source="([^"]*)"/g);

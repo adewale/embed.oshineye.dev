@@ -77,6 +77,8 @@
       font-weight: 500;
       font-family: inherit;
       cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
       transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
@@ -456,22 +458,44 @@
 
     // Theme
     var params = new URL(location.href).searchParams;
-    var theme = params.get('theme') || 'light';
+    var theme = (typeof _THEME !== 'undefined') ? _THEME : (params.get('theme') || 'light');
     if (theme === 'dark') document.documentElement.classList.add('dark');
 
-    var requestedProject = params.get('project');
-    var activeProject = (requestedProject && PROJECTS.some(function(p) { return p.id === requestedProject; }))
-      ? requestedProject : PROJECTS[0].id;
+    // Detect mode: paginated (team pages) vs multi-project (embed)
+    var isPaginated = typeof ACTIVE_PROJECT !== 'undefined';
+    var activeProject;
+
+    if (isPaginated) {
+      activeProject = ACTIVE_PROJECT.id;
+    } else {
+      var requestedProject = params.get('project');
+      activeProject = (requestedProject && PROJECTS.some(function(p) { return p.id === requestedProject; }))
+        ? requestedProject : PROJECTS[0].id;
+    }
+
     function renderProjectSelector() {
       var sel = document.getElementById('projectSelector');
       sel.innerHTML = '';
-      PROJECTS.forEach(function(p) {
-        var btn = document.createElement('button');
-        btn.className = 'project-btn' + (p.id === activeProject ? ' active' : '');
-        btn.textContent = p.name;
-        btn.onclick = function() { switchProject(p.id); };
-        sel.appendChild(btn);
-      });
+      if (isPaginated) {
+        // Paginated: render links that navigate to each project's unique URL
+        NAV_PROJECTS.forEach(function(p) {
+          var link = document.createElement('a');
+          link.className = 'project-btn' + (p.id === activeProject ? ' active' : '');
+          link.textContent = p.name;
+          link.href = '/team-architectures/' + _USERNAME + '/' + p.id +
+            (theme !== 'light' ? '?theme=' + theme : '');
+          sel.appendChild(link);
+        });
+      } else {
+        // Multi-project embed: client-side switching
+        PROJECTS.forEach(function(p) {
+          var btn = document.createElement('button');
+          btn.className = 'project-btn' + (p.id === activeProject ? ' active' : '');
+          btn.textContent = p.name;
+          btn.onclick = function() { switchProject(p.id); };
+          sel.appendChild(btn);
+        });
+      }
     }
 
     function switchProject(id) {
@@ -602,7 +626,7 @@
     }
 
     function renderProject() {
-      var project = PROJECTS.find(function(p) { return p.id === activeProject; });
+      var project = isPaginated ? ACTIVE_PROJECT : PROJECTS.find(function(p) { return p.id === activeProject; });
       if (!project) return;
 
       // Update project info
