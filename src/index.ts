@@ -1,6 +1,11 @@
 import { Hono } from "hono";
 import { embedHeaders } from "./middleware/embed-headers";
 import { embeds, embedsBySlug } from "./embeds/registry";
+import {
+  renderAllMermaidSvgs,
+  buildMermaidHtml,
+} from "./embeds/v1/cloudflare-architecture-viz/mermaid";
+import archVizHtml from "./embeds/v1/cloudflare-architecture-viz/index.html";
 
 export { PresenceRoom } from "./presence/room";
 
@@ -76,6 +81,16 @@ app.get("/v1/avatar-stack/ws", async (c) => {
 
 // Apply embed headers middleware to all /v1/* routes
 app.use("/v1/*", embedHeaders);
+
+// Serve cloudflare-architecture-viz with server-side Mermaid rendering
+app.get("/v1/cloudflare-architecture-viz", (c) => {
+  const theme = c.req.query("theme") || "light";
+  const project = c.req.query("project") || "planet-cf";
+  const diagrams = renderAllMermaidSvgs(theme);
+  const mermaidHtml = buildMermaidHtml(diagrams, project);
+  const html = archVizHtml.replace("<!-- MERMAID_DIAGRAMS -->", mermaidHtml);
+  return c.html(html);
+});
 
 // Serve embed by slug
 app.get("/v1/:slug", (c) => {

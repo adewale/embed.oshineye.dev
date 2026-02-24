@@ -424,22 +424,6 @@ describe("GET /v1/cloudflare-architecture-viz", () => {
     expect(body).toContain("#1a120e");
   });
 
-  it("renders Cloudflare primitives as distinct visual nodes", async () => {
-    const res = await app.request("/v1/cloudflare-architecture-viz");
-    const body = await res.text();
-    // Each primitive is a node with a data-primitive attribute
-    expect(body).toContain("data-primitive");
-    expect(body).toContain("arch-node");
-  });
-
-  it("renders data flow arrows between primitives", async () => {
-    const res = await app.request("/v1/cloudflare-architecture-viz");
-    const body = await res.text();
-    // Creates SVG flow arrows dynamically
-    expect(body).toContain("createElementNS");
-    expect(body).toContain("arch-flow");
-  });
-
   it("contains baked-in architecture data for Adewale's projects", async () => {
     const res = await app.request("/v1/cloudflare-architecture-viz");
     const body = await res.text();
@@ -460,17 +444,107 @@ describe("GET /v1/cloudflare-architecture-viz", () => {
     expect(body).toContain("switchProject");
   });
 
-  it("highlights active data flows on hover", async () => {
-    const res = await app.request("/v1/cloudflare-architecture-viz");
+});
+
+describe("Mermaid diagram generation", () => {
+  it("Mermaid source contains classDef for node colours", async () => {
+    const res = await app.request("/v1/cloudflare-architecture-viz?project=planet-cf");
     const body = await res.text();
-    expect(body).toContain(":hover");
-    expect(body).toContain("arch-flow");
+    // The source is baked into data-mermaid-source attribute
+    expect(body).toContain("classDef workers fill:#e85e2e");
+    expect(body).toContain("classDef cron fill:#a26a09");
+    expect(body).toContain("classDef queues fill:#9f5bb0");
   });
 
-  it("shows labels on data flow arrows", async () => {
+  it("Mermaid source applies class to nodes with shape syntax", async () => {
+    const res = await app.request("/v1/cloudflare-architecture-viz?project=planet-cf");
+    const body = await res.text();
+    // Source is in data-mermaid-source attribute where " → &quot;
+    // Workers uses rounded shape: ("label")
+    expect(body).toContain("Workers(&quot;Workers&quot;):::workers");
+    // D1 uses cylinder shape: [("label")]
+    expect(body).toContain("D1[(&quot;D1&quot;)]:::d1");
+  });
+
+  it("rendered SVGs contain icon badge elements", async () => {
+    const res = await app.request("/v1/cloudflare-architecture-viz?project=planet-cf");
+    const body = await res.text();
+    // Icon badges are SVG groups with class "node-icon-badge"
+    expect(body).toContain("node-icon-badge");
+  });
+
+  it("rendered SVGs contain detail text elements", async () => {
+    const res = await app.request("/v1/cloudflare-architecture-viz?project=planet-cf");
+    const body = await res.text();
+    // Detail text shows primitive detail info
+    expect(body).toContain("node-detail-text");
+    expect(body).toContain("Python");
+    expect(body).toContain("Feed entries");
+  });
+
+  it("rendered SVGs contain subgraph header styling", async () => {
+    const res = await app.request("/v1/cloudflare-architecture-viz?project=planet-cf");
+    const body = await res.text();
+    expect(body).toContain("text-transform: uppercase");
+    expect(body).toContain("letter-spacing");
+  });
+
+  it("small projects use graph LR, planet-cf uses graph TD", async () => {
     const res = await app.request("/v1/cloudflare-architecture-viz");
     const body = await res.text();
-    expect(body).toContain("flow-label");
+    // planet-cf (4 effective tiers) → TD
+    expect(body).toMatch(/data-mermaid-source="[^"]*graph TD[^"]*" /i);
+    // keyboardia (3 tiers) → LR
+    expect(body).toMatch(/data-mermaid-project="keyboardia"[^>]*data-mermaid-source="[^"]*graph LR/i);
+  });
+
+  it("Mermaid source uses cylinder syntax for storage nodes", async () => {
+    const res = await app.request("/v1/cloudflare-architecture-viz?project=keyboardia");
+    const body = await res.text();
+    // KV uses cylinder: [("label")]
+    expect(body).toContain("KV[(&quot;KV&quot;)]:::kv");
+    // R2 uses cylinder
+    expect(body).toContain("R2[(&quot;R2&quot;)]:::r2");
+  });
+
+  it("Mermaid source uses stadium syntax for scheduling nodes", async () => {
+    const res = await app.request("/v1/cloudflare-architecture-viz?project=planet-cf");
+    const body = await res.text();
+    // Cron uses stadium: (["label"])
+    expect(body).toContain("CronTrigger([&quot;Cron Trigger&quot;]):::cron");
+    // Queues uses stadium
+    expect(body).toContain("Queues([&quot;Queues&quot;]):::queues");
+  });
+
+  it("rendered SVGs contain groupShadow filter", async () => {
+    const res = await app.request("/v1/cloudflare-architecture-viz?project=planet-cf");
+    const body = await res.text();
+    expect(body).toContain("groupShadow");
+    expect(body).toContain("feDropShadow");
+  });
+
+  it("rendered SVGs contain rounded corners on subgraph rects", async () => {
+    const res = await app.request("/v1/cloudflare-architecture-viz?project=planet-cf");
+    const body = await res.text();
+    expect(body).toContain('rx="6"');
+    expect(body).toContain('ry="6"');
+  });
+
+  it("planet-cf Mermaid source contains nested subgraph", async () => {
+    const res = await app.request("/v1/cloudflare-architecture-viz?project=planet-cf");
+    const body = await res.text();
+    // Backend is a wrapper subgraph containing Scheduling and Storage & AI
+    expect(body).toContain("Backend");
+    expect(body).toContain("Scheduling");
+    expect(body).toContain("Storage &amp; AI");
+  });
+
+  it("rendered SVGs contain enrichment color CSS variables", async () => {
+    const res = await app.request("/v1/cloudflare-architecture-viz");
+    const body = await res.text();
+    // Enrichment colors are set via BM's CSS variables in the SVG style block
+    expect(body).toContain("#8b7355"); // line color
+    expect(body).toContain("#d4c4aa"); // border color (light mode)
   });
 });
 

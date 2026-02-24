@@ -13,14 +13,15 @@
     "build:timelines": "tsx scripts/build-github-timeline.ts && tsx scripts/build-blogging-timeline.ts"
   },
   "dependencies": {
-    "hono": "^4.7.0"
+    "beautiful-mermaid": "^1.0.2",
+    "hono": "^4.12.2"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20250109.0",
+    "@cloudflare/workers-types": "^4.20260303.0",
     "@playwright/test": "^1.58.2",
     "typescript": "^5.7.0",
     "vite": "^7.3.1",
-    "vitest": "^3.0.0",
-    "wrangler": "^3.105.0"
+    "vitest": "^4.0.18",
+    "wrangler": "^4.68.0"
   }
 }

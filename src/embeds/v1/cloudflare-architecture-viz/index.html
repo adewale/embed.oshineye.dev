@@ -9,83 +9,29 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=DM+Serif+Display&display=swap" rel="stylesheet">
   <style>
     :root {
-      /* Warm cream/brown palette — light mode */
       --bg: #fffcf6;
-      --surface: #ffffff;
-      --surface-hover: #f5efe5;
-      --border: #dccdbf;
-      --border-light: #ebe1d5;
-      --text: #2c1a14;
-      --text-muted: #6b5347;
+      --fg: #2c1a14;
+
+      /* Derived structural colors */
+      --surface: color-mix(in srgb, var(--bg) 92%, var(--fg));
+      --surface-hover: color-mix(in srgb, var(--bg) 85%, var(--fg));
+      --border: color-mix(in srgb, var(--bg) 75%, var(--fg));
+      --text: var(--fg);
+      --text-muted: color-mix(in srgb, var(--fg) 60%, var(--bg));
+      --selector-bg: color-mix(in srgb, var(--bg) 85%, var(--fg));
+
+      /* Accent */
       --accent: #e85e2e;
       --accent-dark: #c94d22;
-      --accent-glow: #e85e2e22;
-      --accent-light: #e85e2e33;
-      --blue: #2c7cb0;
-      --blue-light: #2c7cb022;
-      --green: #398557;
-      --green-light: #39855722;
-      --cyan: #2b818e;
-      --cyan-light: #2b818e22;
-      --indigo: #6373b6;
-      --indigo-light: #6373b622;
-      --violet: #9f5bb0;
-      --violet-light: #9f5bb022;
-      --red: #da304c;
-      --red-light: #da304c22;
-      --gold: #a26a09;
-      --gold-light: #a26a0922;
-      --gray-0: #2c1a14;
-      --gray-4: #6b5347;
-      --gray-6: #a09080;
-      --gray-8: #f5efe5;
-      --node-shadow: #2c1a140a;
-      --flow-color: #a09080;
-      --flow-active: #e85e2e;
-      --selector-bg: #f5efe5;
-      --shadow-card: 0 1px 3px #2c1a140f, 0 4px 16px #2c1a140a;
-      --shadow-card-hover: 0 2px 8px #2c1a141a, 0 8px 32px #2c1a140f;
+
       --font-display: 'DM Serif Display', Georgia, 'Times New Roman', serif;
       --font-body: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     }
 
     :root.dark {
-      /* Warm dark mode */
       --bg: #1a120e;
-      --surface: #2a1e18;
-      --surface-hover: #3a2c24;
-      --border: #4a3828;
-      --border-light: #3a2c24;
-      --text: #f5efe5;
-      --text-muted: #a08978;
-      --accent: #e85e2e;
-      --accent-dark: #c94d22;
-      --accent-glow: #e85e2e33;
-      --accent-light: #e85e2e44;
-      --blue: #7cb7de;
-      --blue-light: #7cb7de22;
-      --green: #79c698;
-      --green-light: #79c69822;
-      --cyan: #66c3d1;
-      --cyan-light: #66c3d122;
-      --indigo: #a5aed5;
-      --indigo-light: #a5aed522;
-      --violet: #c9a2d2;
-      --violet-light: #c9a2d222;
-      --red: #e35f75;
-      --red-light: #e35f7522;
-      --gold: #f4a929;
-      --gold-light: #f4a92922;
-      --gray-0: #f5efe5;
-      --gray-4: #a08978;
-      --gray-6: #4a3828;
-      --gray-8: #2a1e18;
-      --node-shadow: #0000004d;
-      --flow-color: #a08978;
-      --flow-active: #e85e2e;
-      --selector-bg: #2a1e18;
-      --shadow-card: 0 1px 3px #0000001a, 0 4px 16px #00000014;
-      --shadow-card-hover: 0 2px 8px #00000033, 0 8px 32px #0000001f;
+      --fg: #f5efe5;
+      --accent: #e85e2e;  --accent-dark: #c94d22;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -163,233 +109,14 @@
       text-decoration: underline;
     }
 
-    .arch-canvas {
-      position: relative;
-      width: 100%;
-      min-height: 320px;
-    }
-
-    .arch-canvas svg.arch-arrows {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    .arch-canvas svg.arch-labels {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      z-index: 2;
-    }
-
-    .arch-canvas svg path.arch-flow {
-      pointer-events: stroke;
-    }
-
-    .arch-nodes {
-      position: relative;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 16px;
-      justify-content: center;
-      padding: 16px 0;
-    }
-
-    .arch-node {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
-      padding: 14px 18px;
-      border-radius: 10px;
-      background: var(--surface);
-      border: 1.5px solid var(--border-light);
-      cursor: default;
-      transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-      position: relative;
-      min-width: 100px;
-      text-align: center;
-      box-shadow: var(--shadow-card);
-    }
-
-    .arch-node:hover {
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-card-hover);
-      border-color: var(--border);
-    }
-
-    .arch-node .node-icon {
-      width: 36px;
-      height: 36px;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-      font-weight: 700;
-      color: #ffffff;
-    }
-
-    .arch-node .node-icon svg {
-      width: 20px;
-      height: 20px;
-      stroke: #ffffff;
-      stroke-width: 2;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-      fill: none;
-    }
-
-    .arch-node .node-label {
-      font-size: 0.78rem;
-      font-weight: 600;
-      color: var(--text);
-      white-space: nowrap;
-    }
-
-    .arch-node .node-detail {
-      font-size: 0.68rem;
-      color: var(--text-muted);
-      max-width: 120px;
-      text-align: center;
-    }
-
-    /* Primitive-specific colors */
-    .arch-node[data-primitive="workers"] .node-icon { background: var(--accent); }
-    .arch-node[data-primitive="workers"] { border-color: var(--accent-light); }
-    .arch-node[data-primitive="static-assets"] .node-icon { background: var(--gray-4); }
-    .arch-node[data-primitive="durable-objects"] .node-icon { background: var(--blue); }
-    .arch-node[data-primitive="durable-objects"] { border-color: var(--blue-light); }
-    .arch-node[data-primitive="kv"] .node-icon { background: var(--green); }
-    .arch-node[data-primitive="kv"] { border-color: var(--green-light); }
-    .arch-node[data-primitive="d1"] .node-icon { background: var(--indigo); }
-    .arch-node[data-primitive="d1"] { border-color: var(--indigo-light); }
-    .arch-node[data-primitive="r2"] .node-icon { background: var(--cyan); }
-    .arch-node[data-primitive="r2"] { border-color: var(--cyan-light); }
-    .arch-node[data-primitive="queues"] .node-icon { background: var(--violet); }
-    .arch-node[data-primitive="queues"] { border-color: var(--violet-light); }
-    .arch-node[data-primitive="ai"] .node-icon { background: var(--red); }
-    .arch-node[data-primitive="ai"] { border-color: var(--red-light); }
-    .arch-node[data-primitive="vectorize"] .node-icon { background: var(--indigo); }
-    .arch-node[data-primitive="vectorize"] { border-color: var(--indigo-light); }
-    .arch-node[data-primitive="cron"] .node-icon { background: var(--gold); }
-    .arch-node[data-primitive="cron"] { border-color: var(--gold-light); }
-    .arch-node[data-primitive="client"] .node-icon { background: var(--gray-4); }
-    .arch-node[data-primitive="client"] { border-color: var(--gray-6); }
-    .arch-node[data-primitive="terminal"] .node-icon { background: var(--gray-4); }
-    .arch-node[data-primitive="terminal"] { border-color: var(--gray-6); }
-
-    /* SVG flow arrows — CF reference architecture style */
-    .arch-flow {
-      fill: none;
-      stroke: var(--flow-color);
-      stroke-width: 2.5;
-      stroke-linecap: round;
-      opacity: 0.4;
-      transition: all 0.25s;
-    }
-
-    .arch-flow:hover,
-    .arch-flow.active {
-      stroke: var(--flow-active);
-      stroke-width: 3;
-      opacity: 1;
-    }
-
-    .arch-flow-label {
-      font-size: 10px;
-      fill: var(--text-muted);
-      stroke: var(--bg);
-      stroke-width: 4px;
-      paint-order: stroke fill;
-      text-anchor: middle;
-      font-family: var(--font-body);
-      font-weight: 500;
-      opacity: 0.7;
-      transition: all 0.2s;
-    }
-
-    .arch-flow-label.active {
-      fill: var(--text);
-      opacity: 1;
-      font-weight: 600;
-    }
-
-    /* Architecture tiers */
-    .arch-tier {
-      margin-bottom: 12px;
-      position: relative;
-      z-index: 1;
-    }
-
-    .tier-label {
-      font-size: 0.7rem;
-      font-weight: 600;
-      color: var(--accent);
-      text-transform: uppercase;
-      letter-spacing: 0.18em;
-      margin-bottom: 8px;
-      padding-left: 4px;
-    }
-
-    .tier-nodes {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0;
-      justify-content: center;
-    }
-
-    /* Connector lines between tiers — generous gap for arrow routing */
-    .tier-connector {
-      display: flex;
-      justify-content: center;
-      padding: 14px 0;
-      position: relative;
-      z-index: 1;
-    }
-
-    .tier-connector .line {
-      width: 2px;
-      height: 44px;
-      background: var(--border);
-    }
-
-    /* Legend */
-    .legend {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 16px;
-      padding-top: 12px;
-      border-top: 1px solid var(--border-light);
-    }
-
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      font-size: 0.68rem;
-      color: var(--text-muted);
-    }
-
-    .legend-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 3px;
-    }
-
     .diagram-code {
       margin-top: 20px;
       border: 1px solid var(--border);
       border-radius: 10px;
       overflow: hidden;
+    }
+    .diagram-code:first-of-type {
+      margin-top: 0;
     }
     .diagram-code-header {
       display: flex;
@@ -427,12 +154,19 @@
       white-space: pre;
     }
 
+    .mermaid-container {
+      padding: 14px;
+      overflow-x: auto;
+      display: flex;
+      justify-content: center;
+    }
+    .mermaid-container svg {
+      max-width: 100%;
+      height: auto;
+    }
+
     @media (max-width: 500px) {
       body { padding: 12px; }
-      .arch-node { min-width: 80px; padding: 10px 12px; }
-      .arch-node .node-icon { width: 28px; height: 28px; font-size: 14px; }
-      .arch-node .node-label { font-size: 0.7rem; }
-      .arch-node .node-detail { font-size: 0.62rem; }
     }
   </style>
 </head>
@@ -442,8 +176,16 @@
     <div class="project-selector" id="projectSelector"></div>
   </div>
   <div class="project-info" id="projectInfo"></div>
-  <div class="arch-canvas" id="archCanvas"></div>
-  <div class="legend" id="legend"></div>
+
+  <div class="diagram-code" id="mermaidDiagram">
+    <div class="diagram-code-header">
+      <span class="diagram-code-title">Mermaid</span>
+      <button class="copy-btn" id="copyMermaid">Copy</button>
+    </div>
+    <div class="mermaid-container">
+      <!-- MERMAID_DIAGRAMS -->
+    </div>
+  </div>
 
   <div class="diagram-code" id="asciiDiagram">
     <div class="diagram-code-header">
@@ -464,29 +206,29 @@
           {
             label: "Client",
             nodes: [
-              { primitive: "client", icon: "\uD83C\uDF10", label: "Browser", detail: "Reader" }
+              { label: "Browser", detail: "Reader" }
             ]
           },
           {
             label: "Edge",
             nodes: [
-              { primitive: "static-assets", icon: "SA", label: "Static Assets", detail: "HTML / CSS" },
-              { primitive: "workers", icon: "W", label: "Workers", detail: "Python" }
+              { label: "Static Assets", detail: "HTML / CSS" },
+              { label: "Workers", detail: "Python" }
             ]
           },
           {
             label: "Scheduling",
             nodes: [
-              { primitive: "cron", icon: "\u23F0", label: "Cron Trigger", detail: "Hourly" },
-              { primitive: "queues", icon: "Q", label: "Queues", detail: "Feed queue + DLQ" }
+              { label: "Cron Trigger", detail: "Hourly" },
+              { label: "Queues", detail: "Feed queue + DLQ" }
             ]
           },
           {
             label: "Storage & AI",
             nodes: [
-              { primitive: "d1", icon: "D1", label: "D1", detail: "Feed entries" },
-              { primitive: "ai", icon: "AI", label: "Workers AI", detail: "Embeddings" },
-              { primitive: "vectorize", icon: "V", label: "Vectorize", detail: "Search index" }
+              { label: "D1", detail: "Feed entries" },
+              { label: "Workers AI", detail: "Embeddings" },
+              { label: "Vectorize", detail: "Search index" }
             ]
           }
         ],
@@ -511,22 +253,22 @@
           {
             label: "Client",
             nodes: [
-              { primitive: "client", icon: "\uD83C\uDF10", label: "Browser", detail: "SPA client" }
+              { label: "Browser", detail: "SPA client" }
             ]
           },
           {
             label: "Edge",
             nodes: [
-              { primitive: "static-assets", icon: "SA", label: "Static Assets", detail: "Vite build" },
-              { primitive: "workers", icon: "W", label: "Workers", detail: "API router" }
+              { label: "Static Assets", detail: "Vite build" },
+              { label: "Workers", detail: "API router" }
             ]
           },
           {
             label: "State",
             nodes: [
-              { primitive: "kv", icon: "KV", label: "KV", detail: "Sessions" },
-              { primitive: "durable-objects", icon: "DO", label: "Durable Objects", detail: "LiveSession (SQLite)" },
-              { primitive: "r2", icon: "R2", label: "R2", detail: "Audio samples" }
+              { label: "KV", detail: "Sessions" },
+              { label: "Durable Objects", detail: "LiveSession (SQLite)" },
+              { label: "R2", detail: "Audio samples" }
             ]
           }
         ],
@@ -548,20 +290,20 @@
           {
             label: "Edge",
             nodes: [
-              { primitive: "terminal", icon: ">_", label: "Terminal", detail: "TUI client" },
-              { primitive: "workers", icon: "W", label: "Workers", detail: "Entry point" }
+              { label: "Terminal", detail: "TUI client" },
+              { label: "Workers", detail: "Entry point" }
             ]
           },
           {
             label: "Coordination",
             nodes: [
-              { primitive: "durable-objects", icon: "DO", label: "Matchmaker", detail: "Lobby mgmt" }
+              { label: "Matchmaker", detail: "Lobby mgmt" }
             ]
           },
           {
             label: "Game State",
             nodes: [
-              { primitive: "durable-objects", icon: "DO", label: "GameRoom", detail: "SQLite state" }
+              { label: "GameRoom", detail: "SQLite state" }
             ]
           }
         ],
@@ -582,20 +324,20 @@
           {
             label: "Client",
             nodes: [
-              { primitive: "client", icon: "\uD83C\uDF10", label: "Browser", detail: "iframe embed" }
+              { label: "Browser", detail: "iframe embed" }
             ]
           },
           {
             label: "Edge",
             nodes: [
-              { primitive: "static-assets", icon: "SA", label: "Static Assets", detail: "loader.js" },
-              { primitive: "workers", icon: "W", label: "Workers", detail: "Hono router" }
+              { label: "Static Assets", detail: "loader.js" },
+              { label: "Workers", detail: "Hono router" }
             ]
           },
           {
             label: "State",
             nodes: [
-              { primitive: "durable-objects", icon: "DO", label: "Durable Objects", detail: "PresenceRoom" }
+              { label: "Durable Objects", detail: "PresenceRoom" }
             ]
           }
         ],
@@ -615,20 +357,20 @@
           {
             label: "Client",
             nodes: [
-              { primitive: "client", icon: "\uD83C\uDF10", label: "Browser", detail: "Demo UI" }
+              { label: "Browser", detail: "Demo UI" }
             ]
           },
           {
             label: "Edge",
             nodes: [
-              { primitive: "static-assets", icon: "SA", label: "Static Assets", detail: "HTML" }
+              { label: "Static Assets", detail: "HTML" }
             ]
           },
           {
             label: "Compute",
             nodes: [
-              { primitive: "workers", icon: "W", label: "Workers", detail: "Router" },
-              { primitive: "durable-objects", icon: "DO", label: "Durable Objects", detail: "Fibonacci (SQLite)" }
+              { label: "Workers", detail: "Router" },
+              { label: "Durable Objects", detail: "Fibonacci (SQLite)" }
             ]
           }
         ],
@@ -647,13 +389,13 @@
           {
             label: "Client",
             nodes: [
-              { primitive: "client", icon: "\uD83C\uDF10", label: "Browser", detail: "oshineye.dev" }
+              { label: "Browser", detail: "oshineye.dev" }
             ]
           },
           {
             label: "Edge",
             nodes: [
-              { primitive: "static-assets", icon: "SA", label: "Static Assets", detail: "HTML / CSS / JS" }
+              { label: "Static Assets", detail: "HTML / CSS / JS" }
             ]
           }
         ],
@@ -663,37 +405,6 @@
       }
     ];
 
-    var PRIMITIVE_COLORS = {
-      "workers": { bg: "#e85e2e", label: "Workers" },
-      "static-assets": { bg: "#6b5347", label: "Static Assets" },
-      "durable-objects": { bg: "#2c7cb0", label: "Durable Objects" },
-      "kv": { bg: "#398557", label: "KV" },
-      "d1": { bg: "#6373b6", label: "D1" },
-      "r2": { bg: "#2b818e", label: "R2" },
-      "queues": { bg: "#9f5bb0", label: "Queues" },
-      "ai": { bg: "#da304c", label: "Workers AI" },
-      "vectorize": { bg: "#6373b6", label: "Vectorize" },
-      "cron": { bg: "#a26a09", label: "Cron Triggers" },
-      "client": { bg: "#6b5347", label: "Client" },
-      "terminal": { bg: "#6b5347", label: "Terminal" }
-    };
-
-    // Lucide icon SVG paths (https://lucide.dev)
-    var PRIMITIVE_ICONS = {
-      "workers": '<path d="M12 20v2m0-20v2m5 16v2m0-20v2M2 12h2m-2 5h2M2 7h2m16 5h2m-2 5h2M20 7h2M7 20v2M7 2v2"/><rect width="16" height="16" x="4" y="4" rx="2"/><rect width="8" height="8" x="8" y="8" rx="1"/>',
-      "static-assets": '<path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/>',
-      "durable-objects": '<rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
-      "kv": '<path d="m15.5 7.5l2.3 2.3a1 1 0 0 0 1.4 0l2.1-2.1a1 1 0 0 0 0-1.4L19 4m2-2l-9.6 9.6"/><circle cx="7.5" cy="15.5" r="5.5"/>',
-      "d1": '<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/>',
-      "r2": '<rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8m-10 4h4"/>',
-      "queues": '<path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.84Z"/><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/>',
-      "ai": '<path d="M12 18V5m3 8a4.17 4.17 0 0 1-3-4 4.17 4.17 0 0 1-3 4m8.598-6.5A3 3 0 1 0 12 5a3 3 0 1 0-5.598 1.5"/><path d="M17.997 5.125a4 4 0 0 1 2.526 5.77"/><path d="M18 18a4 4 0 0 0 2-7.464"/><path d="M19.967 17.483A4 4 0 1 1 12 18a4 4 0 1 1-7.967-.517"/><path d="M6 18a4 4 0 0 1-2-7.464"/><path d="M6.003 5.125a4 4 0 0 0-2.526 5.77"/>',
-      "vectorize": '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
-      "cron": '<path d="M12 6v6l4 2"/><circle cx="12" cy="12" r="10"/>',
-      "client": '<circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/>',
-      "terminal": '<path d="m4 17 6-6-6-6"/><path d="M12 19h8"/>',
-    };
-
     // Theme
     var params = new URL(location.href).searchParams;
     var theme = params.get('theme') || 'light';
@@ -702,8 +413,6 @@
     var requestedProject = params.get('project');
     var activeProject = (requestedProject && PROJECTS.some(function(p) { return p.id === requestedProject; }))
       ? requestedProject : PROJECTS[0].id;
-    var renderGen = 0;
-
     function renderProjectSelector() {
       var sel = document.getElementById('projectSelector');
       sel.innerHTML = '';
@@ -723,161 +432,6 @@
       history.replaceState(null, '', url);
       renderProjectSelector();
       renderProject();
-    }
-
-    // ===== Barycenter node reordering (Sugiyama-inspired) =====
-
-    function reorderNodesForProject(project) {
-      if (project.tiers.length < 2) return;
-
-      // Build adjacency: nodeLabel → [connected nodeLabels]
-      var adj = {};
-      project.flows.forEach(function(flow) {
-        if (!adj[flow.from]) adj[flow.from] = [];
-        if (!adj[flow.to]) adj[flow.to] = [];
-        adj[flow.from].push(flow.to);
-        adj[flow.to].push(flow.from);
-      });
-
-      // Map node label → tier index
-      var nodeTier = {};
-      project.tiers.forEach(function(tier, ti) {
-        tier.nodes.forEach(function(node) { nodeTier[node.label] = ti; });
-      });
-
-      // Count crossings between two adjacent tiers
-      function countCrossings(tierA, tierB) {
-        var crossings = 0;
-        // Collect edges between these two tiers
-        var edges = [];
-        project.flows.forEach(function(flow) {
-          var fromIdx = -1, toIdx = -1;
-          for (var i = 0; i < tierA.nodes.length; i++) {
-            if (tierA.nodes[i].label === flow.from) fromIdx = i;
-            if (tierA.nodes[i].label === flow.to) toIdx = i;
-          }
-          for (var j = 0; j < tierB.nodes.length; j++) {
-            if (tierB.nodes[j].label === flow.from && fromIdx === -1) fromIdx = -(j + 1);
-            if (tierB.nodes[j].label === flow.to && toIdx === -1) toIdx = -(j + 1);
-          }
-          // Edge goes from tierA to tierB if fromIdx >= 0 and toIdx < 0
-          if (fromIdx >= 0 && toIdx < 0) {
-            edges.push({ a: fromIdx, b: -(toIdx + 1) });
-          } else if (toIdx >= 0 && fromIdx < 0) {
-            edges.push({ a: toIdx, b: -(fromIdx + 1) });
-          }
-        });
-
-        for (var i = 0; i < edges.length; i++) {
-          for (var j = i + 1; j < edges.length; j++) {
-            if ((edges[i].a < edges[j].a && edges[i].b > edges[j].b) ||
-                (edges[i].a > edges[j].a && edges[i].b < edges[j].b)) {
-              crossings++;
-            }
-          }
-        }
-        return crossings;
-      }
-
-      // Total crossings for current arrangement
-      function totalCrossings() {
-        var c = 0;
-        for (var t = 0; t < project.tiers.length - 1; t++) {
-          c += countCrossings(project.tiers[t], project.tiers[t + 1]);
-        }
-        return c;
-      }
-
-      // Save best arrangement
-      var bestCrossings = totalCrossings();
-      var bestArrangement = project.tiers.map(function(tier) { return tier.nodes.slice(); });
-
-      // 24 iterations of barycenter sweeping
-      for (var iter = 0; iter < 24; iter++) {
-        var sweepDown = (iter % 2 === 0);
-
-        if (sweepDown) {
-          for (var ti = 1; ti < project.tiers.length; ti++) {
-            reorderTierByBarycenter(project, adj, nodeTier, ti, ti - 1);
-          }
-        } else {
-          for (var ti2 = project.tiers.length - 2; ti2 >= 0; ti2--) {
-            reorderTierByBarycenter(project, adj, nodeTier, ti2, ti2 + 1);
-          }
-        }
-
-        var c = totalCrossings();
-        if (c < bestCrossings) {
-          bestCrossings = c;
-          bestArrangement = project.tiers.map(function(tier) { return tier.nodes.slice(); });
-        }
-      }
-
-      // Apply best arrangement
-      for (var t = 0; t < project.tiers.length; t++) {
-        project.tiers[t].nodes = bestArrangement[t];
-      }
-
-      // ASCII insight: global barycenter pass — consider ALL cross-tier connections,
-      // not just adjacent ones. This matches the scoring metric and handles cases where
-      // a node connects to non-adjacent tiers (e.g., DO→Browser skipping Edge).
-      project.tiers.forEach(function(tier, ti) {
-        if (tier.nodes.length < 2) return;
-        var globalBary = tier.nodes.map(function(node, ni) {
-          var neighbors = adj[node.label] || [];
-          var positions = [];
-          neighbors.forEach(function(nbr) {
-            var nbrTi = nodeTier[nbr];
-            if (nbrTi !== ti) {
-              var nbrTierNodes = project.tiers[nbrTi].nodes;
-              for (var k = 0; k < nbrTierNodes.length; k++) {
-                if (nbrTierNodes[k].label === nbr) { positions.push(k); break; }
-              }
-            }
-          });
-          var bc = positions.length > 0 ? positions.reduce(function(a, b) { return a + b; }, 0) / positions.length : ni;
-          return { node: node, bc: bc };
-        });
-        // Only reorder if it reduces or maintains crossings
-        var savedNodes = tier.nodes.slice();
-        globalBary.sort(function(a, b) { return a.bc - b.bc; });
-        tier.nodes = globalBary.map(function(b) { return b.node; });
-        var newCrossings = totalCrossings();
-        if (newCrossings > bestCrossings) {
-          tier.nodes = savedNodes; // revert if crossings increased
-        } else {
-          bestCrossings = newCrossings;
-        }
-      });
-    }
-
-    function reorderTierByBarycenter(project, adj, nodeTier, tierIdx, refTierIdx) {
-      var tier = project.tiers[tierIdx];
-      var refTier = project.tiers[refTierIdx];
-
-      // Compute barycenter for each node in this tier
-      var barycenters = tier.nodes.map(function(node) {
-        var neighbors = adj[node.label] || [];
-        var positions = [];
-        neighbors.forEach(function(nbr) {
-          if (nodeTier[nbr] === refTierIdx) {
-            for (var k = 0; k < refTier.nodes.length; k++) {
-              if (refTier.nodes[k].label === nbr) { positions.push(k); break; }
-            }
-          }
-        });
-        var bc = positions.length > 0 ? positions.reduce(function(a, b) { return a + b; }, 0) / positions.length : Infinity;
-        var degree = (adj[node.label] || []).length;
-        return { node: node, bc: bc, degree: degree };
-      });
-
-      // Sort by barycenter, break ties by degree (hubs first for centering)
-      barycenters.sort(function(a, b) {
-        if (a.bc !== b.bc) return a.bc - b.bc;
-        return b.degree - a.degree; // higher degree first
-      });
-
-      tier.nodes = barycenters.map(function(b) { return b.node; });
     }
 
     function generateAscii(project) {
@@ -932,10 +486,6 @@
         lines.push('\u2551' + centerPad(td.label, globalWidth - 2) + '\u2551');
 
         // Node boxes: build line by line
-        // Line 1: top borders  ┌───┐ ┌───┐
-        // Line 2: labels       │ X │ │ Y │
-        // Line 3: details      │ d │ │ d │  (if any node has detail)
-        // Line 4: bottom       └───┘ └───┘
         var hasDetail = td.nodes.some(function(n) { return n.detail; });
 
         var topLine = '  ';
@@ -1003,22 +553,10 @@
     }
 
     function renderProject() {
-      renderGen++;
       var project = PROJECTS.find(function(p) { return p.id === activeProject; });
       if (!project) return;
 
-      // Reorder nodes for optimal layout before DOM creation
-      reorderNodesForProject(project);
-
-      // Compute connection counts for hub-aware spacing
-      var BASE_NODE_GAP = 24;
-      var HUB_EXTRA_GAP = 6;
-      var connectionCount = {};
-      project.flows.forEach(function(flow) {
-        connectionCount[flow.from] = (connectionCount[flow.from] || 0) + 1;
-        connectionCount[flow.to] = (connectionCount[flow.to] || 0) + 1;
-      });
-
+      // Update project info
       var info = document.getElementById('projectInfo');
       info.textContent = '';
       var link = document.createElement('a');
@@ -1029,1233 +567,35 @@
       info.appendChild(link);
       info.appendChild(document.createTextNode(' \u2014 ' + project.description));
 
-      var canvas = document.getElementById('archCanvas');
-      canvas.innerHTML = '';
-
-      project.tiers.forEach(function(tier, ti) {
-        var tierEl = document.createElement('div');
-        tierEl.className = 'arch-tier';
-
-        var label = document.createElement('div');
-        label.className = 'tier-label';
-        label.textContent = tier.label;
-        tierEl.appendChild(label);
-
-        var nodesEl = document.createElement('div');
-        nodesEl.className = 'tier-nodes';
-
-        tier.nodes.forEach(function(node, ni) {
-          var nodeEl = document.createElement('div');
-          nodeEl.className = 'arch-node';
-          nodeEl.setAttribute('data-primitive', node.primitive);
-          nodeEl.setAttribute('data-label', node.label);
-
-          // Hub-aware spacing: more connections → more margin
-          var conns = connectionCount[node.label] || 0;
-          var extraGap = Math.max(0, conns - 2) * HUB_EXTRA_GAP;
-          var halfGap = (BASE_NODE_GAP + extraGap) / 2;
-          nodeEl.style.marginLeft = (ni === 0 ? 0 : halfGap) + 'px';
-          nodeEl.style.marginRight = (ni === tier.nodes.length - 1 ? 0 : halfGap) + 'px';
-
-          var icon = document.createElement('div');
-          icon.className = 'node-icon';
-          if (PRIMITIVE_ICONS[node.primitive]) {
-            var tmp = document.createElement('div');
-            tmp.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + PRIMITIVE_ICONS[node.primitive] + '</svg>';
-            icon.appendChild(tmp.firstChild);
-          } else {
-            icon.textContent = node.icon;
-          }
-          nodeEl.appendChild(icon);
-
-          var lbl = document.createElement('div');
-          lbl.className = 'node-label';
-          lbl.textContent = node.label;
-          nodeEl.appendChild(lbl);
-
-          if (node.detail) {
-            var det = document.createElement('div');
-            det.className = 'node-detail';
-            det.textContent = node.detail;
-            nodeEl.appendChild(det);
-          }
-
-          nodesEl.appendChild(nodeEl);
-        });
-
-        tierEl.appendChild(nodesEl);
-        canvas.appendChild(tierEl);
-
-        if (ti < project.tiers.length - 1) {
-          var conn = document.createElement('div');
-          conn.className = 'tier-connector';
-          var line = document.createElement('div');
-          line.className = 'line';
-          conn.appendChild(line);
-          canvas.appendChild(conn);
-        }
-      });
-
-      renderFlowArrows(project, renderGen);
-      renderLegend(project);
-
-      // Generate text diagram
+      // Generate ASCII diagram
       var asciiText = generateAscii(project);
       document.getElementById('asciiCode').textContent = asciiText;
-    }
 
-    // ===== Orthogonal arrow routing (CF reference architecture style) =====
-
-    // Layout constants
-    var EDGE_SPACING = 18;       // px between multiple connections on one node edge
-    var CORNER_RADIUS = 14;      // px radius for rounded corners on orthogonal paths
-    var ABOVE_TIER_OFFSET = 20;  // px above tier top for obstructed same-tier flows
-    var CHANNEL_SPACING = 10;    // px base offset between parallel flows sharing a channel
-    var CORRIDOR_MARGIN = 40;    // px margin from tier bounds for multi-tier corridors
-
-    function getEdgePoint(node, side, index, total) {
-      var spacing = EDGE_SPACING;
-      var offset = (index - (total - 1) / 2) * spacing;
-      switch (side) {
-        case 'bottom': return { x: node.x + offset, y: node.bottom };
-        case 'top':    return { x: node.x + offset, y: node.top };
-        case 'right':  return { x: node.right, y: node.y + offset };
-        case 'left':   return { x: node.left, y: node.y + offset };
-      }
-    }
-
-    // Build an SVG path through orthogonal waypoints with rounded corners
-    function buildWaypointPath(points) {
-      if (points.length < 2) return '';
-      var R = CORNER_RADIUS;
-      var d = 'M' + points[0].x + ' ' + points[0].y;
-
-      for (var i = 1; i < points.length - 1; i++) {
-        var prev = points[i - 1];
-        var curr = points[i];
-        var next = points[i + 1];
-
-        // Segment lengths to limit radius
-        var len1 = Math.abs(curr.x - prev.x) + Math.abs(curr.y - prev.y);
-        var len2 = Math.abs(next.x - curr.x) + Math.abs(next.y - curr.y);
-        var eR = Math.min(R, len1 / 2, len2 / 2);
-        if (eR < 1) { d += ' L' + curr.x + ' ' + curr.y; continue; }
-
-        // Approach direction (prev→curr)
-        var dx1 = curr.x - prev.x;
-        var dy1 = curr.y - prev.y;
-        // Departure direction (curr→next)
-        var dx2 = next.x - curr.x;
-        var dy2 = next.y - curr.y;
-
-        // Point before corner (approach)
-        var ax = dx1 !== 0 ? curr.x - Math.sign(dx1) * eR : curr.x;
-        var ay = dy1 !== 0 ? curr.y - Math.sign(dy1) * eR : curr.y;
-
-        // Point after corner (departure)
-        var bx = dx2 !== 0 ? curr.x + Math.sign(dx2) * eR : curr.x;
-        var by = dy2 !== 0 ? curr.y + Math.sign(dy2) * eR : curr.y;
-
-        // Line to approach, quadratic Bezier through corner
-        d += ' L' + ax + ' ' + ay;
-        d += ' Q' + curr.x + ' ' + curr.y + ' ' + bx + ' ' + by;
-      }
-
-      // Line to last point
-      var last = points[points.length - 1];
-      d += ' L' + last.x + ' ' + last.y;
-      return d;
-    }
-
-    function renderFlowArrows(project, gen) {
-      var canvas = document.getElementById('archCanvas');
-      var svgNS = 'http://www.w3.org/2000/svg';
-
-      requestAnimationFrame(function() {
-        if (gen !== renderGen) return;
-
-        var rect = canvas.getBoundingClientRect();
-        var viewBox = '0 0 ' + rect.width + ' ' + rect.height;
-
-        // Two SVG layers: arrows behind nodes, labels above nodes
-        var svg = document.createElementNS(svgNS, 'svg');
-        svg.setAttribute('class', 'arch-arrows');
-        svg.setAttribute('viewBox', viewBox);
-        svg.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;overflow:visible';
-
-        var svgLabels = document.createElementNS(svgNS, 'svg');
-        svgLabels.setAttribute('class', 'arch-labels');
-        svgLabels.setAttribute('viewBox', viewBox);
-        svgLabels.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;overflow:visible';
-
-        // Arrowhead markers
-        var defs = document.createElementNS(svgNS, 'defs');
-        function makeMarker(id, fill) {
-          var m = document.createElementNS(svgNS, 'marker');
-          m.setAttribute('id', id);
-          m.setAttribute('markerWidth', '6');
-          m.setAttribute('markerHeight', '5');
-          m.setAttribute('refX', '5.5');
-          m.setAttribute('refY', '2.5');
-          m.setAttribute('orient', 'auto');
-          var poly = document.createElementNS(svgNS, 'polygon');
-          poly.setAttribute('points', '0 0.5, 5 2.5, 0 4.5');
-          poly.setAttribute('fill', fill);
-          m.appendChild(poly);
-          return m;
-        }
-        defs.appendChild(makeMarker('arrow', 'var(--flow-color)'));
-        defs.appendChild(makeMarker('arrow-active', 'var(--flow-active)'));
-        svg.appendChild(defs);
-
-        // Append svgLabels now for getBBox() text measurement; re-appended
-        // after the arrows SVG at the end to ensure labels layer above arrows
-        canvas.appendChild(svgLabels);
-
-        // Text measurement with caching via getBBox()
-        var textMeasureCache = {};
-        function measureText(text) {
-          if (textMeasureCache[text]) return textMeasureCache[text];
-          var t = document.createElementNS(svgNS, 'text');
-          t.setAttribute('class', 'arch-flow-label');
-          t.setAttribute('x', '0');
-          t.setAttribute('y', '0');
-          t.textContent = text;
-          svgLabels.appendChild(t);
-          var bbox = t.getBBox();
-          svgLabels.removeChild(t);
-          textMeasureCache[text] = { width: bbox.width + 4, height: bbox.height };
-          return textMeasureCache[text];
-        }
-
-        // Build node position map
-        var nodeEls = canvas.querySelectorAll('.arch-node');
-        var nodeMap = {};
-        nodeEls.forEach(function(n) {
-          var lbl = n.getAttribute('data-label');
-          var r = n.getBoundingClientRect();
-          nodeMap[lbl] = {
-            x: r.left - rect.left + r.width / 2,
-            y: r.top - rect.top + r.height / 2,
-            w: r.width,
-            h: r.height,
-            top: r.top - rect.top,
-            bottom: r.top - rect.top + r.height,
-            left: r.left - rect.left,
-            right: r.left - rect.left + r.width
-          };
-        });
-
-        // Calculate tier gap channels for routing horizontal segments
-        // Each channel is the vertical midpoint between one tier's bottom and the next tier's top
-        var tierEls = canvas.querySelectorAll('.arch-tier');
-        var tierBounds = [];
-        tierEls.forEach(function(t) {
-          var r = t.getBoundingClientRect();
-          tierBounds.push({
-            top: r.top - rect.top,
-            bottom: r.top - rect.top + r.height
-          });
-        });
-        // channels[i] = midpoint of gap between tier i and tier i+1
-        var channels = [];
-        for (var ci = 0; ci < tierBounds.length - 1; ci++) {
-          channels.push((tierBounds[ci].bottom + tierBounds[ci + 1].top) / 2);
-        }
-
-        // Map each node label to its tier index
-        var nodeTierIndex = {};
-        project.tiers.forEach(function(tier, ti) {
-          tier.nodes.forEach(function(node) {
-            nodeTierIndex[node.label] = ti;
-          });
-        });
-
-        // Compute bounding box of nodes in each tier (for routing around them)
-        var tierNodeBounds = [];
-        project.tiers.forEach(function(tier) {
-          var left = Infinity, right = -Infinity;
-          tier.nodes.forEach(function(node) {
-            var nm = nodeMap[node.label];
-            if (nm) {
-              left = Math.min(left, nm.left);
-              right = Math.max(right, nm.right);
-            }
-          });
-          tierNodeBounds.push({ left: left, right: right });
-        });
-
-        // Determine exit/enter sides and collect connections per node edge
-        var connections = {};
-        var flowData = [];
-
-        project.flows.forEach(function(flow, fi) {
-          var from = nodeMap[flow.from];
-          var to = nodeMap[flow.to];
-          if (!from || !to) return;
-
-          var fromTier = nodeTierIndex[flow.from];
-          var toTier = nodeTierIndex[flow.to];
-          var sameTier = fromTier === toTier;
-          var exitSide, enterSide;
-
-          if (sameTier) {
-            // Check for intermediate nodes that would obstruct a horizontal path
-            var minFlowX = Math.min(from.x, to.x);
-            var maxFlowX = Math.max(from.x, to.x);
-            var sameTierObstacle = false;
-            project.tiers[fromTier].nodes.forEach(function(n) {
-              if (n.label !== flow.from && n.label !== flow.to) {
-                var nm = nodeMap[n.label];
-                if (nm && nm.x > minFlowX && nm.x < maxFlowX) sameTierObstacle = true;
-              }
-            });
-            if (sameTierObstacle) {
-              // Route above the tier via top edges
-              exitSide = 'top';
-              enterSide = 'top';
-            } else {
-              exitSide = to.x > from.x ? 'right' : 'left';
-              enterSide = to.x > from.x ? 'left' : 'right';
-            }
-          } else if (to.y > from.y) {
-            exitSide = 'bottom';
-            enterSide = 'top';
-          } else {
-            exitSide = 'top';
-            enterSide = 'bottom';
-          }
-
-          if (!connections[flow.from]) connections[flow.from] = { bottom: [], top: [], left: [], right: [] };
-          if (!connections[flow.to]) connections[flow.to] = { bottom: [], top: [], left: [], right: [] };
-
-          connections[flow.from][exitSide].push({ fi: fi, type: 'exit', otherX: to.x, otherY: to.y });
-          connections[flow.to][enterSide].push({ fi: fi, type: 'enter', otherX: from.x, otherY: from.y });
-
-          flowData[fi] = { exitSide: exitSide, enterSide: enterSide, label: flow.label, fromLabel: flow.from, toLabel: flow.to };
-        });
-
-        // Sort connections on each edge to minimize crossings
-        Object.keys(connections).forEach(function(nodeLabel) {
-          ['bottom', 'top', 'left', 'right'].forEach(function(side) {
-            connections[nodeLabel][side].sort(function(a, b) {
-              if (side === 'left' || side === 'right') return a.otherY - b.otherY;
-              return a.otherX - b.otherX;
-            });
-          });
-        });
-
-        // Assign edge positions to each flow endpoint
-        var flowPoints = {};
-        Object.keys(connections).forEach(function(nodeLabel) {
-          var node = nodeMap[nodeLabel];
-          if (!node) return;
-          ['bottom', 'top', 'left', 'right'].forEach(function(side) {
-            var conns = connections[nodeLabel][side];
-            var total = conns.length;
-            conns.forEach(function(conn, i) {
-              var pt = getEdgePoint(node, side, i, total);
-              if (!flowPoints[conn.fi]) flowPoints[conn.fi] = {};
-              if (conn.type === 'exit') {
-                flowPoints[conn.fi].exitPt = pt;
-              } else {
-                flowPoints[conn.fi].enterPt = pt;
-              }
-            });
-          });
-        });
-
-        // Channel-based offset assignment: group adjacent-tier flows by channel
-        // ASCII insight: the best diagram has the fewest crossings. Try multiple
-        // sort strategies per channel and pick the one with fewest inversions.
-        // An inversion = two flows whose exit order conflicts with their enter order.
-        var channelOffsets = {};
-        var channelGroups = {};
-        flowData.forEach(function(fd, fi) {
-          if (!fd) return;
-          var fromTier = nodeTierIndex[fd.fromLabel];
-          var toTier = nodeTierIndex[fd.toLabel];
-          if (fromTier === toTier) return;
-          var startTier = Math.min(fromTier, toTier);
-          var endTier = Math.max(fromTier, toTier);
-          if (endTier - startTier !== 1) return;
-          var chIdx = startTier;
-          if (!channelGroups[chIdx]) channelGroups[chIdx] = [];
-          var pts = flowPoints[fi];
-          var exitX = pts && pts.exitPt ? pts.exitPt.x : 0;
-          var enterX = pts && pts.enterPt ? pts.enterPt.x : 0;
-          var span = Math.abs(exitX - enterX);
-          var midX = (exitX + enterX) / 2;
-          channelGroups[chIdx].push({ fi: fi, exitX: exitX, enterX: enterX, span: span, midX: midX });
-        });
-        // Count pairwise inversions for a given ordering
-        function countInversions(group) {
-          var inv = 0;
-          for (var a = 0; a < group.length; a++) {
-            for (var b = a + 1; b < group.length; b++) {
-              var exitBefore = group[a].exitX < group[b].exitX;
-              var enterBefore = group[a].enterX < group[b].enterX;
-              if (exitBefore !== enterBefore) inv++;
-            }
-          }
-          return inv;
-        }
-        Object.keys(channelGroups).forEach(function(chIdx) {
-          var group = channelGroups[chIdx];
-          // Try multiple strategies, pick the one with fewest inversions
-          var strategies = [
-            group.slice().sort(function(a, b) { return a.span - b.span; }),
-            group.slice().sort(function(a, b) { return a.exitX - b.exitX || a.enterX - b.enterX; }),
-            group.slice().sort(function(a, b) { return a.enterX - b.enterX || a.exitX - b.exitX; }),
-            group.slice().sort(function(a, b) { return a.midX - b.midX; })
-          ];
-          var bestInv = Infinity;
-          var best = strategies[0];
-          for (var si = 0; si < strategies.length; si++) {
-            var inv = countInversions(strategies[si]);
-            if (inv < bestInv) { bestInv = inv; best = strategies[si]; }
-          }
-          // Copy best ordering back
-          for (var gi = 0; gi < group.length; gi++) group[gi] = best[gi];
-
-          var n = group.length;
-          var dynSpacing = Math.max(8, Math.min(16, 60 / Math.max(1, n)));
-          group.forEach(function(g, i) {
-            // ASCII insight: near-vertical flows should stay straight, only
-            // wide-spanning flows need channel separation. Scale offset by
-            // how horizontal the flow is — keeps paths direct like ASCII.
-            var xDist = Math.abs(g.exitX - g.enterX);
-            var offsetScale = Math.min(1.0, xDist / 60);
-            channelOffsets[g.fi] = (i - (n - 1) / 2) * dynSpacing * Math.max(0.15, offsetScale);
-          });
-        });
-
-        // Collect horizontal segments of adjacent-tier flows for corridor crossing checks
-        // Each segment: { xMin, xMax, chIdx } — the horizontal span in a channel
-        var adjTierSegments = [];
-        flowData.forEach(function(fd, fi) {
-          if (!fd) return;
-          var fromTier = nodeTierIndex[fd.fromLabel];
-          var toTier = nodeTierIndex[fd.toLabel];
-          if (fromTier === toTier) return;
-          var startTier = Math.min(fromTier, toTier);
-          var endTier = Math.max(fromTier, toTier);
-          if (endTier - startTier !== 1) return;
-          var pts = flowPoints[fi];
-          if (!pts || !pts.exitPt || !pts.enterPt) return;
-          var xMin = Math.min(pts.exitPt.x, pts.enterPt.x);
-          var xMax = Math.max(pts.exitPt.x, pts.enterPt.x);
-          adjTierSegments.push({ xMin: xMin, xMax: xMax, chIdx: startTier });
-        });
-
-        // Track used corridor X positions for multi-tier flows
-        var usedCorridors = [];
-
-        // Build waypoints for each flow
-        function computeWaypoints(fd, fi) {
-          var pts = flowPoints[fi];
-          if (!pts || !pts.exitPt || !pts.enterPt) return null;
-          var p1 = pts.exitPt;
-          var p2 = pts.enterPt;
-          var fromTier = nodeTierIndex[fd.fromLabel];
-          var toTier = nodeTierIndex[fd.toLabel];
-
-          // Same tier
-          if (fromTier === toTier) {
-            // If exit is 'top', this is an obstructed same-tier flow — route above
-            if (fd.exitSide === 'top' && fd.enterSide === 'top') {
-              var aboveY = tierBounds[fromTier].top - ABOVE_TIER_OFFSET;
-              return [p1, { x: p1.x, y: aboveY }, { x: p2.x, y: aboveY }, p2];
-            }
-            return [p1, p2];
-          }
-
-          var goingDown = toTier > fromTier;
-          var startTier = Math.min(fromTier, toTier);
-          var endTier = Math.max(fromTier, toTier);
-          var tierGap = endTier - startTier;
-
-          // Adjacent tiers — ASCII insight: route nearly straight when
-          // endpoints are close AND flow is alone in channel (no parallel flows)
-          if (tierGap === 1) {
-            var ch = channels[startTier];
-            if (ch == null) return [p1, p2];
-            var chOffset = channelOffsets[fi] || 0;
-            var adjCh = ch + chOffset;
-            var xDist = Math.abs(p1.x - p2.x);
-            var chGroup = channelGroups[startTier] || [];
-            var aloneInChannel = chGroup.length <= 1;
-            // Near-vertical: skip the horizontal channel segment when alone
-            if (xDist < 8 && aloneInChannel) {
-              return [p1, p2];
-            }
-            return [
-              p1,
-              { x: p1.x, y: adjCh },
-              { x: p2.x, y: adjCh },
-              p2
-            ];
-          }
-
-          // Multi-tier flow — smart corridor selection
-          var corridorMargin = CORRIDOR_MARGIN;
-          var minLeft = Infinity, maxRight = -Infinity;
-          for (var t = startTier; t <= endTier; t++) {
-            if (tierNodeBounds[t]) {
-              minLeft = Math.min(minLeft, tierNodeBounds[t].left);
-              maxRight = Math.max(maxRight, tierNodeBounds[t].right);
-            }
-          }
-
-          // Collect candidate corridor X positions
-          var candidates = [];
-          // Left and right of all nodes
-          candidates.push(Math.max(10, minLeft - corridorMargin));
-          candidates.push(Math.min(rect.width - 10, maxRight + corridorMargin));
-
-          // Near-direct candidates: points between source and target X
-          var directMidX = (p1.x + p2.x) / 2;
-          candidates.push(directMidX);
-          // Slight offsets from direct midpoint
-          candidates.push(directMidX - 20);
-          candidates.push(directMidX + 20);
-
-          // Gaps between consecutive nodes in intermediate tiers
-          for (var mt = startTier + 1; mt < endTier; mt++) {
-            var tierNodes = project.tiers[mt].nodes.slice();
-            var nodePosArr = tierNodes.map(function(n) { return nodeMap[n.label]; }).filter(function(nm) { return nm; });
-            nodePosArr.sort(function(a, b) { return a.x - b.x; });
-            for (var gi = 0; gi < nodePosArr.length - 1; gi++) {
-              var gapLeft = nodePosArr[gi].right;
-              var gapRight = nodePosArr[gi + 1].left;
-              var gapWidth = gapRight - gapLeft;
-              if (gapWidth > 24) {
-                candidates.push((gapLeft + gapRight) / 2);
-              }
-            }
-          }
-
-          // Score each candidate: prefer shorter total path + proximity to midpoint
-          var midX = (p1.x + p2.x) / 2;
-          var bestScore = Infinity;
-          var corridorX = candidates[0];
-
-          candidates.forEach(function(cx) {
-            // Check candidate doesn't cross through node bounding boxes in intermediate tiers
-            // Pad by 10px so corridors keep safe distance from node edges
-            var crossesNode = false;
-            var nodePad = 10;
-            for (var ct = startTier + 1; ct < endTier; ct++) {
-              project.tiers[ct].nodes.forEach(function(n) {
-                var nm = nodeMap[n.label];
-                if (nm && cx >= nm.left - nodePad && cx <= nm.right + nodePad) {
-                  crossesNode = true;
-                }
-              });
-            }
-            if (crossesNode) return;
-
-            // Total path length approximation
-            var pathLen = Math.abs(p1.x - cx) + Math.abs(cx - p2.x);
-            // Proximity penalty (prefer corridor closer to midpoint)
-            var proxPenalty = Math.abs(midX - cx) * 0.3;
-            // Penalty for proximity to already-used corridors
-            var usedPenalty = 0;
-            for (var ui = 0; ui < usedCorridors.length; ui++) {
-              var dist = Math.abs(cx - usedCorridors[ui]);
-              if (dist < 40) usedPenalty += (40 - dist) * 10;
-            }
-            // Penalty for crossing adjacent-tier flow horizontal segments
-            // ASCII insight: vertical corridors should avoid cutting through horizontal paths
-            var crossingPenalty = 0;
-            for (var asi = 0; asi < adjTierSegments.length; asi++) {
-              var seg = adjTierSegments[asi];
-              // Corridor passes through this channel if its tier range includes the segment's channel
-              if (seg.chIdx >= startTier && seg.chIdx < endTier) {
-                if (cx > seg.xMin + 5 && cx < seg.xMax - 5) {
-                  crossingPenalty += 200;
-                }
-              }
-            }
-            var score = pathLen + proxPenalty + usedPenalty + crossingPenalty;
-            // Directional bias: downward flows prefer left, upward flows prefer right
-            if (goingDown) {
-              score += cx > midX ? 20 : 0;
-            } else {
-              score += cx < midX ? 20 : 0;
-            }
-            if (score < bestScore) {
-              bestScore = score;
-              corridorX = cx;
-            }
-          });
-
-          usedCorridors.push(corridorX);
-
-          var waypoints = [p1];
-          // Channel adjacent to source tier (in direction of travel)
-          var firstCh = goingDown ? channels[fromTier] : channels[fromTier - 1];
-          // Channel adjacent to target tier (in direction of travel)
-          var lastCh = goingDown ? channels[toTier - 1] : channels[toTier];
-
-          if (firstCh != null) {
-            waypoints.push({ x: p1.x, y: firstCh });
-            waypoints.push({ x: corridorX, y: firstCh });
-          }
-          if (lastCh != null && lastCh !== firstCh) {
-            waypoints.push({ x: corridorX, y: lastCh });
-            waypoints.push({ x: p2.x, y: lastCh });
-          } else if (firstCh != null) {
-            waypoints.push({ x: p2.x, y: firstCh });
-          }
-          waypoints.push(p2);
-          return waypoints;
-        }
-
-        // --- Pass 1: compute paths and candidate label positions ---
-        var flowRenders = [];
-
-        // Build nodeBoxes array for overlap checking
-        var nodeBoxes = [];
-        Object.keys(nodeMap).forEach(function(nlbl) {
-          var nm = nodeMap[nlbl];
-          nodeBoxes.push({ left: nm.left, right: nm.right, top: nm.top, bottom: nm.bottom });
-        });
-
-        // Pre-compute all waypoints for cross-flow label awareness
-        var allWaypoints = [];
-        flowData.forEach(function(fd, fi) {
-          if (!fd) { allWaypoints[fi] = null; return; }
-          allWaypoints[fi] = computeWaypoints(fd, fi);
-        });
-
-        // Count how many OTHER flows have segments crossing a bounding rect
-        function countCrossingFlows(skipFi, lRect) {
-          var count = 0;
-          for (var fi2 = 0; fi2 < allWaypoints.length; fi2++) {
-            if (fi2 === skipFi || !allWaypoints[fi2] || allWaypoints[fi2].length < 2) continue;
-            var wp = allWaypoints[fi2];
-            for (var wi2 = 0; wi2 < wp.length - 1; wi2++) {
-              var pa = wp[wi2], pb = wp[wi2 + 1];
-              var segHoriz = Math.abs(pa.y - pb.y) < 1;
-              var crosses = false;
-              if (segHoriz) {
-                if (pa.y >= lRect.top && pa.y <= lRect.bottom) {
-                  var sxMin = Math.min(pa.x, pb.x), sxMax = Math.max(pa.x, pb.x);
-                  if (sxMax >= lRect.left && sxMin <= lRect.right) crosses = true;
-                }
-              } else {
-                if (pa.x >= lRect.left && pa.x <= lRect.right) {
-                  var syMin = Math.min(pa.y, pb.y), syMax = Math.max(pa.y, pb.y);
-                  if (syMax >= lRect.top && syMin <= lRect.bottom) crosses = true;
-                }
-              }
-              if (crosses) { count++; break; }
-            }
-          }
-          return count;
-        }
-
-        flowData.forEach(function(fd, fi) {
-          if (!fd) return;
-          var waypoints = allWaypoints[fi];
-          if (!waypoints || waypoints.length < 2) return;
-
-          var d = buildWaypointPath(waypoints);
-          var fromTier = nodeTierIndex[fd.fromLabel];
-          var toTier = nodeTierIndex[fd.toLabel];
-          var measured = measureText(fd.label);
-
-          // Generate candidate positions from segments
-          var candidates = [];
-          for (var wi = 0; wi < waypoints.length - 1; wi++) {
-            var wdx = Math.abs(waypoints[wi + 1].x - waypoints[wi].x);
-            var wdy = Math.abs(waypoints[wi + 1].y - waypoints[wi].y);
-            var segLen = wdx + wdy;
-            var isHorizontal = wdx > wdy;
-
-            if (isHorizontal && segLen > 20) {
-              var fracs = [0.5, 0.25, 0.75];
-              for (var fc = 0; fc < fracs.length; fc++) {
-                var frac = fracs[fc];
-                var mx = waypoints[wi].x + (waypoints[wi + 1].x - waypoints[wi].x) * frac;
-                var my = (waypoints[wi].y + waypoints[wi + 1].y) / 2;
-                candidates.push({ x: mx, y: my - 8, score: segLen * (frac === 0.5 ? 1.0 : 0.7) });
-                candidates.push({ x: mx, y: my + 14, score: segLen * (frac === 0.5 ? 0.6 : 0.4) });
-              }
-            } else if (!isHorizontal && segLen > 18) {
-              var vFracs = [0.5, 0.3, 0.7];
-              for (var vfc = 0; vfc < vFracs.length; vfc++) {
-                var vf = vFracs[vfc];
-                var mx2 = (waypoints[wi].x + waypoints[wi + 1].x) / 2;
-                var my2 = waypoints[wi].y + (waypoints[wi + 1].y - waypoints[wi].y) * vf;
-                var vScoreMult = vf === 0.5 ? 1.0 : 0.7;
-                candidates.push({ x: mx2 + measured.width / 2 + 6, y: my2, score: segLen * 0.5 * vScoreMult });
-                candidates.push({ x: mx2 - measured.width / 2 - 6, y: my2, score: segLen * 0.4 * vScoreMult });
-              }
-            }
-          }
-
-          // For same-tier flows, force label above the tier
-          if (fromTier === toTier) {
-            var aboveY = tierBounds[fromTier].top - 6;
-            var midX = (waypoints[0].x + waypoints[waypoints.length - 1].x) / 2;
-            candidates = [{ x: midX, y: aboveY, score: 100 }];
-          }
-
-          // Sort candidates by score (best first)
-          candidates.sort(function(a, b) { return b.score - a.score; });
-
-          // Pick best candidate: no node overlap, fewest flow crossings, then highest score
-          // Also try offset positions (nudged left/right) to escape multi-flow zones
-          var chosen = candidates[0] || { x: 0, y: 0 };
-          var hw = measured.width / 2;
-          var hh = measured.height / 2;
-          var bestCrossings = Infinity;
-          var bestScore = -Infinity;
-          var expandedCandidates = [];
-          for (var ec = 0; ec < candidates.length; ec++) {
-            expandedCandidates.push(candidates[ec]);
-            // Add nudged variants for horizontal segments
-            expandedCandidates.push({ x: candidates[ec].x - 30, y: candidates[ec].y, score: candidates[ec].score * 0.6 });
-            expandedCandidates.push({ x: candidates[ec].x + 30, y: candidates[ec].y, score: candidates[ec].score * 0.6 });
-          }
-          for (var ci2 = 0; ci2 < expandedCandidates.length; ci2++) {
-            var c = expandedCandidates[ci2];
-            var cRect = { left: c.x - hw, right: c.x + hw, top: c.y - hh, bottom: c.y + hh };
-            var overlapsNode = false;
-            for (var ni = 0; ni < nodeBoxes.length; ni++) {
-              if (cRect.left < nodeBoxes[ni].right && cRect.right > nodeBoxes[ni].left &&
-                  cRect.top < nodeBoxes[ni].bottom && cRect.bottom > nodeBoxes[ni].top) {
-                overlapsNode = true;
-                break;
-              }
-            }
-            if (overlapsNode) continue;
-            var crossings = countCrossingFlows(fi, cRect);
-            if (crossings < bestCrossings || (crossings === bestCrossings && c.score > bestScore)) {
-              bestCrossings = crossings;
-              bestScore = c.score;
-              chosen = c;
-            }
-          }
-
-          flowRenders.push({
-            fi: fi,
-            fd: fd,
-            d: d,
-            labelX: chosen.x,
-            labelY: chosen.y,
-            text: fd.label,
-            measured: measured
-          });
-        });
-
-        // --- Pass 2: bidirectional label deconfliction ---
-        function labelRect(lr) {
-          var m = lr.measured || measureText(lr.text);
-          return {
-            left: lr.labelX - m.width / 2,
-            right: lr.labelX + m.width / 2,
-            top: lr.labelY - m.height / 2,
-            bottom: lr.labelY + m.height / 2
-          };
-        }
-
-        function rectsOverlap(a, b) {
-          return a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
-        }
-
-        // First pass: check each label against all nodes, shift above if overlapping
-        flowRenders.forEach(function(lr) {
-          var lr_rect = labelRect(lr);
-          for (var ni = 0; ni < nodeBoxes.length; ni++) {
-            if (rectsOverlap(lr_rect, nodeBoxes[ni])) {
-              lr.labelY = Math.min(lr.labelY, nodeBoxes[ni].top - (lr.measured || measureText(lr.text)).height / 2 - 4);
-              lr_rect = labelRect(lr);
-            }
-          }
-        });
-
-        // Sort by Y for iterative nudge
-        flowRenders.sort(function(a, b) { return a.labelY - b.labelY; });
-
-        // Iterative bidirectional nudge
-        for (var pass = 0; pass < 8; pass++) {
-          var moved = false;
-          for (var li = 0; li < flowRenders.length; li++) {
-            for (var lj = li + 1; lj < flowRenders.length; lj++) {
-              var ra = labelRect(flowRenders[li]);
-              var rb = labelRect(flowRenders[lj]);
-              if (!rectsOverlap(ra, rb)) continue;
-
-              var overlapX = Math.min(ra.right, rb.right) - Math.max(ra.left, rb.left);
-              var overlapY = Math.min(ra.bottom, rb.bottom) - Math.max(ra.top, rb.top);
-
-              if (overlapX < 40 && overlapX < overlapY) {
-                // X nudge
-                var nudge = (overlapX + 4) / 2;
-                if (flowRenders[li].labelX < flowRenders[lj].labelX) {
-                  flowRenders[li].labelX -= nudge;
-                  flowRenders[lj].labelX += nudge;
-                } else {
-                  flowRenders[li].labelX += nudge;
-                  flowRenders[lj].labelX -= nudge;
-                }
-              } else {
-                // Y nudge
-                var nudgeY = (overlapY + 4) / 2;
-                flowRenders[li].labelY -= nudgeY;
-                flowRenders[lj].labelY += nudgeY;
-              }
-              moved = true;
-            }
-          }
-          if (!moved) break;
-
-          // Re-check against nodes after each pass
-          flowRenders.forEach(function(lr) {
-            var lr_rect = labelRect(lr);
-            for (var ni = 0; ni < nodeBoxes.length; ni++) {
-              if (rectsOverlap(lr_rect, nodeBoxes[ni])) {
-                lr.labelY = Math.min(lr.labelY, nodeBoxes[ni].top - (lr.measured || measureText(lr.text)).height / 2 - 4);
-              }
-            }
-          });
-        }
-
-        // --- Pass 3: create SVG elements with final positions ---
-        flowRenders.forEach(function(lr) {
-          var path = document.createElementNS(svgNS, 'path');
-          path.setAttribute('class', 'arch-flow');
-          path.setAttribute('d', lr.d);
-          path.setAttribute('marker-end', 'url(#arrow)');
-          path.style.pointerEvents = 'stroke';
-          path.style.cursor = 'pointer';
-
-          // Flow label — always visible (subtle), brighter on hover
-          var textEl = document.createElementNS(svgNS, 'text');
-          textEl.setAttribute('class', 'arch-flow-label');
-          textEl.setAttribute('x', lr.labelX);
-          textEl.setAttribute('y', lr.labelY);
-          textEl.textContent = lr.text;
-
-          path.addEventListener('mouseenter', function() {
-            path.classList.add('active');
-            path.setAttribute('marker-end', 'url(#arrow-active)');
-            textEl.classList.add('active');
-          });
-          path.addEventListener('mouseleave', function() {
-            path.classList.remove('active');
-            path.setAttribute('marker-end', 'url(#arrow)');
-            textEl.classList.remove('active');
-          });
-
-          svg.appendChild(path);
-          svgLabels.appendChild(textEl);
-        });
-
-        canvas.appendChild(svg);
-        canvas.appendChild(svgLabels);
+      // Toggle Mermaid diagram visibility
+      var mermaidSvgs = document.querySelectorAll('.mermaid-project-svg');
+      mermaidSvgs.forEach(function(el) {
+        el.style.display = el.getAttribute('data-mermaid-project') === activeProject ? '' : 'none';
       });
     }
-
-    function renderLegend(project) {
-      var legendEl = document.getElementById('legend');
-      legendEl.innerHTML = '';
-
-      var seen = {};
-      project.tiers.forEach(function(tier) {
-        tier.nodes.forEach(function(node) {
-          if (!seen[node.primitive] && PRIMITIVE_COLORS[node.primitive]) {
-            seen[node.primitive] = true;
-            var item = document.createElement('div');
-            item.className = 'legend-item';
-            var dot = document.createElement('div');
-            dot.className = 'legend-dot';
-            dot.style.background = PRIMITIVE_COLORS[node.primitive].bg;
-            item.appendChild(dot);
-            var lbl = document.createElement('span');
-            lbl.textContent = PRIMITIVE_COLORS[node.primitive].label;
-            item.appendChild(lbl);
-            legendEl.appendChild(item);
-          }
-        });
-      });
-    }
-
-    // ===== Diagram scoring tool =====
-
-    function scoreDiagram() {
-      var canvas = document.getElementById('archCanvas');
-      var project = PROJECTS.find(function(p) { return p.id === activeProject; });
-      if (!project) return { composite: 0, edgeCrossings: 0, pathEfficiency: 0, flowDirection: 0, barycenterDeviation: 0, labelQuality: 0, whitespaceBalance: 0 };
-
-      var rect = canvas.getBoundingClientRect();
-      var svgEl = canvas.querySelector('svg.arch-arrows');
-      var flowPaths = canvas.querySelectorAll('path.arch-flow');
-      var flowLabels = canvas.querySelectorAll('.arch-flow-label');
-      var nodeEls = canvas.querySelectorAll('.arch-node');
-      var svgRect = svgEl ? svgEl.getBoundingClientRect() : rect;
-
-      // Build node info
-      var nodeMap = {};
-      nodeEls.forEach(function(n) {
-        var lbl = n.getAttribute('data-label');
-        var r = n.getBoundingClientRect();
-        nodeMap[lbl] = { x: r.left - rect.left + r.width / 2, y: r.top - rect.top + r.height / 2, left: r.left, right: r.right, top: r.top, bottom: r.bottom };
-      });
-
-      var nodeTierIndex = {};
-      project.tiers.forEach(function(tier, ti) {
-        tier.nodes.forEach(function(node) { nodeTierIndex[node.label] = ti; });
-      });
-
-      var flowCount = flowPaths.length;
-
-      // --- 1. Edge Crossings (30%) ---
-      var crossingCount = 0;
-      if (flowCount > 1) {
-        var pathArrays = Array.from(flowPaths);
-        for (var i = 0; i < pathArrays.length; i++) {
-          for (var j = i + 1; j < pathArrays.length; j++) {
-            var pi = pathArrays[i];
-            var pj = pathArrays[j];
-            var liI = pi.getTotalLength();
-            var liJ = pj.getTotalLength();
-            if (liI === 0 || liJ === 0) continue;
-            // Sample segments along each path and test intersections
-            var samplesI = [];
-            var samplesJ = [];
-            var nSamples = 20;
-            for (var s = 0; s <= nSamples; s++) {
-              var ptI = pi.getPointAtLength((s / nSamples) * liI);
-              samplesI.push({ x: ptI.x, y: ptI.y });
-              var ptJ = pj.getPointAtLength((s / nSamples) * liJ);
-              samplesJ.push({ x: ptJ.x, y: ptJ.y });
-            }
-            var crossed = false;
-            for (var si = 0; si < samplesI.length - 1 && !crossed; si++) {
-              for (var sj = 0; sj < samplesJ.length - 1 && !crossed; sj++) {
-                if (segmentsIntersect(samplesI[si], samplesI[si + 1], samplesJ[sj], samplesJ[sj + 1])) {
-                  crossingCount++;
-                  crossed = true;
-                }
-              }
-            }
-          }
-        }
-      }
-      var edgeCrossings = Math.max(0, 100 - crossingCount * 100 / Math.max(1, flowCount));
-
-      // --- 2. Path Efficiency (15%) ---
-      var effSum = 0;
-      var effCount = 0;
-      flowPaths.forEach(function(p) {
-        var svgPath = p;
-        var totalLen = svgPath.getTotalLength();
-        if (totalLen === 0) return;
-        var startPt = svgPath.getPointAtLength(0);
-        var endPt = svgPath.getPointAtLength(totalLen);
-        var euclidean = Math.sqrt(Math.pow(endPt.x - startPt.x, 2) + Math.pow(endPt.y - startPt.y, 2));
-        if (euclidean < 1) return;
-        var ratio = totalLen / euclidean;
-        effSum += ratio;
-        effCount++;
-      });
-      var avgRatio = effCount > 0 ? effSum / effCount : 1;
-      var pathEfficiency = Math.max(0, Math.min(100, 100 - (avgRatio - 1) * 50));
-
-      // --- 3. Flow Direction (10%) ---
-      var downward = 0;
-      var sameTier = 0;
-      var total = 0;
-      project.flows.forEach(function(flow) {
-        var fromTier = nodeTierIndex[flow.from];
-        var toTier = nodeTierIndex[flow.to];
-        if (fromTier == null || toTier == null) return;
-        total++;
-        if (toTier > fromTier) downward++;
-        else if (toTier === fromTier) sameTier++;
-      });
-      var flowDirection = total > 0 ? (downward + sameTier) / total * 100 : 100;
-
-      // --- 4. Barycenter Deviation (25%) ---
-      var baryDeviation = computeBarycenterDeviation(project, nodeMap, nodeTierIndex);
-
-      // --- 5. Label Quality (10%) ---
-      var labelQuality = computeLabelQuality(flowLabels, nodeEls, flowPaths, svgRect);
-
-      // --- 6. Whitespace Balance (10%) ---
-      var whitespaceBalance = computeWhitespaceBalance(project, nodeMap);
-
-      // Weighted composite
-      var composite = Math.round(
-        edgeCrossings * 0.30 +
-        pathEfficiency * 0.15 +
-        flowDirection * 0.10 +
-        baryDeviation * 0.25 +
-        labelQuality * 0.10 +
-        whitespaceBalance * 0.10
-      );
-
-      return {
-        composite: composite,
-        edgeCrossings: Math.round(edgeCrossings),
-        pathEfficiency: Math.round(pathEfficiency),
-        flowDirection: Math.round(flowDirection),
-        barycenterDeviation: Math.round(baryDeviation),
-        labelQuality: Math.round(labelQuality),
-        whitespaceBalance: Math.round(whitespaceBalance)
-      };
-    }
-
-    // Cross-product orientation test for segment intersection
-    function cross(o, a, b) {
-      return (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x);
-    }
-
-    function onSegment(p, q, r) {
-      return q.x <= Math.max(p.x, r.x) && q.x >= Math.min(p.x, r.x) &&
-             q.y <= Math.max(p.y, r.y) && q.y >= Math.min(p.y, r.y);
-    }
-
-    function segmentsIntersect(p1, q1, p2, q2) {
-      var d1 = cross(p2, q2, p1);
-      var d2 = cross(p2, q2, q1);
-      var d3 = cross(p1, q1, p2);
-      var d4 = cross(p1, q1, q2);
-
-      if (((d1 > 0 && d2 < 0) || (d1 < 0 && d2 > 0)) &&
-          ((d3 > 0 && d4 < 0) || (d3 < 0 && d4 > 0))) return true;
-
-      if (d1 === 0 && onSegment(p2, p1, q2)) return true;
-      if (d2 === 0 && onSegment(p2, q1, q2)) return true;
-      if (d3 === 0 && onSegment(p1, p2, q1)) return true;
-      if (d4 === 0 && onSegment(p1, q2, q1)) return true;
-
-      return false;
-    }
-
-    function computeBarycenterDeviation(project, nodeMap, nodeTierIndex) {
-      // Build adjacency from flows
-      var adj = {};
-      project.flows.forEach(function(flow) {
-        if (!adj[flow.from]) adj[flow.from] = [];
-        if (!adj[flow.to]) adj[flow.to] = [];
-        adj[flow.from].push(flow.to);
-        adj[flow.to].push(flow.from);
-      });
-
-      var totalDeviation = 0;
-      var tierCount = 0;
-
-      project.tiers.forEach(function(tier, ti) {
-        if (tier.nodes.length < 2) return;
-        tierCount++;
-
-        // Compute barycenter for each node
-        var barycenters = [];
-        tier.nodes.forEach(function(node, ni) {
-          var neighbors = adj[node.label] || [];
-          var positions = [];
-          neighbors.forEach(function(nbr) {
-            var nbrTier = nodeTierIndex[nbr];
-            if (nbrTier !== ti) {
-              // Find position of neighbor in its tier
-              var nbrTierNodes = project.tiers[nbrTier].nodes;
-              for (var k = 0; k < nbrTierNodes.length; k++) {
-                if (nbrTierNodes[k].label === nbr) { positions.push(k); break; }
-              }
-            }
-          });
-          var bc = positions.length > 0 ? positions.reduce(function(a, b) { return a + b; }, 0) / positions.length : ni;
-          barycenters.push({ index: ni, bc: bc });
-        });
-
-        // Ideal order: sorted by barycenter
-        var ideal = barycenters.slice().sort(function(a, b) { return a.bc - b.bc; });
-        var idealOrder = ideal.map(function(b) { return b.index; });
-        var actualOrder = barycenters.map(function(b) { return b.index; });
-
-        // Kendall tau distance (normalized)
-        var inversions = 0;
-        var n = actualOrder.length;
-        for (var x = 0; x < n; x++) {
-          for (var y = x + 1; y < n; y++) {
-            var posA1 = idealOrder.indexOf(actualOrder[x]);
-            var posA2 = idealOrder.indexOf(actualOrder[y]);
-            if (posA1 > posA2) inversions++;
-          }
-        }
-        var maxInversions = n * (n - 1) / 2;
-        totalDeviation += maxInversions > 0 ? inversions / maxInversions : 0;
-      });
-
-      return tierCount > 0 ? 100 * (1 - totalDeviation / tierCount) : 100;
-    }
-
-    function computeLabelQuality(flowLabels, nodeEls, flowPaths, svgRect) {
-      var labels = Array.from(flowLabels);
-      var nodes = Array.from(nodeEls);
-      var penalty = 0;
-
-      // Label-label overlaps
-      for (var i = 0; i < labels.length; i++) {
-        var ri = labels[i].getBoundingClientRect();
-        if (ri.width === 0) continue;
-        for (var j = i + 1; j < labels.length; j++) {
-          var rj = labels[j].getBoundingClientRect();
-          if (rj.width === 0) continue;
-          if (ri.left < rj.right && ri.right > rj.left && ri.top < rj.bottom && ri.bottom > rj.top) {
-            penalty += 20;
-          }
-        }
-      }
-
-      // Label-node overlaps
-      for (var li = 0; li < labels.length; li++) {
-        var lr = labels[li].getBoundingClientRect();
-        if (lr.width === 0) continue;
-        for (var ni = 0; ni < nodes.length; ni++) {
-          var nr = nodes[ni].getBoundingClientRect();
-          if (lr.left < nr.right && lr.right > nr.left && lr.top < nr.bottom && lr.bottom > nr.top) {
-            penalty += 20;
-          }
-        }
-      }
-
-      // Average label-to-nearest-path distance penalty
-      var distSum = 0;
-      var distCount = 0;
-      var paths = Array.from(flowPaths);
-      labels.forEach(function(lbl) {
-        var lr2 = lbl.getBoundingClientRect();
-        if (lr2.width === 0) return;
-        var cx = lr2.left + lr2.width / 2;
-        var cy = lr2.top + lr2.height / 2;
-        var minDist = Infinity;
-        paths.forEach(function(p) {
-          var svgPath = p;
-          var totalLen = svgPath.getTotalLength();
-          if (totalLen === 0) return;
-          for (var s = 0; s <= 10; s++) {
-            var pt = svgPath.getPointAtLength((s / 10) * totalLen);
-            var px = svgRect.left + pt.x;
-            var py = svgRect.top + pt.y;
-            var dist = Math.sqrt(Math.pow(cx - px, 2) + Math.pow(cy - py, 2));
-            minDist = Math.min(minDist, dist);
-          }
-        });
-        if (minDist !== Infinity) { distSum += minDist; distCount++; }
-      });
-
-      var avgDist = distCount > 0 ? distSum / distCount : 0;
-      if (avgDist > 60) penalty += (avgDist - 60);
-
-      return Math.max(0, Math.min(100, 100 - penalty));
-    }
-
-    function computeWhitespaceBalance(project, nodeMap) {
-      var totalCV = 0;
-      var tierCount = 0;
-
-      project.tiers.forEach(function(tier) {
-        if (tier.nodes.length < 2) return;
-        tierCount++;
-
-        // Sort nodes by x position
-        var positions = tier.nodes.map(function(n) { return nodeMap[n.label] ? nodeMap[n.label].x : 0; }).sort(function(a, b) { return a - b; });
-
-        var gaps = [];
-        for (var g = 1; g < positions.length; g++) {
-          gaps.push(positions[g] - positions[g - 1]);
-        }
-
-        if (gaps.length === 0) return;
-
-        var mean = gaps.reduce(function(a, b) { return a + b; }, 0) / gaps.length;
-        if (mean < 1) return;
-
-        var variance = gaps.reduce(function(a, b) { return a + Math.pow(b - mean, 2); }, 0) / gaps.length;
-        var stddev = Math.sqrt(variance);
-        var cv = stddev / mean;
-        totalCV += cv;
-      });
-
-      return tierCount > 0 ? Math.max(0, Math.min(100, 100 * (1 - totalCV / tierCount))) : 100;
-    }
-
-    window.scoreDiagram = scoreDiagram;
-
-    // ===== Debug overlay (Shift+D) =====
-
-    var scoreOverlayVisible = false;
-    document.addEventListener('keydown', function(e) {
-      if (e.key === 'D' && e.shiftKey && !e.ctrlKey && !e.metaKey && !e.altKey) {
-        e.preventDefault();
-        scoreOverlayVisible = !scoreOverlayVisible;
-        var existing = document.getElementById('score-overlay');
-        if (existing) { existing.remove(); }
-        if (!scoreOverlayVisible) return;
-
-        var scores = scoreDiagram();
-        var overlay = document.createElement('div');
-        overlay.id = 'score-overlay';
-        overlay.style.cssText = 'position:fixed;top:12px;right:12px;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:14px 18px;z-index:9999;font-family:var(--font-body);font-size:12px;box-shadow:var(--shadow-card);min-width:220px;';
-
-        var title = document.createElement('div');
-        title.style.cssText = 'font-weight:700;margin-bottom:8px;font-size:14px;color:var(--text);';
-        title.textContent = 'Composite: ' + scores.composite + '/100';
-        overlay.appendChild(title);
-
-        var metrics = [
-          { key: 'edgeCrossings', label: 'Edge Crossings', weight: '30%' },
-          { key: 'pathEfficiency', label: 'Path Efficiency', weight: '15%' },
-          { key: 'flowDirection', label: 'Flow Direction', weight: '10%' },
-          { key: 'barycenterDeviation', label: 'Barycenter', weight: '25%' },
-          { key: 'labelQuality', label: 'Label Quality', weight: '10%' },
-          { key: 'whitespaceBalance', label: 'Whitespace', weight: '10%' }
-        ];
-
-        metrics.forEach(function(m) {
-          var val = scores[m.key];
-          var row = document.createElement('div');
-          row.style.cssText = 'display:flex;align-items:center;gap:6px;margin-bottom:4px;';
-
-          var label = document.createElement('span');
-          label.style.cssText = 'flex:0 0 90px;color:var(--text-muted);font-size:11px;';
-          label.textContent = m.label;
-          row.appendChild(label);
-
-          var barBg = document.createElement('div');
-          barBg.style.cssText = 'flex:1;height:8px;background:var(--border-light);border-radius:4px;overflow:hidden;';
-          var barFill = document.createElement('div');
-          var color = val >= 70 ? 'var(--green)' : val >= 40 ? 'var(--gold)' : 'var(--red)';
-          barFill.style.cssText = 'height:100%;border-radius:4px;background:' + color + ';width:' + val + '%;';
-          barBg.appendChild(barFill);
-          row.appendChild(barBg);
-
-          var valSpan = document.createElement('span');
-          valSpan.style.cssText = 'flex:0 0 28px;text-align:right;font-size:11px;color:var(--text);font-weight:600;';
-          valSpan.textContent = val;
-          row.appendChild(valSpan);
-
-          overlay.appendChild(row);
-        });
-
-        document.body.appendChild(overlay);
-      }
-    });
 
     // Initialize
     renderProjectSelector();
     renderProject();
 
-    // Copy button
+    // Copy buttons
     document.getElementById('copyAscii').addEventListener('click', function() {
       var btn = this;
       navigator.clipboard.writeText(document.getElementById('asciiCode').textContent).then(function() {
+        btn.textContent = 'Copied!';
+        setTimeout(function() { btn.textContent = 'Copy'; }, 1500);
+      });
+    });
+
+    document.getElementById('copyMermaid').addEventListener('click', function() {
+      var btn = this;
+      var active = document.querySelector('.mermaid-project-svg[data-mermaid-project="' + activeProject + '"]');
+      var src = active ? active.getAttribute('data-mermaid-source') : '';
+      navigator.clipboard.writeText(src || '').then(function() {
         btn.textContent = 'Copied!';
         setTimeout(function() { btn.textContent = 'Copy'; }, 1500);
       });
