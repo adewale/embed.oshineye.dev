@@ -2,5 +2,6 @@ node_modules/
 dist/
 .dev.vars
 .wrangler/
+.cache/
 test-results/
 playwright-report/

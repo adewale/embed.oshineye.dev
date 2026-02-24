@@ -3,7 +3,9 @@
 Discovers Cloudflare projects for team members via the GitHub API
 and generates TypeScript data for the team-architectures page.
 
-Usage: python3 scripts/build_team_architectures.py
+Usage:
+  python3 scripts/build_team_architectures.py           # uses cache
+  python3 scripts/build_team_architectures.py --refresh  # fresh API calls
 
 Requires: gh CLI (authenticated)
 """
@@ -21,6 +23,7 @@ from datetime import datetime, timezone
 SCRIPT_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = SCRIPT_DIR.parent
 OUTPUT = PROJECT_ROOT / "src" / "embeds" / "v1" / "cloudflare-architecture-viz" / "team-data.ts"
+CACHE_FILE = PROJECT_ROOT / ".cache" / "team-discovery.json"
 
 # --- Team members ---
 TEAM = [
@@ -459,7 +462,7 @@ def list_repos(username: str) -> list[dict]:
     return [
         {"name": r["name"], "description": r.get("description") or ""}
         for r in repos
-        if not r.get("fork") and not r.get("archived")
+        if isinstance(r, dict) and not r.get("fork") and not r.get("archived")
     ]
 
 
@@ -722,12 +725,13 @@ def discover_user(username: str) -> list[dict]:
         print(f"    Deduplicated {before - len(projects)} variant(s)", file=sys.stderr)
 
     # Rank by complexity and take top N
+    total_found = len(projects)
     projects.sort(key=project_complexity, reverse=True)
     if len(projects) > MAX_PROJECTS:
         print(f"    Trimmed from {len(projects)} to {MAX_PROJECTS} most interesting", file=sys.stderr)
         projects = projects[:MAX_PROJECTS]
 
-    return projects
+    return projects, total_found
 
 
 def normalize_id(project_id: str) -> str:
@@ -805,8 +809,10 @@ def generate_team_data_ts(registry: dict[str, dict]) -> str:
     for username, data in registry.items():
         display_name = data["displayName"]
         projects = data["projects"]
+        total_discovered = data["totalDiscovered"]
         lines.append(f'  "{username}": {{')
         lines.append(f'    displayName: "{display_name}",')
+        lines.append(f'    totalDiscovered: {total_discovered},')
         lines.append(f"    projects: [")
         for project in projects:
             lines.append(format_project(project, 3) + ",")
@@ -818,19 +824,56 @@ def generate_team_data_ts(registry: dict[str, dict]) -> str:
     return "\n".join(lines)
 
 
+# --- Cache ---
+
+def load_cache() -> dict:
+    """Load cached discovery results (keyed by username)."""
+    if CACHE_FILE.exists():
+        try:
+            return json.loads(CACHE_FILE.read_text())
+        except (json.JSONDecodeError, OSError):
+            return {}
+    return {}
+
+
+def save_cache(cache: dict) -> None:
+    """Save discovery cache to disk."""
+    CACHE_FILE.parent.mkdir(parents=True, exist_ok=True)
+    CACHE_FILE.write_text(json.dumps(cache, indent=2))
+    print(f"  Cache saved to {CACHE_FILE.relative_to(PROJECT_ROOT)}", file=sys.stderr)
+
+
 # --- Main ---
 
 def main():
-    print("Building team architectures data...\n", file=sys.stderr)
+    use_cache = "--refresh" not in sys.argv
+
+    cache = load_cache() if use_cache else {}
+    if use_cache and cache:
+        print("Building team architectures data (using cache)...\n", file=sys.stderr)
+    else:
+        print("Building team architectures data (fresh from GitHub)...\n", file=sys.stderr)
 
     registry: dict[str, dict] = {}
 
     for username, display_name in TEAM:
-        print(f"  Processing {username} ({display_name})...", file=sys.stderr)
-
-        # Discover projects from GitHub
-        discovered = discover_user(username)
-        print(f"    Discovered {len(discovered)} project(s) from GitHub", file=sys.stderr)
+        # Try cache first
+        if use_cache and username in cache:
+            discovered = cache[username]["projects"]
+            discovered_total = cache[username]["totalFound"]
+            print(f"  {username} ({display_name}): {len(discovered)} project(s) from cache ({discovered_total} before cap)", file=sys.stderr)
+        else:
+            print(f"  Processing {username} ({display_name})...", file=sys.stderr)
+            try:
+                discovered, discovered_total = discover_user(username)
+            except Exception as e:
+                print(f"    ERROR: {e} — saving partial cache and aborting", file=sys.stderr)
+                save_cache(cache)
+                raise
+            print(f"    Discovered {len(discovered)} project(s) from GitHub ({discovered_total} before cap)", file=sys.stderr)
+            cache[username] = {"projects": discovered, "totalFound": discovered_total}
+            # Save cache after each user so partial progress is preserved
+            save_cache(cache)
 
         # Get curated data if available
         curated = CURATED.get(username, [])
@@ -839,11 +882,13 @@ def main():
 
         # Merge: curated takes precedence
         merged = merge_projects(discovered, curated)
-        print(f"    Total: {len(merged)} project(s)\n", file=sys.stderr)
+        total_discovered = discovered_total + len(curated)
+        print(f"    Total: {len(merged)} project(s) (of {total_discovered} found)\n", file=sys.stderr)
 
         registry[username] = {
             "displayName": display_name,
             "projects": merged,
+            "totalDiscovered": total_discovered,
         }
 
     # Generate TypeScript

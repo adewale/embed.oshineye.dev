@@ -220,6 +220,7 @@ export const PROJECTS: Project[] = [
 export interface UserEntry {
   displayName: string;
   projects: Project[];
+  totalDiscovered: number; // total CF projects found before capping
 }
 
 function nodeId(label: string): string {

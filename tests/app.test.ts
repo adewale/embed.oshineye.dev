@@ -757,7 +757,7 @@ describe("GET /team-architectures", () => {
     const body = await res.text();
     for (const [username, entry] of Object.entries(TEAM_REGISTRY)) {
       if (entry.projects.length > 0) {
-        expect(body).toContain(`href="/team-architectures/${username}`);
+        expect(body).toContain(`/team-architectures/${username}`);
       }
     }
   });
@@ -885,6 +885,87 @@ describe("TEAM_RENDERED / TEAM_REGISTRY sync", () => {
     const expectedIds = new Set(PROJECTS.map((p: { id: string }) => p.id));
     const lightIds = new Set(Object.keys(ADE_RENDERED.light));
     expect([...lightIds].sort()).toEqual([...expectedIds].sort());
+  });
+
+  it("every pre-rendered SVG has non-empty svg and source", async () => {
+    const { TEAM_RENDERED, ADE_RENDERED } = await import(
+      "../src/embeds/v1/cloudflare-architecture-viz/team-svgs"
+    );
+    for (const [username, rendered] of Object.entries(TEAM_RENDERED)) {
+      for (const [id, diagram] of Object.entries(rendered.light)) {
+        expect(diagram.svg.length, `${username}/${id} light SVG is empty`).toBeGreaterThan(100);
+        expect(diagram.source.length, `${username}/${id} light source is empty`).toBeGreaterThan(10);
+      }
+      for (const [id, diagram] of Object.entries(rendered.dark)) {
+        expect(diagram.svg.length, `${username}/${id} dark SVG is empty`).toBeGreaterThan(100);
+        expect(diagram.source.length, `${username}/${id} dark source is empty`).toBeGreaterThan(10);
+      }
+    }
+    for (const [id, diagram] of Object.entries(ADE_RENDERED.light)) {
+      expect(diagram.svg.length, `ade/${id} light SVG is empty`).toBeGreaterThan(100);
+      expect(diagram.source.length, `ade/${id} light source is empty`).toBeGreaterThan(10);
+    }
+  });
+
+  it("totalDiscovered >= projects.length for every user", async () => {
+    const { TEAM_REGISTRY } = await import(
+      "../src/embeds/v1/cloudflare-architecture-viz/mermaid"
+    );
+    for (const [username, entry] of Object.entries(TEAM_REGISTRY)) {
+      expect(
+        entry.totalDiscovered,
+        `${username}: totalDiscovered (${entry.totalDiscovered}) < projects.length (${entry.projects.length})`
+      ).toBeGreaterThanOrEqual(entry.projects.length);
+    }
+  });
+
+  it("totalDiscovered values are diverse across users", async () => {
+    const { TEAM_REGISTRY } = await import(
+      "../src/embeds/v1/cloudflare-architecture-viz/mermaid"
+    );
+    const totals = Object.values(TEAM_REGISTRY).map((e: { totalDiscovered: number }) => e.totalDiscovered);
+    const unique = new Set(totals);
+    expect(unique.size, `All ${totals.length} users have totalDiscovered=${totals[0]} — suspicious`).toBeGreaterThan(1);
+  });
+});
+
+describe("Gallery HTML structure", () => {
+  it("cards do not use nested <a> tags", async () => {
+    const res = await app.request("/team-architectures");
+    const body = await res.text();
+    // Cards should be <div class="card">, not <a class="card">
+    expect(body).not.toMatch(/<a[^>]*class="card"/);
+    expect(body).toMatch(/<div[^>]*class="card"/);
+  });
+
+  it("gallery shows accurate project counts from totalDiscovered", async () => {
+    const { TEAM_REGISTRY } = await import(
+      "../src/embeds/v1/cloudflare-architecture-viz/mermaid"
+    );
+    const res = await app.request("/team-architectures");
+    const body = await res.text();
+    for (const [, entry] of Object.entries(TEAM_REGISTRY)) {
+      if (entry.projects.length === 0) continue;
+      if (entry.totalDiscovered > entry.projects.length) {
+        // Should show "X of Y projects"
+        expect(body).toContain(`${entry.projects.length} of ${entry.totalDiscovered}`);
+      }
+    }
+  });
+
+  it("rendered user pages include mermaid source in data attributes", async () => {
+    const res = await app.request("/team-architectures/adewale");
+    const body = await res.text();
+    // Each SVG div should have data-mermaid-source with actual mermaid syntax
+    const sources = body.match(/data-mermaid-source="([^"]*)"/g);
+    expect(sources).not.toBeNull();
+    expect(sources!.length).toBeGreaterThan(0);
+    // Mermaid source should contain graph directive
+    for (const attr of sources!) {
+      const value = attr.replace(/data-mermaid-source="/, "").replace(/"$/, "");
+      const decoded = value.replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"');
+      expect(decoded, "Mermaid source should contain graph directive").toMatch(/graph (LR|TD)/);
+    }
   });
 });
 
