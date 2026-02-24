@@ -520,12 +520,26 @@ def find_wrangler_config(username: str, repo: str) -> str | None:
     return None
 
 
+def strip_comments(content: str) -> str:
+    """Strip comment lines from TOML (# ...) and JSONC (// ...) config files."""
+    lines = []
+    for line in content.split("\n"):
+        stripped = line.lstrip()
+        if stripped.startswith("#") or stripped.startswith("//"):
+            continue
+        lines.append(line)
+    return "\n".join(lines)
+
+
 def detect_primitives(content: str) -> dict:
-    """Detect CF primitives from wrangler config content."""
+    """Detect CF primitives from wrangler config content (comments stripped)."""
     primitives: set[str] = {"workers"}
     has_static_assets = False
     has_cron = False
-    lc = content.lower()
+
+    # Strip comments to avoid matching scaffolded / commented-out bindings
+    cleaned = strip_comments(content)
+    lc = cleaned.lower()
 
     for key, primitive in KNOWN_PRIMITIVES.items():
         patterns = [
@@ -533,7 +547,7 @@ def detect_primitives(content: str) -> dict:
             re.compile(rf'"{key}"\s*:', re.IGNORECASE),
             re.compile(rf'{key}\s*=', re.IGNORECASE),
         ]
-        if any(p.search(content) for p in patterns):
+        if any(p.search(cleaned) for p in patterns):
             primitives.add(primitive)
 
     # AI detection (more specific)
@@ -635,7 +649,7 @@ def generate_flows(primitives: set[str], has_static_assets: bool, has_cron: bool
     return flows
 
 
-MAX_PROJECTS = 10  # Cap per user to keep rendering fast
+MAX_PROJECTS = 8  # Cap per user — most users have 4-8 real CF projects
 
 
 def project_complexity(project: dict) -> int:
@@ -644,6 +658,29 @@ def project_complexity(project: dict) -> int:
     # Bonus for non-trivial primitives (not just workers + client + static-assets)
     interesting = prims - {"client", "terminal", "workers", "static-assets"}
     return len(interesting) * 10 + len(prims)
+
+
+def deduplicate_variants(projects: list[dict]) -> list[dict]:
+    """Remove project name variants (e.g. foo, foo-demo, foo-video-demo).
+    Keeps the shortest-named variant (assumed to be the canonical project)."""
+    # Sort by name length so shorter names come first
+    by_len = sorted(projects, key=lambda p: len(p["id"]))
+    kept: list[dict] = []
+    kept_ids: list[str] = []
+
+    for project in by_len:
+        pid = project["id"].lower()
+        # Check if this is a variant of an already-kept project
+        is_variant = False
+        for kid in kept_ids:
+            if pid.startswith(kid) and len(pid) > len(kid):
+                is_variant = True
+                break
+        if not is_variant:
+            kept.append(project)
+            kept_ids.append(pid)
+
+    return kept
 
 
 def discover_user(username: str) -> list[dict]:
@@ -678,6 +715,12 @@ def discover_user(username: str) -> list[dict]:
 
         print(f"    Found: {repo['name']} ({', '.join(sorted(primitives))})", file=sys.stderr)
 
+    # Deduplicate project name variants (foo, foo-demo, foo-slides → keep foo)
+    before = len(projects)
+    projects = deduplicate_variants(projects)
+    if len(projects) < before:
+        print(f"    Deduplicated {before - len(projects)} variant(s)", file=sys.stderr)
+
     # Rank by complexity and take top N
     projects.sort(key=project_complexity, reverse=True)
     if len(projects) > MAX_PROJECTS:
@@ -687,16 +730,22 @@ def discover_user(username: str) -> list[dict]:
     return projects
 
 
+def normalize_id(project_id: str) -> str:
+    """Normalize a project ID for deduplication (hyphens, underscores, dots → lowercase hyphen)."""
+    return re.sub(r'[_.]', '-', project_id).lower()
+
+
 def merge_projects(discovered: list[dict], curated: list[dict]) -> list[dict]:
-    """Merge discovered projects with curated data. Curated takes precedence."""
-    curated_ids = {p["id"] for p in curated}
+    """Merge discovered projects with curated data. Curated takes precedence.
+    Uses normalized IDs so 'planet-cf' matches 'planet_cf' etc."""
+    curated_norm = {normalize_id(p["id"]) for p in curated}
     merged = list(curated)
     for project in discovered:
-        if project["id"] not in curated_ids:
+        if normalize_id(project["id"]) not in curated_norm:
             merged.append(project)
     # If merged exceeds MAX_PROJECTS, keep all curated + top discovered
     if len(merged) > MAX_PROJECTS:
-        extra = [p for p in merged if p["id"] not in curated_ids]
+        extra = [p for p in merged if normalize_id(p["id"]) not in curated_norm]
         extra.sort(key=project_complexity, reverse=True)
         merged = list(curated) + extra[:MAX_PROJECTS - len(curated)]
     return merged

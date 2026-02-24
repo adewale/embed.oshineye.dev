@@ -2,14 +2,13 @@ import { Hono } from "hono";
 import { embedHeaders } from "./middleware/embed-headers";
 import { embeds, embedsBySlug } from "./embeds/registry";
 import {
-  renderAllMermaidSvgs,
-  buildMermaidHtml,
   escapeAttr,
   TEAM_REGISTRY,
   PRIMITIVE_TIER,
+  PROJECTS,
 } from "./embeds/v1/cloudflare-architecture-viz/mermaid";
 import type { UserEntry } from "./embeds/v1/cloudflare-architecture-viz/mermaid";
-import { TEAM_RENDERED } from "./embeds/v1/cloudflare-architecture-viz/team-svgs";
+import { TEAM_RENDERED, ADE_RENDERED } from "./embeds/v1/cloudflare-architecture-viz/team-svgs";
 import type { PreRenderedDiagrams } from "./embeds/v1/cloudflare-architecture-viz/team-svgs";
 import archVizHtml from "./embeds/v1/cloudflare-architecture-viz/index.html";
 
@@ -149,12 +148,12 @@ app.get("/v1/avatar-stack/ws", async (c) => {
 // Apply embed headers middleware to all /v1/* routes
 app.use("/v1/*", embedHeaders);
 
-// Serve cloudflare-architecture-viz with server-side Mermaid rendering
+// Serve cloudflare-architecture-viz with pre-rendered SVGs
 app.get("/v1/cloudflare-architecture-viz", (c) => {
   const theme = c.req.query("theme") || "light";
   const project = c.req.query("project") || "planet-cf";
-  const diagrams = renderAllMermaidSvgs(theme);
-  const mermaidHtml = buildMermaidHtml(diagrams, project);
+  const diagrams = theme === "dark" ? ADE_RENDERED.dark : ADE_RENDERED.light;
+  const mermaidHtml = buildPreRenderedHtml(diagrams, project);
   const html = archVizHtml.replace("<!-- MERMAID_DIAGRAMS -->", mermaidHtml);
   return c.html(html);
 });
@@ -181,7 +180,10 @@ app.get("/team-architectures", (c) => {
       return `<a href="/team-architectures/${username}?theme=${theme}" class="card">
         <img src="https://github.com/${username}.png?size=80" alt="${entry.displayName}" width="48" height="48" class="avatar" />
         <div class="card-body">
-          <strong class="name">${entry.displayName}</strong>
+          <div class="card-header">
+            <strong class="name">${entry.displayName}</strong>
+            <a href="https://github.com/${username}" class="gh-link" target="_blank" rel="noopener" title="GitHub profile" onclick="event.stopPropagation()"><svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg></a>
+          </div>
           <span class="meta">${entry.projects.length} project${entry.projects.length !== 1 ? "s" : ""}</span>
           <div class="badges">${badges}</div>
         </div>
@@ -244,8 +246,11 @@ app.get("/team-architectures", (c) => {
     }
     .card:hover { border-color: var(--accent); }
     .avatar { border-radius: 50%; flex-shrink: 0; }
-    .card-body { min-width: 0; }
-    .name { display: block; color: var(--accent); font-size: 0.95rem; }
+    .card-body { min-width: 0; flex: 1; }
+    .card-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .name { color: var(--accent); font-size: 0.95rem; }
+    .gh-link { color: var(--text-muted); display: flex; align-items: center; transition: color 0.15s; flex-shrink: 0; }
+    .gh-link:hover { color: var(--accent); }
     .meta { display: block; font-size: 0.8rem; color: var(--text-muted); margin: 2px 0 6px; }
     .badges { display: flex; flex-wrap: wrap; gap: 4px; }
     .badge {

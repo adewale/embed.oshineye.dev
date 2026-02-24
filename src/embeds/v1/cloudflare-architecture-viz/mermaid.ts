@@ -316,69 +316,6 @@ export function computeSvgTotalEdgeLength(svg: string): number {
   return total;
 }
 
-// --- Graph-level scoring ---
-
-// Count edge crossings between adjacent tiers.
-// Two edges (u1→v1) and (u2→v2) cross iff u1 is left of u2 but v1 is right of v2 (or vice versa).
-function countEdgeCrossings(tiers: ComputedTier[], flows: Flow[]): number {
-  // Build node→(tierIndex, positionInTier) lookup
-  const nodePos = new Map<string, { tier: number; pos: number }>();
-  for (let t = 0; t < tiers.length; t++) {
-    for (let p = 0; p < tiers[t].nodes.length; p++) {
-      nodePos.set(tiers[t].nodes[p].label, { tier: t, pos: p });
-    }
-  }
-
-  let crossings = 0;
-  // For each pair of adjacent tiers, collect edges that span them
-  for (let t = 0; t < tiers.length - 1; t++) {
-    const edges: { fromPos: number; toPos: number }[] = [];
-    for (const flow of flows) {
-      const from = nodePos.get(flow.from);
-      const to = nodePos.get(flow.to);
-      if (!from || !to) continue;
-      // Edge spans tier t → t+1 (either direction)
-      if ((from.tier === t && to.tier === t + 1) ||
-          (from.tier === t + 1 && to.tier === t)) {
-        const upper = from.tier === t ? from : to;
-        const lower = from.tier === t ? to : from;
-        edges.push({ fromPos: upper.pos, toPos: lower.pos });
-      }
-    }
-    // Count crossing pairs
-    for (let i = 0; i < edges.length; i++) {
-      for (let j = i + 1; j < edges.length; j++) {
-        const a = edges[i], b = edges[j];
-        if ((a.fromPos < b.fromPos && a.toPos > b.toPos) ||
-            (a.fromPos > b.fromPos && a.toPos < b.toPos)) {
-          crossings++;
-        }
-      }
-    }
-  }
-  return crossings;
-}
-
-// Compute flow direction score: % of flows where source tier < target tier
-function computeFlowDirection(tiers: ComputedTier[], flows: Flow[]): number {
-  const tierIndex = new Map<string, number>();
-  for (let t = 0; t < tiers.length; t++) {
-    for (const node of tiers[t].nodes) {
-      tierIndex.set(node.label, t);
-    }
-  }
-  if (flows.length === 0) return 100;
-  let forward = 0;
-  for (const flow of flows) {
-    const fromTier = tierIndex.get(flow.from);
-    const toTier = tierIndex.get(flow.to);
-    if (fromTier !== undefined && toTier !== undefined && fromTier < toTier) {
-      forward++;
-    }
-  }
-  return Math.round((forward / flows.length) * 100);
-}
-
 // Kendall tau distance: count inversions between two permutations
 function kendallTau(a: number[], b: number[]): number {
   const n = a.length;
@@ -451,36 +388,21 @@ function computeBarycenterDeviation(tiers: ComputedTier[], flows: Flow[]): numbe
 
 export interface LayoutScore {
   composite: number;           // 0-100 weighted sum
-  edgeCrossings: number;       // 0-100 graph-level (fewer = better)
-  flowDirection: number;       // 0-100 (% forward flows)
-  barycenterDeviation: number; // 0-100 (closer to ideal = better)
   svgEdgeCrossings: number;    // 0-100 SVG-level (fewer geometric crossings = better)
   svgEdgeLength: number;       // 0-100 SVG-level (shorter total edge length = better)
+  barycenterDeviation: number; // 0-100 (closer to ideal = better)
 }
 
 // Graph-only scoring (used by barycenterOrder tests and as fallback)
+// Without SVG data, scores barycenter deviation only (SVG metrics require a rendered diagram)
 export function scoreOrdering(tiers: ComputedTier[], flows: Flow[]): LayoutScore {
-  const crossings = countEdgeCrossings(tiers, flows);
-  const edgeCrossings = Math.round(100 / (1 + crossings));
-  const flowDirection = computeFlowDirection(tiers, flows);
   const barycenterDeviation = computeBarycenterDeviation(tiers, flows);
 
-  const composite = Math.round(
-    edgeCrossings * 0.50 +
-    flowDirection * 0.15 +
-    barycenterDeviation * 0.35
-  );
-
-  return { composite, edgeCrossings, flowDirection, barycenterDeviation, svgEdgeCrossings: 0, svgEdgeLength: 0 };
+  return { composite: barycenterDeviation, svgEdgeCrossings: 0, svgEdgeLength: 0, barycenterDeviation };
 }
 
 // Full scoring including SVG-level metrics from a rendered SVG
 function scoreWithSvg(tiers: ComputedTier[], flows: Flow[], svg: string): LayoutScore {
-  const crossings = countEdgeCrossings(tiers, flows);
-  const edgeCrossings = Math.round(100 / (1 + crossings));
-  const flowDirection = computeFlowDirection(tiers, flows);
-  const barycenterDeviation = computeBarycenterDeviation(tiers, flows);
-
   const svgCrossings = countSvgEdgeCrossings(svg);
   const svgEdgeCrossings = Math.round(100 / (1 + svgCrossings));
 
@@ -488,15 +410,15 @@ function scoreWithSvg(tiers: ComputedTier[], flows: Flow[], svg: string): Layout
   // Normalize: 100 for 0 length, decays with a 2000px baseline
   const svgEdgeLength = Math.round(100 / (1 + svgLength / 2000));
 
+  const barycenterDeviation = computeBarycenterDeviation(tiers, flows);
+
   const composite = Math.round(
-    svgEdgeCrossings * 0.40 +
+    svgEdgeCrossings * 0.50 +
     svgEdgeLength * 0.15 +
-    flowDirection * 0.10 +
-    barycenterDeviation * 0.20 +
-    edgeCrossings * 0.15
+    barycenterDeviation * 0.35
   );
 
-  return { composite, edgeCrossings, flowDirection, barycenterDeviation, svgEdgeCrossings, svgEdgeLength };
+  return { composite, svgEdgeCrossings, svgEdgeLength, barycenterDeviation };
 }
 
 // Generate all permutations of an array
@@ -555,28 +477,9 @@ interface RenderOpts {
   line: string; accent: string; muted: string; surface: string; border: string;
 }
 
-// Max permutation combinations before falling back to barycenter heuristic
-const MAX_PERM_COMBOS = 5000;
-
 // Optimize layout with SVG-level scoring: render in the loop
 function optimizeLayout(project: Project, renderOpts: RenderOpts): { source: string; svg: string; score: LayoutScore } {
   const rawTiers = computeTiers(project.nodes);
-
-  // Check total permutation space — fall back to barycenter for complex projects
-  const totalCombos = rawTiers.reduce((acc, tier) => {
-    let f = 1;
-    for (let i = 2; i <= tier.nodes.length; i++) f *= i;
-    return acc * f;
-  }, 1);
-
-  if (totalCombos > MAX_PERM_COMBOS) {
-    const bcTiers = barycenterOrder(rawTiers, project.flows);
-    const source = generateMermaidSource(project, bcTiers);
-    const svg = renderMermaidSVG(source, renderOpts);
-    const score = scoreWithSvg(bcTiers, project.flows, svg);
-    return { source, svg, score };
-  }
-
   const tierPerms = rawTiers.map(tier => permutations(tier.nodes));
 
   let bestSource = generateMermaidSource(project, rawTiers);

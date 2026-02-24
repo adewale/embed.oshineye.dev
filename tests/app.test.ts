@@ -642,11 +642,9 @@ describe("Layout scoring", () => {
       const score = scoreOrdering(tiers, project.flows);
       expect(score.composite).toBeGreaterThanOrEqual(0);
       expect(score.composite).toBeLessThanOrEqual(100);
-      expect(score.edgeCrossings).toBeGreaterThanOrEqual(0);
-      expect(score.flowDirection).toBeGreaterThanOrEqual(0);
       expect(score.barycenterDeviation).toBeGreaterThanOrEqual(0);
-      // Graph-only scoreOrdering sets SVG metrics to 0
-      expect(score.svgEdgeCrossings).toBe(0);
+      expect(score.svgEdgeCrossings).toBeGreaterThanOrEqual(0);
+      // Graph-only scoreOrdering sets SVG edge length to 0
       expect(score.svgEdgeLength).toBe(0);
     }
   });
@@ -764,6 +762,21 @@ describe("GET /team-architectures", () => {
     }
   });
 
+  it("contains GitHub profile links with icon", async () => {
+    const { TEAM_REGISTRY } = await import(
+      "../src/embeds/v1/cloudflare-architecture-viz/mermaid"
+    );
+    const res = await app.request("/team-architectures");
+    const body = await res.text();
+    for (const [username, entry] of Object.entries(TEAM_REGISTRY)) {
+      if (entry.projects.length > 0) {
+        expect(body).toContain(`href="https://github.com/${username}"`);
+      }
+    }
+    expect(body).toContain("gh-link");
+    expect(body).toContain("viewBox");
+  });
+
   it("supports dark theme", async () => {
     const res = await app.request("/team-architectures?theme=dark");
     expect(res.status).toBe(200);
@@ -773,29 +786,105 @@ describe("GET /team-architectures", () => {
 });
 
 describe("GET /team-architectures/:username", () => {
-  it("returns 200 with diagrams for a known user", async () => {
+  it("returns 200 for every user in TEAM_REGISTRY", async () => {
+    const { TEAM_REGISTRY } = await import(
+      "../src/embeds/v1/cloudflare-architecture-viz/mermaid"
+    );
+    for (const [username, entry] of Object.entries(TEAM_REGISTRY)) {
+      if (entry.projects.length === 0) continue;
+      const res = await app.request(`/team-architectures/${username}`);
+      expect(res.status, `${username} should return 200`).toBe(200);
+      const body = await res.text();
+      expect(body).toContain(entry.displayName);
+      expect(body).toContain("mermaid-project-svg");
+    }
+  });
+
+  it("returns dark-themed SVGs for ?theme=dark", async () => {
+    const res = await app.request("/team-architectures/adewale?theme=dark");
+    expect(res.status).toBe(200);
+    const body = await res.text();
+    expect(body).toContain("#1f2937");
+    expect(body).toContain("mermaid-project-svg");
+  });
+
+  it("selects specific project via ?project= query param", async () => {
     const { TEAM_REGISTRY } = await import(
       "../src/embeds/v1/cloudflare-architecture-viz/mermaid"
     );
     const entry = TEAM_REGISTRY["adewale"];
-    expect(entry).toBeDefined();
-    const res = await app.request("/team-architectures/adewale");
+    const secondProject = entry.projects[1]?.id;
+    if (!secondProject) return;
+    const res = await app.request(`/team-architectures/adewale?project=${secondProject}`);
     expect(res.status).toBe(200);
     const body = await res.text();
-    expect(body).toContain(entry.displayName);
-    expect(body).toContain("mermaid-project-svg");
+    // The selected project should NOT have display:none
+    expect(body).not.toMatch(
+      new RegExp(`data-mermaid-project="${secondProject}"[^>]*style="display: none"`)
+    );
   });
 
-  it("returns 200 instantly for users with complex projects", async () => {
-    const res = await app.request("/team-architectures/craigsdennis");
-    expect(res.status).toBe(200);
+  it("pre-rendered SVGs contain icon badges and detail text", async () => {
+    const res = await app.request("/team-architectures/adewale");
     const body = await res.text();
-    expect(body).toContain("mermaid-project-svg");
+    expect(body).toContain("node-icon-badge");
+    expect(body).toContain("node-detail-text");
+    expect(body).toContain("text-transform: uppercase");
   });
 
   it("returns 404 for unknown username", async () => {
     const res = await app.request("/team-architectures/nobody");
     expect(res.status).toBe(404);
+  });
+});
+
+describe("TEAM_RENDERED / TEAM_REGISTRY sync", () => {
+  it("TEAM_RENDERED has an entry for every user in TEAM_REGISTRY with projects", async () => {
+    const { TEAM_REGISTRY } = await import(
+      "../src/embeds/v1/cloudflare-architecture-viz/mermaid"
+    );
+    const { TEAM_RENDERED } = await import(
+      "../src/embeds/v1/cloudflare-architecture-viz/team-svgs"
+    );
+    for (const [username, entry] of Object.entries(TEAM_REGISTRY)) {
+      if (entry.projects.length === 0) continue;
+      expect(TEAM_RENDERED, `Missing TEAM_RENDERED entry for "${username}"`).toHaveProperty(username);
+      expect(TEAM_RENDERED[username]).toHaveProperty("light");
+      expect(TEAM_RENDERED[username]).toHaveProperty("dark");
+    }
+  });
+
+  it("TEAM_RENDERED project IDs match TEAM_REGISTRY project IDs", async () => {
+    const { TEAM_REGISTRY } = await import(
+      "../src/embeds/v1/cloudflare-architecture-viz/mermaid"
+    );
+    const { TEAM_RENDERED } = await import(
+      "../src/embeds/v1/cloudflare-architecture-viz/team-svgs"
+    );
+    for (const [username, entry] of Object.entries(TEAM_REGISTRY)) {
+      if (entry.projects.length === 0) continue;
+      const rendered = TEAM_RENDERED[username];
+      if (!rendered) continue;
+
+      const expectedIds = new Set(entry.projects.map((p: { id: string }) => p.id));
+      const lightIds = new Set(Object.keys(rendered.light));
+      const darkIds = new Set(Object.keys(rendered.dark));
+
+      expect([...lightIds].sort(), `${username}: light project IDs mismatch`).toEqual([...expectedIds].sort());
+      expect([...darkIds].sort(), `${username}: dark project IDs mismatch`).toEqual([...expectedIds].sort());
+    }
+  });
+
+  it("ADE_RENDERED project IDs match PROJECTS", async () => {
+    const { PROJECTS } = await import(
+      "../src/embeds/v1/cloudflare-architecture-viz/mermaid"
+    );
+    const { ADE_RENDERED } = await import(
+      "../src/embeds/v1/cloudflare-architecture-viz/team-svgs"
+    );
+    const expectedIds = new Set(PROJECTS.map((p: { id: string }) => p.id));
+    const lightIds = new Set(Object.keys(ADE_RENDERED.light));
+    expect([...lightIds].sort()).toEqual([...expectedIds].sort());
   });
 });
 

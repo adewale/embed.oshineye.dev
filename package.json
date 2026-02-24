@@ -14,11 +14,11 @@
     "build:team-architectures": "python3 scripts/build_team_architectures.py && tsx scripts/build-team-svgs.ts"
   },
   "dependencies": {
-    "beautiful-mermaid": "^1.0.2",
     "hono": "^4.12.2"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20260303.0",
+    "beautiful-mermaid": "^1.0.2",
     "@playwright/test": "^1.58.2",
     "typescript": "^5.7.0",
     "vite": "^7.3.1",

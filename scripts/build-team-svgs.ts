@@ -1,10 +1,11 @@
 #!/usr/bin/env tsx
 // Pre-renders all team member architecture SVGs at build time.
+// Also pre-renders Ade's personal embed projects (PROJECTS from mermaid.ts).
 // Run AFTER build_team_architectures.py has generated team-data.ts.
 //
 // Usage: tsx scripts/build-team-svgs.ts
 
-import { TEAM_REGISTRY, renderAllMermaidSvgs } from "../src/embeds/v1/cloudflare-architecture-viz/mermaid";
+import { TEAM_REGISTRY, PROJECTS, renderAllMermaidSvgs } from "../src/embeds/v1/cloudflare-architecture-viz/mermaid";
 import type { RenderedDiagrams } from "../src/embeds/v1/cloudflare-architecture-viz/mermaid";
 import { writeFileSync } from "node:fs";
 import { join, dirname } from "node:path";
@@ -29,12 +30,22 @@ function stripDiagrams(diagrams: RenderedDiagrams): PreRenderedDiagrams {
   return result;
 }
 
+// Pre-render Ade's personal embed projects (used by /v1/cloudflare-architecture-viz)
+console.log(`Rendering Ade's embed projects (${PROJECTS.length} projects)...`);
+let t0 = Date.now();
+const adeRendered = {
+  light: stripDiagrams(renderAllMermaidSvgs("light", PROJECTS)),
+  dark: stripDiagrams(renderAllMermaidSvgs("dark", PROJECTS)),
+};
+console.log(`  Done in ${((Date.now() - t0) / 1000).toFixed(1)}s`);
+
+// Pre-render all team member projects
 const output: Record<string, { light: PreRenderedDiagrams; dark: PreRenderedDiagrams }> = {};
 
 for (const [username, entry] of Object.entries(TEAM_REGISTRY)) {
   if (entry.projects.length === 0) continue;
   console.log(`Rendering ${username} (${entry.projects.length} projects)...`);
-  const t0 = Date.now();
+  t0 = Date.now();
   output[username] = {
     light: stripDiagrams(renderAllMermaidSvgs("light", entry.projects)),
     dark: stripDiagrams(renderAllMermaidSvgs("dark", entry.projects)),
@@ -53,6 +64,8 @@ export interface PreRenderedDiagram {
 
 export type PreRenderedDiagrams = Record<string, PreRenderedDiagram>;
 
+export const ADE_RENDERED: { light: PreRenderedDiagrams; dark: PreRenderedDiagrams } = ${JSON.stringify(adeRendered)};
+
 export const TEAM_RENDERED: Record<string, { light: PreRenderedDiagrams; dark: PreRenderedDiagrams }> = ${JSON.stringify(output)};
 `;
 
@@ -64,4 +77,6 @@ const totalProjects = Object.values(output).reduce(
 );
 const fileSizeKB = (Buffer.byteLength(ts) / 1024).toFixed(0);
 console.log(`\nWrote ${outPath}`);
-console.log(`  ${Object.keys(output).length} users, ${totalProjects} projects, ${fileSizeKB} KB`);
+console.log(`  Ade embed: ${Object.keys(adeRendered.light).length} projects`);
+console.log(`  Team: ${Object.keys(output).length} users, ${totalProjects} projects`);
+console.log(`  Total: ${fileSizeKB} KB`);
