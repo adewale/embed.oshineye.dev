@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cloudflare Architecture</title>
+  <style>
+    :root {
+      --bg: #f9fafb;
+      --fg: #111827;
+      --surface: #ffffff;
+      --surface-hover: #f9fafb;
+      --border: #e5e7eb;
+      --text: #111827;
+      --text-muted: #6b7280;
+      --selector-bg: #ffffff;
+      --accent: #f97316;
+      --accent-dark: #ea580c;
+      --font-display: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-body: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    :root.dark {
+      --bg: #111827;
+      --fg: #f9fafb;
+      --surface: #1f2937;
+      --surface-hover: #374151;
+      --border: #374151;
+      --text: #f9fafb;
+      --text-muted: #9ca3af;
+      --selector-bg: #1f2937;
+      --accent: #f97316;
+      --accent-dark: #ea580c;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--text);
+      padding: 20px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    h1 {
+      font-family: var(--font-display);
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--fg);
+    }
+
+    .project-selector {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .project-btn {
+      padding: 6px 16px;
+      border: 1px solid var(--border);
+      border-radius: 9999px;
+      background: var(--selector-bg);
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .project-btn:hover {
+      background: var(--surface-hover);
+      color: var(--text);
+    }
+
+    .project-btn.active {
+      background: #fff7ed;
+      color: #ea580c;
+      border-color: #fed7aa;
+    }
+
+    :root.dark .project-btn.active {
+      background: #431407;
+      color: #fb923c;
+      border-color: #7c2d12;
+    }
+
+    .project-info {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+      line-height: 1.55;
+    }
+
+    .project-info a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .project-info a:hover {
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    .diagram-code {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      background: var(--surface);
+      box-shadow: 0 1px 3px 0 rgba(0,0,0,0.1), 0 1px 2px -1px rgba(0,0,0,0.1);
+    }
+    .diagram-code-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 14px;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+    }
+    .diagram-code-title {
+      font-weight: 600;
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+    }
+    .copy-btn {
+      padding: 4px 12px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--surface);
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .copy-btn:hover {
+      background: var(--surface-hover);
+      color: var(--text);
+    }
+    .diagram-code-block {
+      margin: 0;
+      padding: 14px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.78rem;
+      line-height: 1.5;
+      overflow-x: auto;
+      background: var(--surface);
+      color: var(--text);
+      white-space: pre;
+    }
+
+    .mermaid-container {
+      padding: 14px;
+      overflow-x: auto;
+      display: flex;
+      justify-content: center;
+      background: var(--surface);
+    }
+    .mermaid-container svg {
+      max-width: 100%;
+      height: auto;
+    }
+    .mermaid-flows {
+      padding: 12px 14px;
+      border-top: 1px solid var(--border);
+      font-size: 0.875rem;
+      line-height: 1.7;
+      color: var(--text-muted);
+      background: var(--surface);
+    }
+    .mermaid-flows-title {
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-size: 0.72rem;
+      margin-bottom: 4px;
+      color: var(--text-muted);
+    }
+    .mermaid-flow-item {
+      display: flex;
+      gap: 6px;
+      align-items: baseline;
+    }
+    .mermaid-flow-arrow {
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+    .mermaid-flow-label {
+      color: var(--text-muted);
+      opacity: 0.75;
+    }
+
+    /* ---- Mobile-friendly overrides ---- */
+    @media (max-width: 640px) {
+      body { padding: 14px; }
+      .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+      .project-selector {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        max-width: 100%;
+        scrollbar-width: none;          /* Firefox */
+        padding-bottom: 4px;
+      }
+      .project-selector::-webkit-scrollbar { display: none; }
+      .project-btn {
+        padding: 10px 16px;
+        font-size: 0.8rem;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+      .diagram-code-header {
+        padding: 8px 12px;
+      }
+      .diagram-code-block {
+        padding: 12px;
+        font-size: 0.7rem;
+      }
+      .mermaid-container {
+        padding: 8px;
+      }
+      .mermaid-flows {
+        padding: 10px 12px;
+        font-size: 0.8rem;
+      }
+      .mermaid-flow-item {
+        flex-wrap: wrap;
+        gap: 4px;
+      }
+      .project-info {
+        font-size: 0.78rem;
+      }
+    }
+
+    @media (max-width: 380px) {
+      body { padding: 10px; }
+      h1 { font-size: 1rem; }
+      .project-btn {
+        padding: 8px 12px;
+        font-size: 0.75rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Cloudflare Architecture</h1>
+    <div class="project-selector" id="projectSelector"></div>
+  </div>
+  <div class="project-info" id="projectInfo"></div>
+
+  <div class="diagram-code" id="mermaidDiagram">
+    <div class="diagram-code-header">
+      <span class="diagram-code-title">Mermaid</span>
+    </div>
+    <div class="mermaid-container">
+      <!-- MERMAID_DIAGRAMS -->
+    </div>
+    <div class="mermaid-flows" id="mermaidFlows"></div>
+  </div>
+
+  <script>
+    var PROJECTS = [
+      {
+        id: "planet-cf",
+        name: "Planet CF",
+        description: "A feed aggregator for the Cloudflare community, built with Python Workers. Uses D1, Queues with dead-letter queue, Workers AI, Vectorize, and Cron Triggers.",
+        url: "https://github.com/adewale/planet_cf",
+        tiers: [
+          {
+            label: "Client",
+            nodes: [
+              { label: "Browser", detail: "Reader" }
+            ]
+          },
+          {
+            label: "Edge",
+            nodes: [
+              { label: "Static Assets", detail: "HTML / CSS" },
+              { label: "Workers", detail: "Python" },
+              { label: "Cron Trigger", detail: "Hourly" }
+            ]
+          },
+          {
+            label: "Storage",
+            nodes: [
+              { label: "D1", detail: "Feed entries" },
+              { label: "Queues", detail: "Feed queue + DLQ" }
+            ]
+          },
+          {
+            label: "AI",
+            nodes: [
+              { label: "Workers AI", detail: "Embeddings" },
+              { label: "Vectorize", detail: "Search index" }
+            ]
+          }
+        ],
+        flows: [
+          { from: "Browser", to: "Static Assets", label: "GET /" },
+          { from: "Browser", to: "Workers", label: "Search / browse" },
+          { from: "Cron Trigger", to: "Workers", label: "Scheduled event" },
+          { from: "Workers", to: "Queues", label: "Enqueue feeds" },
+          { from: "Queues", to: "Workers", label: "Consume batch" },
+          { from: "Workers", to: "D1", label: "Read / write entries" },
+          { from: "Workers", to: "Workers AI", label: "Generate embeddings" },
+          { from: "Workers AI", to: "Vectorize", label: "Index vectors" },
+          { from: "Workers", to: "Vectorize", label: "Semantic query" }
+        ]
+      },
+      {
+        id: "keyboardia",
+        name: "keyboardia",
+        description: "Multiplayer step sequencer with polyrhythmic patterns. Uses KV for sessions, Durable Objects with SQLite for live collaboration, and R2 for audio samples.",
+        url: "https://github.com/adewale/keyboardia",
+        tiers: [
+          {
+            label: "Client",
+            nodes: [
+              { label: "Browser", detail: "SPA client" }
+            ]
+          },
+          {
+            label: "Edge",
+            nodes: [
+              { label: "Static Assets", detail: "Vite build" },
+              { label: "Workers", detail: "API router" }
+            ]
+          },
+          {
+            label: "Compute",
+            nodes: [
+              { label: "Durable Objects", detail: "LiveSession (SQLite)" }
+            ]
+          },
+          {
+            label: "Storage",
+            nodes: [
+              { label: "KV", detail: "Sessions" },
+              { label: "R2", detail: "Audio samples" }
+            ]
+          }
+        ],
+        flows: [
+          { from: "Browser", to: "Static Assets", label: "GET /" },
+          { from: "Browser", to: "Workers", label: "API requests" },
+          { from: "Workers", to: "KV", label: "Session lookup" },
+          { from: "Workers", to: "Durable Objects", label: "Live session" },
+          { from: "Workers", to: "R2", label: "Store / fetch samples" },
+          { from: "Durable Objects", to: "Browser", label: "WS sync" }
+        ]
+      },
+      {
+        id: "vaders",
+        name: "vaders",
+        description: "Multiplayer Space Invaders TUI synchronised via Durable Objects. Matchmaker DO for lobby management, GameRoom DOs with SQLite for authoritative game state.",
+        url: "https://github.com/adewale/vaders",
+        tiers: [
+          {
+            label: "Client",
+            nodes: [
+              { label: "Terminal", detail: "TUI client" }
+            ]
+          },
+          {
+            label: "Edge",
+            nodes: [
+              { label: "Workers", detail: "Entry point" }
+            ]
+          },
+          {
+            label: "Compute",
+            nodes: [
+              { label: "Matchmaker", detail: "Lobby mgmt" },
+              { label: "GameRoom", detail: "SQLite state" }
+            ]
+          }
+        ],
+        flows: [
+          { from: "Terminal", to: "Workers", label: "Join game" },
+          { from: "Workers", to: "Matchmaker", label: "Find / create room" },
+          { from: "Matchmaker", to: "GameRoom", label: "Route player" },
+          { from: "GameRoom", to: "Terminal", label: "WS game state" },
+          { from: "Terminal", to: "GameRoom", label: "Player input" }
+        ]
+      },
+      {
+        id: "embed-oshineye-dev",
+        name: "embed.oshineye.dev",
+        description: "Interactive visualisations embedded via iframe. Hono on Workers with Durable Objects for live presence.",
+        url: "https://github.com/adewale/embed.oshineye.dev",
+        tiers: [
+          {
+            label: "Client",
+            nodes: [
+              { label: "Browser", detail: "iframe embed" }
+            ]
+          },
+          {
+            label: "Edge",
+            nodes: [
+              { label: "Static Assets", detail: "loader.js" },
+              { label: "Workers", detail: "Hono router" }
+            ]
+          },
+          {
+            label: "Compute",
+            nodes: [
+              { label: "Durable Objects", detail: "PresenceRoom" }
+            ]
+          }
+        ],
+        flows: [
+          { from: "Browser", to: "Static Assets", label: "GET /static/*" },
+          { from: "Browser", to: "Workers", label: "GET /v1/:slug" },
+          { from: "Workers", to: "Durable Objects", label: "stub.fetch()" },
+          { from: "Durable Objects", to: "Browser", label: "WS broadcast" }
+        ]
+      },
+      {
+        id: "fibonacci-do",
+        name: "fibonacci DO",
+        description: "Minimal Durable Objects demo with SQLite storage, computing and caching Fibonacci sequences in a persistent actor.",
+        url: "https://github.com/adewale/fibonacci_durable_object",
+        tiers: [
+          {
+            label: "Client",
+            nodes: [
+              { label: "Browser", detail: "Demo UI" }
+            ]
+          },
+          {
+            label: "Edge",
+            nodes: [
+              { label: "Static Assets", detail: "HTML" },
+              { label: "Workers", detail: "Router" }
+            ]
+          },
+          {
+            label: "Compute",
+            nodes: [
+              { label: "Durable Objects", detail: "Fibonacci (SQLite)" }
+            ]
+          }
+        ],
+        flows: [
+          { from: "Browser", to: "Static Assets", label: "GET /" },
+          { from: "Browser", to: "Workers", label: "Compute request" },
+          { from: "Workers", to: "Durable Objects", label: "stub.fetch()" }
+        ]
+      },
+      {
+        id: "oshineye-dev",
+        name: "oshineye.dev",
+        description: "Personal website hosted as a static-assets-only Worker with custom domain routing and auto trailing slash.",
+        url: "https://github.com/adewale/oshineye-dev",
+        tiers: [
+          {
+            label: "Client",
+            nodes: [
+              { label: "Browser", detail: "oshineye.dev" }
+            ]
+          },
+          {
+            label: "Edge",
+            nodes: [
+              { label: "Static Assets", detail: "HTML / CSS / JS" }
+            ]
+          }
+        ],
+        flows: [
+          { from: "Browser", to: "Static Assets", label: "GET /*" }
+        ]
+      }
+    ];
+
+    // Theme
+    var params = new URL(location.href).searchParams;
+    var theme = params.get('theme') || 'light';
+    if (theme === 'dark') document.documentElement.classList.add('dark');
+
+    // Detect mode: paginated (team pages) vs multi-project (embed)
+    var isPaginated = typeof ACTIVE_PROJECT !== 'undefined';
+    var activeProject;
+
+    if (isPaginated) {
+      activeProject = ACTIVE_PROJECT.id;
+    } else {
+      var requestedProject = params.get('project');
+      activeProject = (requestedProject && PROJECTS.some(function(p) { return p.id === requestedProject; }))
+        ? requestedProject : PROJECTS[0].id;
+    }
+
+    function renderProjectSelector() {
+      var sel = document.getElementById('projectSelector');
+      sel.innerHTML = '';
+      if (isPaginated) {
+        // Single project detail: show back link to user's grid page
+        var link = document.createElement('a');
+        link.className = 'project-btn';
+        link.innerHTML = '&larr; ' + _DISPLAY_NAME + "'s projects";
+        link.href = _BACK_URL;
+        sel.appendChild(link);
+        var active = document.createElement('span');
+        active.className = 'project-btn active';
+        active.textContent = activeProject;
+        sel.appendChild(active);
+      } else {
+        // Multi-project embed: client-side switching
+        PROJECTS.forEach(function(p) {
+          var btn = document.createElement('button');
+          btn.className = 'project-btn' + (p.id === activeProject ? ' active' : '');
+          btn.textContent = p.name;
+          btn.onclick = function() { switchProject(p.id); };
+          sel.appendChild(btn);
+        });
+      }
+    }
+
+    function switchProject(id) {
+      activeProject = id;
+      var url = new URL(location.href);
+      url.searchParams.set('project', id);
+      history.replaceState(null, '', url);
+      renderProjectSelector();
+      renderProject();
+    }
+
+    function renderProject() {
+      var project = isPaginated ? ACTIVE_PROJECT : PROJECTS.find(function(p) { return p.id === activeProject; });
+      if (!project) return;
+
+      // Update project info
+      var info = document.getElementById('projectInfo');
+      info.textContent = '';
+      var link = document.createElement('a');
+      link.href = project.url;
+      link.target = '_blank';
+      link.rel = 'noopener';
+      link.textContent = project.name;
+      info.appendChild(link);
+      info.appendChild(document.createTextNode(' \u2014 ' + project.description));
+
+      // Toggle Mermaid diagram visibility
+      var mermaidSvgs = document.querySelectorAll('.mermaid-project-svg');
+      mermaidSvgs.forEach(function(el) {
+        el.style.display = el.getAttribute('data-mermaid-project') === activeProject ? '' : 'none';
+      });
+
+      // Generate Mermaid flows list
+      var flowsEl = document.getElementById('mermaidFlows');
+      flowsEl.innerHTML = '<div class="mermaid-flows-title">Flows</div>';
+      project.flows.forEach(function(flow) {
+        var item = document.createElement('div');
+        item.className = 'mermaid-flow-item';
+        item.innerHTML = '<span>' + flow.from + '</span>' +
+          '<span class="mermaid-flow-arrow">\u2192</span>' +
+          '<span>' + flow.to + '</span>' +
+          '<span class="mermaid-flow-label">' + flow.label + '</span>';
+        flowsEl.appendChild(item);
+      });
+    }
+
+    // Initialize
+    renderProjectSelector();
+    renderProject();
+
+    // ResizeObserver for iframe auto-height
+    new ResizeObserver(function() {
+      window.parent.postMessage(
+        { type: 'embed.oshineye.resize', height: document.body.scrollHeight },
+        '*'
+      );
+    }).observe(document.body);
+  </script>
+</body>
+</html>

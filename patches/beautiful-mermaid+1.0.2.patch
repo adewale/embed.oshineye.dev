@@ -1,0 +1,42 @@
+diff --git a/node_modules/beautiful-mermaid/src/layout-engine.ts b/node_modules/beautiful-mermaid/src/layout-engine.ts
+index f7fe086..a3a661e 100644
+--- a/node_modules/beautiful-mermaid/src/layout-engine.ts
++++ b/node_modules/beautiful-mermaid/src/layout-engine.ts
+@@ -45,7 +45,7 @@ const DEFAULTS = {
+   nodeSpacing: 28,
+   layerSpacing: 48,
+   mergeEdges: true,
+-  thoroughness: 3,
++  thoroughness: 7,
+ } as const
+ 
+ /** Convert Mermaid direction to ELK direction */
+@@ -137,7 +137,7 @@ interface HierarchicalEdgeInfo {
+  */
+ function mermaidToElk(
+   graph: MermaidGraph,
+-  opts: Required<Pick<RenderOptions, 'font' | 'padding' | 'nodeSpacing' | 'layerSpacing'>>
++  opts: Required<Pick<RenderOptions, 'font' | 'padding' | 'nodeSpacing' | 'layerSpacing'>> & { thoroughness?: number }
+ ): ElkGraphNode {
+   // Collect all node IDs that belong to subgraphs
+   const subgraphNodeIds = new Set<string>()
+@@ -204,7 +204,7 @@ function mermaidToElk(
+       'elk.edgeRouting': 'ORTHOGONAL',
+       'elk.layered.nodePlacement.bk.fixedAlignment': 'BALANCED',
+       'elk.contentAlignment': 'H_CENTER V_CENTER',
+-      'elk.layered.thoroughness': String(DEFAULTS.thoroughness),
++      'elk.layered.thoroughness': String(opts.thoroughness ?? DEFAULTS.thoroughness),
+       'elk.layered.highDegreeNodes.treatment': 'true',
+       'elk.layered.highDegreeNodes.threshold': '8',
+       'elk.layered.compaction.postCompaction.strategy': 'LEFT_RIGHT_CONSTRAINT_LOCKING',
+diff --git a/node_modules/beautiful-mermaid/src/types.ts b/node_modules/beautiful-mermaid/src/types.ts
+index 012d98f..69c8c9b 100644
+--- a/node_modules/beautiful-mermaid/src/types.ts
++++ b/node_modules/beautiful-mermaid/src/types.ts
+@@ -155,4 +155,6 @@ export interface RenderOptions {
+   componentSpacing?: number
+   /** Render with transparent background (no background style on SVG). Default: false */
+   transparent?: boolean
++  /** ELK layered thoroughness (crossing minimization iterations). Default: 7 */
++  thoroughness?: number
+ }

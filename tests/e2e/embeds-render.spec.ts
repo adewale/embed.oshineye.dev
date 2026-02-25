@@ -5,6 +5,7 @@ const EMBEDS = [
   "avatar-stack-playground",
   "github-timeline",
   "blogging-timeline",
+  "cloudflare-architecture-viz",
 ];
 
 for (const slug of EMBEDS) {
