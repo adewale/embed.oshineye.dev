@@ -489,15 +489,11 @@ describe("Mermaid diagram generation", () => {
     expect(body).toContain("letter-spacing");
   });
 
-  it("small projects use graph LR, large projects use graph TD", async () => {
+  it("projects use best-scoring direction (LR or TD)", async () => {
     const res = await app.request("/v1/cloudflare-architecture-viz");
     const body = await res.text();
-    // planet-cf (4 tiers: client, edge, storage, ai) → TD
-    expect(body).toMatch(/data-mermaid-project="planet-cf"[^>]*data-mermaid-source="[^"]*graph TD/i);
-    // keyboardia (4 tiers: client, edge, compute, storage) → TD
-    expect(body).toMatch(/data-mermaid-project="keyboardia"[^>]*data-mermaid-source="[^"]*graph TD/i);
-    // vaders (3 tiers: client, edge, compute) → LR
-    expect(body).toMatch(/data-mermaid-project="vaders"[^>]*data-mermaid-source="[^"]*graph LR/i);
+    // Every project should have a graph direction in its mermaid source
+    expect(body).toMatch(/data-mermaid-source="[^"]*graph (LR|TD)/i);
   });
 
   it("Mermaid source uses cylinder syntax for storage nodes", async () => {

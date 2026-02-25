@@ -436,8 +436,8 @@ function permutations<T>(arr: T[]): T[][] {
 }
 
 // Generate Mermaid source notation from tiers (pure, no optimization)
-function generateMermaidSource(project: Project, tiers: ComputedTier[]): string {
-  const direction = project.direction || (tiers.length <= 3 ? "LR" : "TD");
+function generateMermaidSource(project: Project, tiers: ComputedTier[], directionOverride?: string): string {
+  const direction = directionOverride || project.direction || (tiers.length <= 3 ? "LR" : "TD");
   const lines: string[] = [`graph ${direction}`];
 
   const usedPrimitives = new Set<string>();
@@ -454,6 +454,11 @@ function generateMermaidSource(project: Project, tiers: ComputedTier[]): string 
       lines.push(`    ${nodeShapeSyntax(id, node.label, node.primitive)}:::${cls}`);
     }
     lines.push("  end");
+  }
+
+  // Invisible links between adjacent tiers to enforce visual ordering
+  for (let i = 0; i < tiers.length - 1; i++) {
+    lines.push(`  ${nodeId(tiers[i].label)} ~~~ ${nodeId(tiers[i + 1].label)}`);
   }
 
   for (const flow of project.flows) {
@@ -478,35 +483,87 @@ interface RenderOpts {
   line: string; accent: string; muted: string; surface: string; border: string;
 }
 
-// Optimize layout with SVG-level scoring: render in the loop
-function optimizeLayout(project: Project, renderOpts: RenderOpts): { source: string; svg: string; score: LayoutScore } {
-  const rawTiers = computeTiers(project.nodes);
-  const tierPerms = rawTiers.map(tier => permutations(tier.nodes));
+// Try a single tier ordering in both directions, return the best result
+function tryLayout(
+  project: Project, tiers: ComputedTier[], renderOpts: RenderOpts, extraOpts?: { thoroughness?: number }
+): { source: string; svg: string; score: LayoutScore } {
+  const lrOpts = { ...renderOpts, layerSpacing: 96, nodeSpacing: 24, ...extraOpts };
+  const tdOpts = { ...renderOpts, layerSpacing: 64, nodeSpacing: 40, ...extraOpts };
 
-  let bestSource = generateMermaidSource(project, rawTiers);
-  let bestSvg = renderMermaidSVG(bestSource, renderOpts);
-  let bestScore = scoreWithSvg(rawTiers, project.flows, bestSvg);
-
-  function search(tierIdx: number, current: ComputedTier[]): void {
-    if (tierIdx === rawTiers.length) {
-      const source = generateMermaidSource(project, current);
-      const svg = renderMermaidSVG(source, renderOpts);
-      const score = scoreWithSvg(current, project.flows, svg);
-      if (score.composite > bestScore.composite) {
-        bestScore = score;
-        bestSource = source;
-        bestSvg = svg;
-      }
-      return;
-    }
-    for (const perm of tierPerms[tierIdx]) {
-      current[tierIdx] = { ...rawTiers[tierIdx], nodes: perm };
-      search(tierIdx + 1, current);
-    }
+  if (project.direction) {
+    const opts = project.direction === "LR" ? lrOpts : tdOpts;
+    const source = generateMermaidSource(project, tiers);
+    const svg = renderMermaidSVG(source, opts);
+    const score = scoreWithSvg(tiers, project.flows, svg);
+    return { source, svg, score };
   }
 
-  search(0, [...rawTiers]);
-  return { source: bestSource, svg: bestSvg, score: bestScore };
+  const lrSource = generateMermaidSource(project, tiers, "LR");
+  const lrSvg = renderMermaidSVG(lrSource, lrOpts);
+  const lrScore = scoreWithSvg(tiers, project.flows, lrSvg);
+
+  const tdSource = generateMermaidSource(project, tiers, "TD");
+  const tdSvg = renderMermaidSVG(tdSource, tdOpts);
+  const tdScore = scoreWithSvg(tiers, project.flows, tdSvg);
+
+  if (lrScore.composite >= tdScore.composite) {
+    return { source: lrSource, svg: lrSvg, score: lrScore };
+  }
+  return { source: tdSource, svg: tdSvg, score: tdScore };
+}
+
+// Optimize layout: fast path (barycenter + LR/TD), slow fallback (permutations + higher thoroughness)
+function optimizeLayout(project: Project, renderOpts: RenderOpts): { source: string; svg: string; score: LayoutScore } {
+  const rawTiers = computeTiers(project.nodes);
+  const orderedTiers = barycenterOrder(rawTiers, project.flows);
+
+  // Fast path: barycenter ordering, try both directions
+  let best = tryLayout(project, orderedTiers, renderOpts);
+  if (best.score.composite >= 70) return best;
+
+  // Slow path: exhaustive permutation search with higher ELK thoroughness
+  // Only reached for complex layouts that don't score well with the heuristic
+  for (const tier of orderedTiers) {
+    if (tier.nodes.length > 5) return best; // cap: 5! = 120, beyond that is too slow
+  }
+
+  for (const perm of tierPermutations(orderedTiers)) {
+    const candidate = tryLayout(project, perm, renderOpts, { thoroughness: 15 });
+    if (candidate.score.composite > best.score.composite) {
+      best = candidate;
+    }
+    if (best.score.composite >= 70) break; // good enough, stop searching
+  }
+
+  return best;
+}
+
+// Generate all permutations of node orderings within each tier (cartesian product)
+function tierPermutations(tiers: ComputedTier[]): ComputedTier[][] {
+  // Find tiers with >1 node (those are worth permuting)
+  const multiNodeIndices = tiers.map((t, i) => ({ i, len: t.nodes.length })).filter(x => x.len > 1);
+  if (multiNodeIndices.length === 0) return [tiers];
+
+  // Build array of per-tier permutation sets
+  const perTierPerms = tiers.map(tier =>
+    tier.nodes.length > 1 ? permutations(tier.nodes) : [tier.nodes]
+  );
+
+  // Cartesian product of all tier permutations
+  const results: ComputedTier[][] = [];
+  function cartesian(idx: number, current: ComputedTier[]) {
+    if (idx === tiers.length) {
+      results.push(current);
+      return;
+    }
+    for (const nodePerm of perTierPerms[idx]) {
+      cartesian(idx + 1, [...current, { ...tiers[idx], nodes: nodePerm }]);
+    }
+  }
+  cartesian(0, []);
+
+  // Skip the first one (identical to barycenter ordering already tried)
+  return results.slice(1);
 }
 
 // Compute barycenter-sorted ordering for a set of tiers (deterministic heuristic)
