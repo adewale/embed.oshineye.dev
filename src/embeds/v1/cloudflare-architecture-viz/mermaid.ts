@@ -232,13 +232,13 @@ function primitiveClass(primitive: string): string {
 }
 
 // Group a flat node list into ordered tiers based on PRIMITIVE_TIER
-interface ComputedTier {
+export interface ComputedTier {
   category: TierCategory;
   label: string;
   nodes: Node[];
 }
 
-function computeTiers(nodes: Node[]): ComputedTier[] {
+export function computeTiers(nodes: Node[]): ComputedTier[] {
   const groups = new Map<TierCategory, Node[]>();
   for (const node of nodes) {
     const cat = PRIMITIVE_TIER[node.primitive];

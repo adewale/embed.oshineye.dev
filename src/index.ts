@@ -65,17 +65,146 @@ function renderProjectPage(entry: UserEntry, username: string, theme: string, pr
   if (!diagrams[projectId]) return null;
 
   const mermaidHtml = buildSingleProjectHtml(diagrams, projectId);
-  const navProjects = entry.projects.map((p) => ({ id: p.id, name: p.id }));
   const activeProject = toClientProjects(entry, username).find((p) => p.id === projectId);
+  const themeParam = theme !== "light" ? `?theme=${theme}` : "";
+  const backUrl = `/team-architectures/${username}${themeParam}`;
 
   return archVizHtml
     .replace("<!-- MERMAID_DIAGRAMS -->", mermaidHtml)
     .replace(
       "var PROJECTS = [",
-      `var ACTIVE_PROJECT = ${JSON.stringify(activeProject)};var NAV_PROJECTS = ${JSON.stringify(navProjects)};var _THEME = "${theme}";var _USERNAME = "${username}";var _IGNORE = [`
+      `var ACTIVE_PROJECT = ${JSON.stringify(activeProject)};var _BACK_URL = "${backUrl}";var _DISPLAY_NAME = "${entry.displayName}";var _IGNORE = [`
     )
     .replace("<title>Cloudflare Architecture</title>", `<title>${entry.displayName}'s ${projectId}</title>`)
     .replace(">Cloudflare Architecture</h1>", `>${entry.displayName}'s Cloudflare Architecture</h1>`);
+}
+
+// Render a grid page showing all projects for a team member
+function renderUserGridPage(entry: UserEntry, username: string, theme: string): string {
+  const isDark = theme === "dark";
+  const themeParam = theme !== "light" ? `?theme=${theme}` : "";
+
+  const projectCards = entry.projects
+    .map((p) => {
+      const uniquePrims = new Set<string>();
+      for (const n of p.nodes) {
+        if (n.primitive !== "client" && n.primitive !== "terminal") {
+          uniquePrims.add(n.primitive);
+        }
+      }
+      const badges = [...uniquePrims]
+        .map((prim) => `<span class="badge">${prim}</span>`)
+        .join(" ");
+      return `<a class="project-card" href="/team-architectures/${username}/${p.id}${themeParam}">
+        <strong class="project-name">${p.id}</strong>
+        <div class="badges">${badges}</div>
+      </a>`;
+    })
+    .join("\n      ");
+
+  return `<!DOCTYPE html>
+<html lang="en" class="${isDark ? "dark" : ""}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${entry.displayName}'s Architectures — embed.oshineye.dev</title>
+  <style>
+    :root {
+      --bg: #f9fafb;
+      --fg: #111827;
+      --surface: #ffffff;
+      --surface-hover: #f9fafb;
+      --border: #e5e7eb;
+      --text: #111827;
+      --text-muted: #6b7280;
+      --accent: #f97316;
+      --accent-dark: #ea580c;
+    }
+    :root.dark {
+      --bg: #111827;
+      --fg: #f9fafb;
+      --surface: #1f2937;
+      --surface-hover: #374151;
+      --border: #374151;
+      --text: #f9fafb;
+      --text-muted: #9ca3af;
+      --accent: #f97316;
+      --accent-dark: #ea580c;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg); color: var(--text);
+      max-width: 960px; margin: 0 auto; padding: 32px 24px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+    .user-header {
+      display: flex; align-items: center; gap: 16px;
+      margin-bottom: 24px;
+    }
+    .user-header .avatar { border-radius: 50%; flex-shrink: 0; }
+    .user-header .user-info { min-width: 0; }
+    .user-header h1 { font-size: 1.5rem; margin-bottom: 2px; }
+    .user-header .gh-link {
+      color: var(--text-muted); display: inline-flex; align-items: center;
+      text-decoration: none; font-size: 0.85rem; gap: 4px;
+      transition: color 0.15s;
+    }
+    .user-header .gh-link:hover { color: var(--accent); }
+    .back-link {
+      display: inline-block; margin-bottom: 16px;
+      color: var(--text-muted); text-decoration: none; font-size: 0.85rem;
+    }
+    .back-link:hover { color: var(--accent); }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    @media (max-width: 768px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 480px) {
+      .grid { grid-template-columns: 1fr; }
+      body { padding: 20px 16px; }
+      .user-header h1 { font-size: 1.25rem; }
+    }
+    .project-card {
+      display: block; padding: 16px; border-radius: 8px;
+      background: var(--surface); border: 1px solid var(--border);
+      text-decoration: none; color: var(--text);
+      transition: border-color 0.15s;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .project-card:hover { border-color: var(--accent); }
+    .project-card:active { border-color: var(--accent); background: var(--surface-hover); }
+    .project-name { color: var(--accent); font-size: 0.95rem; display: block; margin-bottom: 8px; }
+    .badges { display: flex; flex-wrap: wrap; gap: 4px; }
+    .badge {
+      font-size: 0.65rem; padding: 1px 6px; border-radius: 4px;
+      background: var(--surface-hover); color: var(--text-muted);
+      border: 1px solid var(--border);
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+  <a class="back-link" href="/team-architectures${themeParam}">&larr; Back to team</a>
+  <div class="user-header">
+    <img src="https://github.com/${username}.png?size=80" alt="${entry.displayName}" width="64" height="64" class="avatar" />
+    <div class="user-info">
+      <h1>${entry.displayName}</h1>
+      <a href="https://github.com/${username}" class="gh-link" target="_blank" rel="noopener">
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        ${username}
+      </a>
+    </div>
+  </div>
+  <div class="grid">
+      ${projectCards}
+  </div>
+</body>
+</html>`;
 }
 
 export { PresenceRoom } from "./presence/room";
@@ -187,16 +316,15 @@ app.get("/team-architectures", (c) => {
       const badges = [...uniquePrims]
         .map((p) => `<span class="badge">${p}</span>`)
         .join(" ");
-      const firstProject = entry.projects[0].id;
       const themeParam = theme !== "light" ? `?theme=${theme}` : "";
-      return `<div class="card" onclick="window.location='/team-architectures/${username}/${firstProject}${themeParam}'" role="link" tabindex="0">
+      return `<div class="card" onclick="window.location='/team-architectures/${username}${themeParam}'" role="link" tabindex="0">
         <img src="https://github.com/${username}.png?size=80" alt="${entry.displayName}" width="48" height="48" class="avatar" />
         <div class="card-body">
           <div class="card-header">
             <strong class="name">${entry.displayName}</strong>
             <a href="https://github.com/${username}" class="gh-link" target="_blank" rel="noopener" title="GitHub profile" onclick="event.stopPropagation()"><svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg></a>
           </div>
-          <span class="meta">${entry.totalDiscovered > entry.projects.length ? `${entry.projects.length} of ${entry.totalDiscovered}` : entry.projects.length} project${entry.totalDiscovered !== 1 ? "s" : ""}</span>
+          <span class="meta">${entry.projects.length} project${entry.projects.length !== 1 ? "s" : ""}</span>
           <div class="badges">${badges}</div>
         </div>
       </div>`;
@@ -292,18 +420,15 @@ app.get("/team-architectures", (c) => {
   return c.html(html);
 });
 
-// Team architectures user page — redirect to first project (or ?project= backward compat)
+// Team architectures user page — grid of all projects
 app.get("/team-architectures/:username", (c) => {
   const username = c.req.param("username");
   const entry = TEAM_REGISTRY[username];
   if (!entry || entry.projects.length === 0) return c.text("Not Found", 404);
 
   const theme = c.req.query("theme") || "light";
-  const project = c.req.query("project");
-  const targetProject = (project && entry.projects.some((p) => p.id === project))
-    ? project : entry.projects[0].id;
-  const themeParam = theme !== "light" ? `?theme=${theme}` : "";
-  return c.redirect(`/team-architectures/${username}/${targetProject}${themeParam}`, 302);
+  const html = renderUserGridPage(entry, username, theme);
+  return c.html(html);
 });
 
 // Team architectures single project page (paginated — one SVG per page)

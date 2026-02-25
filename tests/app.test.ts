@@ -619,26 +619,12 @@ describe("PRIMITIVE_TIER completeness", () => {
 
 describe("Layout scoring", () => {
   it("scoreOrdering returns valid LayoutScore for each project", async () => {
-    const { PROJECTS, scoreOrdering, PRIMITIVE_TIER } = await import(
+    const { PROJECTS, scoreOrdering, computeTiers } = await import(
       "../src/embeds/v1/cloudflare-architecture-viz/mermaid"
     );
-    const TIER_ORDER = ["client", "edge", "compute", "storage", "ai"];
-    const TIER_LABELS: Record<string, string> = {
-      client: "Client", edge: "Edge", compute: "Compute", storage: "Storage", ai: "AI",
-    };
 
     for (const project of PROJECTS) {
-      // Compute tiers
-      const groups = new Map<string, any[]>();
-      for (const node of project.nodes) {
-        const cat = PRIMITIVE_TIER[node.primitive];
-        if (!groups.has(cat)) groups.set(cat, []);
-        groups.get(cat)!.push(node);
-      }
-      const tiers = TIER_ORDER
-        .filter((cat) => groups.has(cat))
-        .map((cat) => ({ category: cat, label: TIER_LABELS[cat], nodes: groups.get(cat)! }));
-
+      const tiers = computeTiers(project.nodes);
       const score = scoreOrdering(tiers, project.flows);
       expect(score.composite).toBeGreaterThanOrEqual(0);
       expect(score.composite).toBeLessThanOrEqual(100);
@@ -691,38 +677,172 @@ describe("Layout scoring", () => {
     }
   });
 
-  it("barycenter ordering matches permutation-optimal ordering for all projects", async () => {
-    const { PROJECTS, scoreOrdering, barycenterOrder, PRIMITIVE_TIER } = await import(
+  it("barycenter ordering beats initial ordering for all projects", async () => {
+    const { PROJECTS, scoreOrdering, barycenterOrder, computeTiers } = await import(
       "../src/embeds/v1/cloudflare-architecture-viz/mermaid"
     );
-    const TIER_ORDER = ["client", "edge", "compute", "storage", "ai"];
-    const TIER_LABELS: Record<string, string> = {
-      client: "Client", edge: "Edge", compute: "Compute", storage: "Storage", ai: "AI",
-    };
 
     for (const project of PROJECTS) {
-      const groups = new Map<string, any[]>();
-      for (const node of project.nodes) {
-        const cat = PRIMITIVE_TIER[node.primitive];
-        if (!groups.has(cat)) groups.set(cat, []);
-        groups.get(cat)!.push(node);
-      }
-      const tiers = TIER_ORDER
-        .filter((cat) => groups.has(cat))
-        .map((cat) => ({ category: cat, label: TIER_LABELS[cat], nodes: groups.get(cat)! }));
-
+      const tiers = computeTiers(project.nodes);
       const bcTiers = barycenterOrder(tiers, project.flows);
       const bcScore = scoreOrdering(bcTiers, project.flows);
-
-      // The barycenter heuristic should produce a score at least as good as the
-      // initial (unoptimized) ordering — it may not always match the exhaustive
-      // permutation optimum, but it should be close
       const initialScore = scoreOrdering(tiers, project.flows);
       expect(
         bcScore.composite,
         `${project.id}: barycenter (${bcScore.composite}) should be >= initial (${initialScore.composite})`
       ).toBeGreaterThanOrEqual(initialScore.composite);
     }
+  });
+
+  it("all team project diagrams score >= 60 composite", async () => {
+    const { TEAM_RENDERED } = await import(
+      "../src/embeds/v1/cloudflare-architecture-viz/team-svgs"
+    );
+    for (const [username, rendered] of Object.entries(TEAM_RENDERED)) {
+      for (const [id, diagram] of Object.entries(rendered.light)) {
+        expect(
+          diagram.composite,
+          `${username}/${id} composite=${diagram.composite}`
+        ).toBeGreaterThanOrEqual(60);
+      }
+    }
+  });
+
+  it("barycenter ordering beats initial ordering for all team projects", async () => {
+    const { TEAM_REGISTRY, scoreOrdering, barycenterOrder, computeTiers } = await import(
+      "../src/embeds/v1/cloudflare-architecture-viz/mermaid"
+    );
+    for (const [, entry] of Object.entries(TEAM_REGISTRY)) {
+      for (const project of entry.projects) {
+        const tiers = computeTiers(project.nodes);
+        const bcTiers = barycenterOrder(tiers, project.flows);
+        const bcScore = scoreOrdering(bcTiers, project.flows);
+        const initialScore = scoreOrdering(tiers, project.flows);
+        expect(bcScore.composite).toBeGreaterThanOrEqual(initialScore.composite);
+      }
+    }
+  });
+
+  it("pre-rendered scores show meaningful variation across projects", async () => {
+    const { TEAM_RENDERED } = await import(
+      "../src/embeds/v1/cloudflare-architecture-viz/team-svgs"
+    );
+    const scores: number[] = [];
+    for (const rendered of Object.values(TEAM_RENDERED)) {
+      for (const diagram of Object.values(rendered.light)) {
+        scores.push(diagram.composite);
+      }
+    }
+    const unique = new Set(scores);
+    expect(unique.size).toBeGreaterThan(3);
+  });
+
+  it("scoreOrdering returns valid scores for every team project", async () => {
+    const { TEAM_REGISTRY, scoreOrdering, computeTiers } = await import(
+      "../src/embeds/v1/cloudflare-architecture-viz/mermaid"
+    );
+    for (const [, entry] of Object.entries(TEAM_REGISTRY)) {
+      for (const project of entry.projects) {
+        const tiers = computeTiers(project.nodes);
+        const score = scoreOrdering(tiers, project.flows);
+        expect(score.composite).toBeGreaterThanOrEqual(0);
+        expect(score.composite).toBeLessThanOrEqual(100);
+        expect(score.barycenterDeviation).toBeGreaterThanOrEqual(0);
+        expect(score.barycenterDeviation).toBeLessThanOrEqual(100);
+      }
+    }
+  });
+});
+
+describe("escapeAttr", () => {
+  it("escapes ampersands, quotes, and angle brackets", async () => {
+    const { escapeAttr } = await import(
+      "../src/embeds/v1/cloudflare-architecture-viz/mermaid"
+    );
+    expect(escapeAttr('a&b"c<d')).toBe("a&amp;b&quot;c&lt;d");
+  });
+
+  it("leaves clean strings unchanged", async () => {
+    const { escapeAttr } = await import(
+      "../src/embeds/v1/cloudflare-architecture-viz/mermaid"
+    );
+    expect(escapeAttr("hello world")).toBe("hello world");
+  });
+
+  it("handles empty string", async () => {
+    const { escapeAttr } = await import(
+      "../src/embeds/v1/cloudflare-architecture-viz/mermaid"
+    );
+    expect(escapeAttr("")).toBe("");
+  });
+});
+
+describe("computeSvgTotalEdgeLength", () => {
+  it("computes Manhattan distance for simple polylines", async () => {
+    const { computeSvgTotalEdgeLength } = await import(
+      "../src/embeds/v1/cloudflare-architecture-viz/mermaid"
+    );
+    const svg = '<polyline class="edge" points="0,0 100,0 100,50" />';
+    expect(computeSvgTotalEdgeLength(svg)).toBe(150);
+  });
+
+  it("returns 0 for SVG with no edges", async () => {
+    const { computeSvgTotalEdgeLength } = await import(
+      "../src/embeds/v1/cloudflare-architecture-viz/mermaid"
+    );
+    expect(computeSvgTotalEdgeLength("<svg></svg>")).toBe(0);
+  });
+});
+
+describe("computeTiers", () => {
+  it("groups nodes into canonical tier order", async () => {
+    const { computeTiers } = await import(
+      "../src/embeds/v1/cloudflare-architecture-viz/mermaid"
+    );
+    const nodes = [
+      { label: "DB", primitive: "d1", detail: "" },
+      { label: "Worker", primitive: "workers", detail: "" },
+      { label: "User", primitive: "client", detail: "" },
+    ];
+    const tiers = computeTiers(nodes);
+    expect(tiers.map(t => t.category)).toEqual(["client", "edge", "storage"]);
+    expect(tiers[0].nodes[0].label).toBe("User");
+    expect(tiers[1].nodes[0].label).toBe("Worker");
+    expect(tiers[2].nodes[0].label).toBe("DB");
+  });
+
+  it("omits tiers with no nodes", async () => {
+    const { computeTiers } = await import(
+      "../src/embeds/v1/cloudflare-architecture-viz/mermaid"
+    );
+    const nodes = [
+      { label: "Worker", primitive: "workers", detail: "" },
+    ];
+    const tiers = computeTiers(nodes);
+    expect(tiers.length).toBe(1);
+    expect(tiers[0].category).toBe("edge");
+  });
+
+  it("handles single-node projects", async () => {
+    const { computeTiers } = await import(
+      "../src/embeds/v1/cloudflare-architecture-viz/mermaid"
+    );
+    const nodes = [
+      { label: "AI", primitive: "ai", detail: "" },
+    ];
+    const tiers = computeTiers(nodes);
+    expect(tiers.length).toBe(1);
+    expect(tiers[0].category).toBe("ai");
+    expect(tiers[0].nodes.length).toBe(1);
+  });
+});
+
+describe("dark theme for main embed", () => {
+  it("returns dark-themed HTML for ?theme=dark", async () => {
+    const res = await app.request("/v1/cloudflare-architecture-viz?theme=dark");
+    expect(res.status).toBe(200);
+    const body = await res.text();
+    expect(body).toContain("data-mermaid-project");
   });
 });
 
@@ -785,40 +905,63 @@ describe("GET /team-architectures", () => {
   });
 });
 
-describe("GET /team-architectures/:username (redirect)", () => {
-  it("302 redirects to first project for every user", async () => {
+describe("GET /team-architectures/:username (grid page)", () => {
+  it("returns 200 with project grid for every user", async () => {
     const { TEAM_REGISTRY } = await import(
       "../src/embeds/v1/cloudflare-architecture-viz/mermaid"
     );
     for (const [username, entry] of Object.entries(TEAM_REGISTRY)) {
       if (entry.projects.length === 0) continue;
       const res = await app.request(`/team-architectures/${username}`);
-      expect(res.status, `${username} should return 302`).toBe(302);
-      const location = res.headers.get("location");
-      expect(location).toBe(`/team-architectures/${username}/${entry.projects[0].id}`);
+      expect(res.status, `${username} should return 200`).toBe(200);
+      const body = await res.text();
+      expect(body).toContain("<!DOCTYPE html>");
+      expect(body).toContain(entry.displayName);
     }
   });
 
-  it("?project= redirects to that project's path", async () => {
+  it("contains all project SVGs for the user", async () => {
     const { TEAM_REGISTRY } = await import(
       "../src/embeds/v1/cloudflare-architecture-viz/mermaid"
     );
+    const res = await app.request("/team-architectures/adewale");
+    const body = await res.text();
     const entry = TEAM_REGISTRY["adewale"];
-    const secondProject = entry.projects[1]?.id;
-    if (!secondProject) return;
-    const res = await app.request(`/team-architectures/adewale?project=${secondProject}`);
-    expect(res.status).toBe(302);
-    expect(res.headers.get("location")).toBe(`/team-architectures/adewale/${secondProject}`);
+    for (const p of entry.projects) {
+      expect(body, `should contain project ${p.id}`).toContain(`/team-architectures/adewale/${p.id}`);
+    }
   });
 
-  it("preserves theme param through redirect", async () => {
+  it("contains project card links to /:username/:projectId", async () => {
     const { TEAM_REGISTRY } = await import(
       "../src/embeds/v1/cloudflare-architecture-viz/mermaid"
     );
+    const res = await app.request("/team-architectures/adewale");
+    const body = await res.text();
     const entry = TEAM_REGISTRY["adewale"];
+    for (const p of entry.projects) {
+      expect(body).toContain(`href="/team-architectures/adewale/${p.id}"`);
+    }
+  });
+
+  it("shows user avatar and display name", async () => {
+    const { TEAM_REGISTRY } = await import(
+      "../src/embeds/v1/cloudflare-architecture-viz/mermaid"
+    );
+    const res = await app.request("/team-architectures/adewale");
+    const body = await res.text();
+    const entry = TEAM_REGISTRY["adewale"];
+    expect(body).toContain(entry.displayName);
+    expect(body).toContain("github.com/adewale.png");
+    expect(body).toContain(`href="https://github.com/adewale"`);
+  });
+
+  it("supports dark theme on user grid page", async () => {
     const res = await app.request("/team-architectures/adewale?theme=dark");
-    expect(res.status).toBe(302);
-    expect(res.headers.get("location")).toBe(`/team-architectures/adewale/${entry.projects[0].id}?theme=dark`);
+    expect(res.status).toBe(200);
+    const body = await res.text();
+    expect(body).toContain("#1f2937");
+    expect(body).toContain('class="dark"');
   });
 
   it("returns 404 for unknown username", async () => {
@@ -851,13 +994,12 @@ describe("GET /team-architectures/:username/:projectId (paginated)", () => {
     expect(matches!.length).toBe(1);
   });
 
-  it("contains ACTIVE_PROJECT and NAV_PROJECTS instead of PROJECTS array", async () => {
+  it("contains ACTIVE_PROJECT with back link and display name", async () => {
     const res = await app.request("/team-architectures/adewale/planet-cf");
     const body = await res.text();
     expect(body).toContain("ACTIVE_PROJECT");
-    expect(body).toContain("NAV_PROJECTS");
-    expect(body).toContain("_USERNAME");
-    expect(body).toContain("_THEME");
+    expect(body).toContain("_BACK_URL");
+    expect(body).toContain("_DISPLAY_NAME");
   });
 
   it("returns dark-themed SVGs for ?theme=dark", async () => {
@@ -885,12 +1027,11 @@ describe("GET /team-architectures/:username/:projectId (paginated)", () => {
     expect(res.status).toBe(404);
   });
 
-  it("project selector links contain path-based URLs", async () => {
+  it("contains back link to user grid page", async () => {
     const res = await app.request("/team-architectures/adewale/planet-cf");
     const body = await res.text();
-    // NAV_PROJECTS should be in the injected JS
-    expect(body).toContain("/team-architectures/");
-    expect(body).toContain('"adewale"');
+    expect(body).toContain("/team-architectures/adewale");
+    expect(body).toContain("Ade");
   });
 });
 
@@ -994,7 +1135,7 @@ describe("Gallery HTML structure", () => {
     expect(body).toMatch(/<div[^>]*class="card"/);
   });
 
-  it("gallery shows accurate project counts from totalDiscovered", async () => {
+  it("gallery shows actual project counts", async () => {
     const { TEAM_REGISTRY } = await import(
       "../src/embeds/v1/cloudflare-architecture-viz/mermaid"
     );
@@ -1002,10 +1143,7 @@ describe("Gallery HTML structure", () => {
     const body = await res.text();
     for (const [, entry] of Object.entries(TEAM_REGISTRY)) {
       if (entry.projects.length === 0) continue;
-      if (entry.totalDiscovered > entry.projects.length) {
-        // Should show "X of Y projects"
-        expect(body).toContain(`${entry.projects.length} of ${entry.totalDiscovered}`);
-      }
+      expect(body).toContain(`${entry.projects.length} project`);
     }
   });
 
