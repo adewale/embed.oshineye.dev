@@ -23,7 +23,7 @@ from datetime import datetime, timezone
 SCRIPT_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = SCRIPT_DIR.parent
 OUTPUT = PROJECT_ROOT / "src" / "embeds" / "v1" / "cloudflare-architecture-viz" / "team-data.ts"
-CACHE_FILE = PROJECT_ROOT / ".cache" / "team-discovery.json"
+CACHE_FILE = PROJECT_ROOT / "data" / "team-discovery.json"
 
 # --- Team members ---
 TEAM = [
