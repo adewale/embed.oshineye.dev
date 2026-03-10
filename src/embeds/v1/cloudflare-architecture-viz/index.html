@@ -273,6 +273,7 @@
   <div class="diagram-code" id="mermaidDiagram">
     <div class="diagram-code-header">
       <span class="diagram-code-title">Mermaid</span>
+      <button class="copy-btn" id="copyMermaidBtn" onclick="copyMermaidMarkdown()">Copy Markdown</button>
     </div>
     <div class="mermaid-container">
       <!-- MERMAID_DIAGRAMS -->
@@ -492,6 +493,54 @@
         flows: [
           { from: "Browser", to: "Static Assets", label: "GET /*" }
         ]
+      },
+      {
+        id: "tasche",
+        name: "Tasche",
+        description: "A self-hosted read-it-later service built on Cloudflare Python Workers. Save articles, read them offline, and listen to them as audio. Uses D1 with FTS5, R2, KV, Queues, Workers AI TTS, and a service-bound Readability Worker.",
+        url: "https://github.com/adewale/tasche",
+        tiers: [
+          {
+            label: "Client",
+            nodes: [
+              { label: "Browser", detail: "PWA (Preact)" }
+            ]
+          },
+          {
+            label: "Edge",
+            nodes: [
+              { label: "Static Assets", detail: "Vite SPA" },
+              { label: "Python Worker", detail: "FastAPI API" },
+              { label: "JS Worker", detail: "Readability" }
+            ]
+          },
+          {
+            label: "Storage",
+            nodes: [
+              { label: "D1", detail: "Articles, FTS5" },
+              { label: "R2", detail: "Content + audio" },
+              { label: "KV", detail: "Sessions (7d TTL)" },
+              { label: "Queues", detail: "Article processing" }
+            ]
+          },
+          {
+            label: "AI",
+            nodes: [
+              { label: "Workers AI", detail: "TTS (MeloTTS)" }
+            ]
+          }
+        ],
+        flows: [
+          { from: "Browser", to: "Static Assets", label: "GET /" },
+          { from: "Browser", to: "Python Worker", label: "API requests" },
+          { from: "Python Worker", to: "KV", label: "Session lookup" },
+          { from: "Python Worker", to: "D1", label: "CRUD + FTS5 search" },
+          { from: "Python Worker", to: "Queues", label: "Enqueue article" },
+          { from: "Queues", to: "Python Worker", label: "Consume batch" },
+          { from: "Python Worker", to: "JS Worker", label: "Service binding" },
+          { from: "Python Worker", to: "R2", label: "Store / fetch content" },
+          { from: "Python Worker", to: "Workers AI", label: "Generate audio" }
+        ]
       }
     ];
 
@@ -519,7 +568,7 @@
         // Single project detail: show back link to user's grid page
         var link = document.createElement('a');
         link.className = 'project-btn';
-        link.innerHTML = '&larr; ' + _DISPLAY_NAME + "'s projects";
+        link.innerHTML = '&larr; ' + (typeof _BACK_LABEL !== 'undefined' ? _BACK_LABEL : _DISPLAY_NAME + "'s projects");
         link.href = _BACK_URL;
         sel.appendChild(link);
         var active = document.createElement('span');
@@ -579,6 +628,19 @@
           '<span>' + flow.to + '</span>' +
           '<span class="mermaid-flow-label">' + flow.label + '</span>';
         flowsEl.appendChild(item);
+      });
+    }
+
+    function copyMermaidMarkdown() {
+      var active = document.querySelector('.mermaid-project-svg[style=""], .mermaid-project-svg:not([style*="display: none"])');
+      if (!active) return;
+      var source = active.getAttribute('data-mermaid-source');
+      if (!source) return;
+      var markdown = '```mermaid\n' + source + '\n```';
+      navigator.clipboard.writeText(markdown).then(function() {
+        var btn = document.getElementById('copyMermaidBtn');
+        btn.textContent = 'Copied!';
+        setTimeout(function() { btn.textContent = 'Copy Markdown'; }, 1500);
       });
     }
 

@@ -1,0 +1,267 @@
+// Garden projects from garden.cloudflare.dev
+// Architecture data derived from wrangler configs of each project's GitHub repo
+
+import type { Project } from "./mermaid";
+
+export interface GardenProject extends Project {
+  name: string;
+  description: string;
+  developer: string;
+  developerName: string;
+  gardenUrl: string;
+  repoUrl: string;
+}
+
+export const GARDEN_PROJECTS: GardenProject[] = [
+  {
+    id: "bucketdrop",
+    name: "BucketDrop",
+    description: "File uploads from your Mac menu bar. Bring your own R2 bucket.",
+    developer: "fayazara",
+    developerName: "Fayaz Ahmed",
+    gardenUrl: "https://garden.cloudflare.dev/bucketdrop/",
+    repoUrl: "https://github.com/fayazara/bucketdrop",
+    nodes: [
+      { label: "macOS App", primitive: "client", detail: "Menu bar client" },
+      { label: "R2", primitive: "r2", detail: "S3-compatible storage" },
+    ],
+    flows: [
+      { from: "macOS App", to: "R2", label: "Upload via S3 API" },
+    ],
+  },
+  {
+    id: "image-editing-arena",
+    name: "Image Editing Arena",
+    description: "AI-powered image editing arena. Upload images and compare transformations side-by-side.",
+    developer: "replicate",
+    developerName: "Replicate",
+    gardenUrl: "https://garden.cloudflare.dev/image-editing-arena/",
+    repoUrl: "https://github.com/replicate/image-editing-arena",
+    nodes: [
+      { label: "Browser", primitive: "client", detail: "Arena UI" },
+      { label: "Static Assets", primitive: "static-assets", detail: "SPA" },
+    ],
+    flows: [
+      { from: "Browser", to: "Static Assets", label: "GET /" },
+    ],
+  },
+  {
+    id: "system",
+    name: "SYSTEM",
+    description: "Control your Mac from anywhere with AI. Play music, send messages, run commands.",
+    developer: "ygwyg",
+    developerName: "Brandon Strittmatter",
+    gardenUrl: "https://garden.cloudflare.dev/system/",
+    repoUrl: "https://github.com/ygwyg/system",
+    nodes: [
+      { label: "Client", primitive: "client", detail: "Raycast / Browser" },
+      { label: "Workers", primitive: "workers", detail: "Agent server" },
+      { label: "Durable Objects", primitive: "durable-objects", detail: "SystemAgent (SQLite)" },
+    ],
+    flows: [
+      { from: "Client", to: "Workers", label: "AI commands" },
+      { from: "Workers", to: "Durable Objects", label: "Agent state" },
+    ],
+  },
+  {
+    id: "fauxto-booth",
+    name: "Fauxto Booth",
+    description: "Take Fake Photos with your real friends! AI-powered photo booth with real-time collaboration.",
+    developer: "craigsdennis",
+    developerName: "Craig Dennis",
+    gardenUrl: "https://garden.cloudflare.dev/fauxto-booth/",
+    repoUrl: "https://github.com/craigsdennis/fauxto-booth",
+    nodes: [
+      { label: "Browser", primitive: "client", detail: "React SPA" },
+      { label: "Static Assets", primitive: "static-assets", detail: "Vite build" },
+      { label: "Workers", primitive: "workers", detail: "API router" },
+      { label: "Durable Objects", primitive: "durable-objects", detail: "Hub/Booth/Fauxto Agents" },
+      { label: "Workflow", primitive: "workflows", detail: "Photo pipeline" },
+      { label: "R2", primitive: "r2", detail: "Photos" },
+    ],
+    flows: [
+      { from: "Browser", to: "Static Assets", label: "GET /" },
+      { from: "Browser", to: "Workers", label: "API requests" },
+      { from: "Workers", to: "Durable Objects", label: "Agent state" },
+      { from: "Workers", to: "Workflow", label: "Generate photo" },
+      { from: "Workers", to: "R2", label: "Store photos" },
+      { from: "Durable Objects", to: "Browser", label: "WS updates" },
+    ],
+  },
+  {
+    id: "the-coffee-cluster",
+    name: "The Coffee Cluster",
+    description: "A Next.js application demonstrating PlanetScale with Hyperdrive for fast database connections.",
+    developer: "jillesme",
+    developerName: "Jilles Soeters",
+    gardenUrl: "https://garden.cloudflare.dev/the-coffee-cluster/",
+    repoUrl: "https://github.com/jillesme/thecoffeecluster",
+    nodes: [
+      { label: "Browser", primitive: "client", detail: "thecoffeecluster.com" },
+      { label: "Static Assets", primitive: "static-assets", detail: "Next.js" },
+      { label: "Workers", primitive: "workers", detail: "OpenNext" },
+      { label: "R2", primitive: "r2", detail: "Coffee images" },
+    ],
+    flows: [
+      { from: "Browser", to: "Static Assets", label: "GET /" },
+      { from: "Browser", to: "Workers", label: "Dynamic routes" },
+      { from: "Workers", to: "R2", label: "Image storage" },
+    ],
+  },
+  {
+    id: "virtual-try-on",
+    name: "Virtual Try On",
+    description: "Virtually try on clothing items using Workers and Replicate AI models.",
+    developer: "harshil1712",
+    developerName: "Harshil Agrawal",
+    gardenUrl: "https://garden.cloudflare.dev/virtual-try-on/",
+    repoUrl: "https://github.com/harshil1712/virtual-try-on-demo",
+    nodes: [
+      { label: "Browser", primitive: "client", detail: "TanStack UI" },
+      { label: "Static Assets", primitive: "static-assets", detail: "TanStack SPA" },
+      { label: "Workers", primitive: "workers", detail: "API" },
+      { label: "R2", primitive: "r2", detail: "Images" },
+    ],
+    flows: [
+      { from: "Browser", to: "Static Assets", label: "GET /" },
+      { from: "Browser", to: "Workers", label: "Try-on requests" },
+      { from: "Workers", to: "R2", label: "Store images" },
+    ],
+  },
+  {
+    id: "inboxbuddy",
+    name: "InboxBuddy",
+    description: "AI-powered scheduling assistant. CC the bot in any email for automatic meeting coordination.",
+    developer: "whoiskatrin",
+    developerName: "Kate Reznykova",
+    gardenUrl: "https://garden.cloudflare.dev/inboxbuddy/",
+    repoUrl: "https://github.com/whoiskatrin/inboxbuddy",
+    nodes: [
+      { label: "Browser", primitive: "client", detail: "Dashboard" },
+      { label: "Static Assets", primitive: "static-assets", detail: "React SPA" },
+      { label: "Workers", primitive: "workers", detail: "Email handler" },
+      { label: "Durable Objects", primitive: "durable-objects", detail: "Conversation Agents" },
+      { label: "D1", primitive: "d1", detail: "Conversations" },
+      { label: "KV", primitive: "kv", detail: "OAuth tokens" },
+    ],
+    flows: [
+      { from: "Browser", to: "Static Assets", label: "GET /" },
+      { from: "Browser", to: "Workers", label: "Dashboard API" },
+      { from: "Workers", to: "Durable Objects", label: "Conversation state" },
+      { from: "Workers", to: "D1", label: "Store metadata" },
+      { from: "Workers", to: "KV", label: "Token lookup" },
+    ],
+  },
+  {
+    id: "kivo",
+    name: "Kivo",
+    description: "A modern invoicing platform for freelancers. Create invoices, track payments, get paid faster.",
+    developer: "lauragift21",
+    developerName: "Gift Egwuenu",
+    gardenUrl: "https://garden.cloudflare.dev/kivo/",
+    repoUrl: "https://github.com/lauragift21/kivo",
+    nodes: [
+      { label: "Browser", primitive: "client", detail: "TanStack UI" },
+      { label: "Static Assets", primitive: "static-assets", detail: "TanStack SPA" },
+      { label: "Workers", primitive: "workers", detail: "API" },
+      { label: "Cron Trigger", primitive: "cron", detail: "Every 5 min" },
+      { label: "Durable Objects", primitive: "durable-objects", detail: "ReminderScheduler" },
+      { label: "D1", primitive: "d1", detail: "Invoices" },
+      { label: "R2", primitive: "r2", detail: "PDF storage" },
+    ],
+    flows: [
+      { from: "Browser", to: "Static Assets", label: "GET /" },
+      { from: "Browser", to: "Workers", label: "API requests" },
+      { from: "Cron Trigger", to: "Workers", label: "Reconciliation" },
+      { from: "Workers", to: "Durable Objects", label: "Schedule reminders" },
+      { from: "Workers", to: "D1", label: "CRUD invoices" },
+      { from: "Workers", to: "R2", label: "Store PDFs" },
+    ],
+  },
+  {
+    id: "weft",
+    name: "Weft",
+    description: "Task management where AI agents do your tasks across emails, spreadsheets, and code.",
+    developer: "jonesphillip",
+    developerName: "Phillip Jones",
+    gardenUrl: "https://garden.cloudflare.dev/weft/",
+    repoUrl: "https://github.com/jonesphillip/weft",
+    nodes: [
+      { label: "Browser", primitive: "client", detail: "Task board" },
+      { label: "Static Assets", primitive: "static-assets", detail: "React SPA" },
+      { label: "Workers", primitive: "workers", detail: "API" },
+      { label: "Durable Objects", primitive: "durable-objects", detail: "Board/User (SQLite)" },
+      { label: "Workflow", primitive: "workflows", detail: "AgentWorkflow" },
+    ],
+    flows: [
+      { from: "Browser", to: "Static Assets", label: "GET /" },
+      { from: "Browser", to: "Workers", label: "Task management" },
+      { from: "Workers", to: "Durable Objects", label: "Board state" },
+      { from: "Workers", to: "Workflow", label: "Agent execution" },
+    ],
+  },
+  {
+    id: "keyboardia",
+    name: "Keyboardia",
+    description: "A multiplayer step sequencer with polyrhythmic patterns for real-time collaboration.",
+    developer: "adewale",
+    developerName: "Ade Oshineye",
+    gardenUrl: "https://garden.cloudflare.dev/keyboardia/",
+    repoUrl: "https://github.com/adewale/keyboardia",
+    nodes: [
+      { label: "Browser", primitive: "client", detail: "SPA client" },
+      { label: "Static Assets", primitive: "static-assets", detail: "Vite build" },
+      { label: "Workers", primitive: "workers", detail: "API router" },
+      { label: "Durable Objects", primitive: "durable-objects", detail: "LiveSession (SQLite)" },
+      { label: "KV", primitive: "kv", detail: "Sessions" },
+      { label: "R2", primitive: "r2", detail: "Audio samples" },
+    ],
+    flows: [
+      { from: "Browser", to: "Static Assets", label: "GET /" },
+      { from: "Browser", to: "Workers", label: "API requests" },
+      { from: "Workers", to: "KV", label: "Session lookup" },
+      { from: "Workers", to: "Durable Objects", label: "Live session" },
+      { from: "Workers", to: "R2", label: "Store / fetch samples" },
+      { from: "Durable Objects", to: "Browser", label: "WS sync" },
+    ],
+  },
+  {
+    id: "webhookflare",
+    name: "Webhookflare",
+    description: "Webhook testing and debugging tool with persistent SQLite storage and real-time WebSocket updates.",
+    developer: "fayazara",
+    developerName: "Fayaz Ahmed",
+    gardenUrl: "https://garden.cloudflare.dev/webhookflare/",
+    repoUrl: "https://github.com/fayazara/webhookflare",
+    nodes: [
+      { label: "Browser", primitive: "client", detail: "Debug UI" },
+      { label: "Static Assets", primitive: "static-assets", detail: "Dashboard" },
+      { label: "Workers", primitive: "workers", detail: "Webhook handler" },
+      { label: "Durable Objects", primitive: "durable-objects", detail: "WebhookBin (SQLite)" },
+    ],
+    flows: [
+      { from: "Browser", to: "Static Assets", label: "GET /" },
+      { from: "Browser", to: "Workers", label: "Create / view bins" },
+      { from: "Workers", to: "Durable Objects", label: "Store webhooks" },
+      { from: "Durable Objects", to: "Browser", label: "WS updates" },
+    ],
+  },
+  {
+    id: "kontext-realtime",
+    name: "Kontext Realtime",
+    description: "Create and edit images using your voice, powered by Replicate and Cloudflare Workers.",
+    developer: "zeke",
+    developerName: "Zeke",
+    gardenUrl: "https://garden.cloudflare.dev/kontext-realtime/",
+    repoUrl: "https://github.com/replicate/kontext-realtime",
+    nodes: [
+      { label: "Browser", primitive: "client", detail: "WebRTC UI" },
+      { label: "Static Assets", primitive: "static-assets", detail: "React SPA" },
+      { label: "Workers", primitive: "workers", detail: "Hono API" },
+    ],
+    flows: [
+      { from: "Browser", to: "Static Assets", label: "GET /" },
+      { from: "Browser", to: "Workers", label: "API requests" },
+    ],
+  },
+];

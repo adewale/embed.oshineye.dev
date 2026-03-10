@@ -8,8 +8,10 @@ import {
   PROJECTS,
 } from "./embeds/v1/cloudflare-architecture-viz/mermaid";
 import type { UserEntry } from "./embeds/v1/cloudflare-architecture-viz/mermaid";
-import { TEAM_RENDERED, ADE_RENDERED } from "./embeds/v1/cloudflare-architecture-viz/team-svgs";
+import { TEAM_RENDERED, ADE_RENDERED, GARDEN_RENDERED } from "./embeds/v1/cloudflare-architecture-viz/team-svgs";
 import type { PreRenderedDiagrams } from "./embeds/v1/cloudflare-architecture-viz/team-svgs";
+import { GARDEN_PROJECTS } from "./embeds/v1/cloudflare-architecture-viz/garden-data";
+import type { GardenProject } from "./embeds/v1/cloudflare-architecture-viz/garden-data";
 import archVizHtml from "./embeds/v1/cloudflare-architecture-viz/index.html";
 
 const TIER_ORDER = ["client", "edge", "compute", "storage", "ai"];
@@ -259,6 +261,7 @@ app.get("/", (c) => {
   <h2>Architecture Diagrams</h2>
   <ul>
     <li><a href="/team-architectures">Team Architectures</a> &mdash; Cloudflare architecture diagrams for the team</li>
+    <li><a href="/garden-architectures">Garden Architectures</a> &mdash; Architecture diagrams for garden.cloudflare.dev projects</li>
   </ul>
 </body>
 </html>`;
@@ -442,6 +445,173 @@ app.get("/team-architectures/:username/:projectId", (c) => {
   const theme = c.req.query("theme") || "light";
   const html = renderProjectPage(entry, username, theme, projectId);
   if (!html) return c.text("Not Found", 404);
+  return c.html(html);
+});
+
+// Garden architectures gallery page
+app.get("/garden-architectures", (c) => {
+  const theme = c.req.query("theme") || "light";
+  const isDark = theme === "dark";
+
+  const cards = GARDEN_PROJECTS
+    .map((p) => {
+      const uniquePrims = new Set<string>();
+      for (const n of p.nodes) {
+        if (n.primitive !== "client" && n.primitive !== "terminal") {
+          uniquePrims.add(n.primitive);
+        }
+      }
+      const badges = [...uniquePrims]
+        .map((prim) => `<span class="badge">${prim}</span>`)
+        .join(" ");
+      const themeParam = theme !== "light" ? `?theme=${theme}` : "";
+      return `<div class="card" onclick="window.location='/garden-architectures/${p.id}${themeParam}'" role="link" tabindex="0">
+        <img src="https://github.com/${p.developer}.png?size=80" alt="${p.developerName}" width="48" height="48" class="avatar" />
+        <div class="card-body">
+          <div class="card-header">
+            <strong class="name">${p.name}</strong>
+            <a href="${p.gardenUrl}" class="gh-link" target="_blank" rel="noopener" title="View on Garden" onclick="event.stopPropagation()"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg></a>
+          </div>
+          <span class="meta">${p.developerName}</span>
+          <div class="badges">${badges}</div>
+        </div>
+      </div>`;
+    })
+    .join("\n      ");
+
+  const html = `<!DOCTYPE html>
+<html lang="en" class="${isDark ? "dark" : ""}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Garden Architectures — embed.oshineye.dev</title>
+  <style>
+    :root {
+      --bg: #f9fafb;
+      --fg: #111827;
+      --surface: #ffffff;
+      --surface-hover: #f9fafb;
+      --border: #e5e7eb;
+      --text: #111827;
+      --text-muted: #6b7280;
+      --accent: #f97316;
+      --accent-dark: #ea580c;
+    }
+    :root.dark {
+      --bg: #111827;
+      --fg: #f9fafb;
+      --surface: #1f2937;
+      --surface-hover: #374151;
+      --border: #374151;
+      --text: #f9fafb;
+      --text-muted: #9ca3af;
+      --accent: #f97316;
+      --accent-dark: #ea580c;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg); color: var(--text);
+      max-width: 960px; margin: 0 auto; padding: 32px 24px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+    h1 { font-size: 1.5rem; margin-bottom: 4px; }
+    .subtitle { color: var(--text-muted); margin-bottom: 24px; }
+    .subtitle a { color: var(--accent); text-decoration: none; }
+    .subtitle a:hover { text-decoration: underline; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    @media (max-width: 768px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 480px) {
+      .grid { grid-template-columns: 1fr; }
+      body { padding: 20px 16px; }
+      h1 { font-size: 1.25rem; }
+    }
+    .card {
+      display: flex; align-items: flex-start; gap: 12px;
+      padding: 16px; border-radius: 8px;
+      background: var(--surface); border: 1px solid var(--border);
+      text-decoration: none; color: var(--text);
+      transition: border-color 0.15s;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .card:hover { border-color: var(--accent); }
+    .card:active { border-color: var(--accent); background: var(--surface-hover); }
+    .avatar { border-radius: 50%; flex-shrink: 0; }
+    .card-body { min-width: 0; flex: 1; }
+    .card-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .name { color: var(--accent); font-size: 0.95rem; }
+    .gh-link { color: var(--text-muted); display: flex; align-items: center; transition: color 0.15s; flex-shrink: 0; padding: 4px; margin: -4px; }
+    .gh-link:hover { color: var(--accent); }
+    .meta { display: block; font-size: 0.8rem; color: var(--text-muted); margin: 2px 0 6px; }
+    .badges { display: flex; flex-wrap: wrap; gap: 4px; }
+    .badge {
+      font-size: 0.65rem; padding: 1px 6px; border-radius: 4px;
+      background: var(--surface-hover); color: var(--text-muted);
+      border: 1px solid var(--border);
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+  <h1>Garden Architectures</h1>
+  <p class="subtitle">Cloudflare architecture diagrams for <a href="https://garden.cloudflare.dev/" target="_blank" rel="noopener">garden.cloudflare.dev</a> projects</p>
+  <div class="grid">
+      ${cards}
+  </div>
+</body>
+</html>`;
+
+  return c.html(html);
+});
+
+// Garden architectures single project page
+app.get("/garden-architectures/:projectId", (c) => {
+  const projectId = c.req.param("projectId");
+  const project = GARDEN_PROJECTS.find((p) => p.id === projectId);
+  if (!project) return c.text("Not Found", 404);
+
+  const theme = c.req.query("theme") || "light";
+  const diagrams = theme === "dark" ? GARDEN_RENDERED.dark : GARDEN_RENDERED.light;
+  if (!diagrams[projectId]) return c.text("Not Found", 404);
+
+  const mermaidHtml = buildSingleProjectHtml(diagrams, projectId);
+
+  // Build client-side project data (same format as team pages)
+  const groups = new Map<string, { label: string; detail: string }[]>();
+  for (const node of project.nodes) {
+    const cat = PRIMITIVE_TIER[node.primitive];
+    if (!groups.has(cat)) groups.set(cat, []);
+    groups.get(cat)!.push({ label: node.label, detail: node.detail });
+  }
+  const tiers = TIER_ORDER
+    .filter((cat) => groups.has(cat))
+    .map((cat) => ({ label: TIER_LABELS[cat], nodes: groups.get(cat)! }));
+  const clientProject = {
+    id: project.id,
+    name: project.name,
+    description: project.description,
+    url: project.repoUrl,
+    tiers,
+    flows: project.flows,
+  };
+
+  const themeParam = theme !== "light" ? `?theme=${theme}` : "";
+  const backUrl = `/garden-architectures${themeParam}`;
+
+  const html = archVizHtml
+    .replace("<!-- MERMAID_DIAGRAMS -->", mermaidHtml)
+    .replace(
+      "var PROJECTS = [",
+      `var ACTIVE_PROJECT = ${JSON.stringify(clientProject)};var _BACK_URL = "${backUrl}";var _DISPLAY_NAME = "${project.name}";var _BACK_LABEL = "Garden projects";var _IGNORE = [`
+    )
+    .replace("<title>Cloudflare Architecture</title>", `<title>${project.name} Architecture</title>`)
+    .replace(">Cloudflare Architecture</h1>", `>${project.name}</h1>`);
   return c.html(html);
 });
 

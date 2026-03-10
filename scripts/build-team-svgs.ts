@@ -7,6 +7,7 @@
 
 import { TEAM_REGISTRY, PROJECTS, renderAllMermaidSvgs } from "../src/embeds/v1/cloudflare-architecture-viz/mermaid";
 import type { RenderedDiagrams } from "../src/embeds/v1/cloudflare-architecture-viz/mermaid";
+import { GARDEN_PROJECTS } from "../src/embeds/v1/cloudflare-architecture-viz/garden-data";
 import { writeFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -39,6 +40,15 @@ const adeRendered = {
 };
 console.log(`  Done in ${((Date.now() - t0) / 1000).toFixed(1)}s`);
 
+// Pre-render Garden projects (garden.cloudflare.dev)
+console.log(`Rendering Garden projects (${GARDEN_PROJECTS.length} projects)...`);
+t0 = Date.now();
+const gardenRendered = {
+  light: stripDiagrams(renderAllMermaidSvgs("light", GARDEN_PROJECTS)),
+  dark: stripDiagrams(renderAllMermaidSvgs("dark", GARDEN_PROJECTS)),
+};
+console.log(`  Done in ${((Date.now() - t0) / 1000).toFixed(1)}s`);
+
 // Pre-render all team member projects
 const output: Record<string, { light: PreRenderedDiagrams; dark: PreRenderedDiagrams }> = {};
 
@@ -66,6 +76,8 @@ export type PreRenderedDiagrams = Record<string, PreRenderedDiagram>;
 
 export const ADE_RENDERED: { light: PreRenderedDiagrams; dark: PreRenderedDiagrams } = ${JSON.stringify(adeRendered)};
 
+export const GARDEN_RENDERED: { light: PreRenderedDiagrams; dark: PreRenderedDiagrams } = ${JSON.stringify(gardenRendered)};
+
 export const TEAM_RENDERED: Record<string, { light: PreRenderedDiagrams; dark: PreRenderedDiagrams }> = ${JSON.stringify(output)};
 `;
 
@@ -78,5 +90,6 @@ const totalProjects = Object.values(output).reduce(
 const fileSizeKB = (Buffer.byteLength(ts) / 1024).toFixed(0);
 console.log(`\nWrote ${outPath}`);
 console.log(`  Ade embed: ${Object.keys(adeRendered.light).length} projects`);
+console.log(`  Garden: ${Object.keys(gardenRendered.light).length} projects`);
 console.log(`  Team: ${Object.keys(output).length} users, ${totalProjects} projects`);
 console.log(`  Total: ${fileSizeKB} KB`);

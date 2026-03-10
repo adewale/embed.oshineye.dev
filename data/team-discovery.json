@@ -13382,6 +13382,103 @@
             "label": "API requests"
           }
         ]
+      },
+      {
+        "id": "tasche",
+        "nodes": [
+          {
+            "label": "Browser",
+            "primitive": "client",
+            "detail": "PWA (Preact)"
+          },
+          {
+            "label": "Static Assets",
+            "primitive": "static-assets",
+            "detail": "Vite SPA"
+          },
+          {
+            "label": "Python Worker",
+            "primitive": "workers",
+            "detail": "FastAPI API"
+          },
+          {
+            "label": "JS Worker",
+            "primitive": "workers",
+            "detail": "Readability"
+          },
+          {
+            "label": "D1",
+            "primitive": "d1",
+            "detail": "Articles, FTS5"
+          },
+          {
+            "label": "R2",
+            "primitive": "r2",
+            "detail": "Content + audio"
+          },
+          {
+            "label": "KV",
+            "primitive": "kv",
+            "detail": "Sessions (7d TTL)"
+          },
+          {
+            "label": "Queues",
+            "primitive": "queues",
+            "detail": "Article processing"
+          },
+          {
+            "label": "Workers AI",
+            "primitive": "ai",
+            "detail": "TTS (MeloTTS)"
+          }
+        ],
+        "flows": [
+          {
+            "from": "Browser",
+            "to": "Static Assets",
+            "label": "GET /"
+          },
+          {
+            "from": "Browser",
+            "to": "Python Worker",
+            "label": "API requests"
+          },
+          {
+            "from": "Python Worker",
+            "to": "KV",
+            "label": "Session lookup"
+          },
+          {
+            "from": "Python Worker",
+            "to": "D1",
+            "label": "CRUD + FTS5 search"
+          },
+          {
+            "from": "Python Worker",
+            "to": "Queues",
+            "label": "Enqueue article"
+          },
+          {
+            "from": "Queues",
+            "to": "Python Worker",
+            "label": "Consume batch"
+          },
+          {
+            "from": "Python Worker",
+            "to": "JS Worker",
+            "label": "Service binding"
+          },
+          {
+            "from": "Python Worker",
+            "to": "R2",
+            "label": "Store / fetch content"
+          },
+          {
+            "from": "Python Worker",
+            "to": "Workers AI",
+            "label": "Generate audio"
+          }
+        ]
       }
     ],
     "totalFound": 6
