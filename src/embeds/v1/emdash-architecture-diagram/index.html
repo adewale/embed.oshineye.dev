@@ -403,13 +403,13 @@
       {
         id: "overview",
         name: "Overview",
-        description: 'EmDash is a headless CMS built entirely on Cloudflare Workers. It uses a monorepo architecture with platform-agnostic core logic and Cloudflare-specific adapters. <a href="https://github.com/emdash-cms/emdash" target="_blank" rel="noopener">github.com/emdash-cms/emdash</a>',
+        description: 'EmDash is an agent-portable reimagination of WordPress, built on Astro and Cloudflare. Content is stored as Portable Text (structured JSON), edited with TipTap, and queried via Kysely. Plugins run in sandboxed Worker isolates. <a href="https://github.com/emdash-cms/emdash" target="_blank" rel="noopener">github.com/emdash-cms/emdash</a>',
         tiers: [
           {
             tier: "client",
             label: "Clients",
             nodes: [
-              { name: "Admin Dashboard", detail: "Site management UI" },
+              { name: "Admin Dashboard", detail: "TipTap editor UI" },
               { name: "API Consumers", detail: "REST / JSON API" },
               { name: "AI Agents", detail: "MCP Protocol" },
               { name: "CLI", detail: "emdash-cli" }
@@ -417,11 +417,11 @@
           },
           {
             tier: "edge",
-            label: "Edge",
+            label: "Edge / Runtime",
             nodes: [
-              { name: "Cloudflare Workers", detail: "Hono router" },
-              { name: "Static Assets", detail: "Admin UI / CDN" },
-              { name: "Cache", detail: "KV-backed" }
+              { name: "Astro", detail: "Site framework + SSR" },
+              { name: "Cloudflare Workers", detail: "Serverless compute" },
+              { name: "Static Assets", detail: "Admin UI / CDN" }
             ]
           },
           {
@@ -429,18 +429,28 @@
             label: "Core Engine (packages/core)",
             nodes: [
               { name: "Content API", detail: "22 REST handlers" },
-              { name: "Schema Engine", detail: "Dynamic content types" },
+              { name: "Schema Engine", detail: "DB-driven content types" },
               { name: "Plugin Manager", detail: "Sandboxed plugins" },
               { name: "MCP Server", detail: "AI tool interface" }
+            ]
+          },
+          {
+            tier: "edge",
+            label: "Middleware Chain",
+            nodes: [
+              { name: "setup", detail: "Init + migration check" },
+              { name: "auth", detail: "Session validation" },
+              { name: "request-context", detail: "DB, user, locale" },
+              { name: "redirect", detail: "URL rewrite rules" }
             ]
           },
           {
             tier: "auth",
             label: "Auth (packages/auth)",
             nodes: [
+              { name: "Passkey", detail: "WebAuthn (primary)" },
               { name: "OAuth", detail: "Social providers" },
               { name: "Magic Link", detail: "Email-based" },
-              { name: "Passkey", detail: "WebAuthn" },
               { name: "RBAC", detail: "Role-based access" }
             ]
           },
@@ -448,9 +458,9 @@
             tier: "storage",
             label: "Cloudflare Services",
             nodes: [
-              { name: "D1", detail: "SQL database" },
+              { name: "D1", detail: "SQLite database" },
               { name: "R2", detail: "Object storage" },
-              { name: "KV", detail: "Key-value cache" },
+              { name: "KV", detail: "Sessions & cache" },
               { name: "Queues", detail: "Async tasks" }
             ]
           },
@@ -464,58 +474,74 @@
           }
         ],
         flows: [
-          { from: "Admin Dashboard", to: "Workers", label: "REST API calls" },
+          { from: "Admin Dashboard", to: "Astro SSR", label: "REST API calls" },
           { from: "AI Agents", to: "MCP Server", label: "MCP protocol" },
-          { from: "Workers", to: "Content API", label: "Route dispatch" },
-          { from: "Content API", to: "D1", label: "SQL queries (prepared)" },
+          { from: "Astro", to: "Middleware Chain", label: "Request pipeline" },
+          { from: "Middleware", to: "Content API", label: "Route dispatch" },
+          { from: "Content API", to: "D1", label: "Kysely SQL queries" },
           { from: "Content API", to: "R2", label: "Media upload/download" },
-          { from: "Plugin Manager", to: "Workers AI", label: "Security audit" },
-          { from: "Plugin Manager", to: "Queues", label: "Scheduled tasks" }
+          { from: "Plugin Manager", to: "Workers AI", label: "Security audit" }
         ],
         packages: [
-          { name: "core", desc: "CMS engine & API" },
-          { name: "auth", desc: "Authentication" },
-          { name: "cloudflare", desc: "CF adapters" },
-          { name: "marketplace", desc: "Plugin store" },
-          { name: "x402", desc: "Payments" }
+          { name: "core", desc: "Astro integration + CMS engine" },
+          { name: "admin", desc: "Dashboard UI" },
+          { name: "auth", desc: "WebAuthn, OAuth, RBAC" },
+          { name: "blocks", desc: "Portable Text blocks" },
+          { name: "cloudflare", desc: "D1/R2/KV adapters" },
+          { name: "plugins", desc: "10 first-party plugins" },
+          { name: "marketplace", desc: "Plugin store Worker" },
+          { name: "create-emdash", desc: "Scaffolding CLI" },
+          { name: "gutenberg-to-pt", desc: "WP block converter" },
+          { name: "x402", desc: "Payment protocol" }
         ]
       },
       {
         id: "core",
         name: "Core Engine",
-        description: "The core package contains the platform-agnostic CMS logic: content CRUD, schema management, plugin orchestration, media handling, and the MCP server for AI agents.",
+        description: "The core package is an Astro integration containing platform-agnostic CMS logic. Content is Portable Text stored in SQL via Kysely. Schema lives in the database (non-devs can create content types via admin). All handlers return ApiResponse&lt;T&gt; discriminated unions.",
         tiers: [
           {
             tier: "client",
             label: "Inbound",
             nodes: [
-              { name: "Hono Router", detail: "HTTP dispatch" },
-              { name: "MCP Server", detail: "AI agent tools" }
+              { name: "Astro Routes", detail: "Thin wrappers \u2192 handlers" },
+              { name: "MCP Server", detail: "AI agent tools" },
+              { name: "CLI", detail: "Programmatic access" }
+            ]
+          },
+          {
+            tier: "edge",
+            label: "Middleware Pipeline",
+            nodes: [
+              { name: "setup.ts", detail: "Runtime init, migrations" },
+              { name: "auth.ts", detail: "Session + WebAuthn" },
+              { name: "request-context.ts", detail: "DB, user, locale" },
+              { name: "redirect.ts", detail: "URL rewrite rules" }
             ]
           },
           {
             tier: "core",
-            label: "API Handlers",
+            label: "API Handlers (Content)",
             nodes: [
-              { name: "Content", detail: "CRUD operations" },
-              { name: "Schema", detail: "Content type defs" },
+              { name: "Content", detail: "CRUD, Portable Text" },
+              { name: "Schema", detail: "DB-driven type defs" },
               { name: "Media", detail: "Upload / transform" },
               { name: "Taxonomies", detail: "Tags & categories" }
             ]
           },
           {
             tier: "core",
-            label: "API Handlers (continued)",
+            label: "API Handlers (Structure)",
             nodes: [
               { name: "Menus", detail: "Navigation trees" },
               { name: "Sections", detail: "Page sections" },
-              { name: "SEO", detail: "Meta & sitemap" },
+              { name: "SEO", detail: "Meta, sitemap, robots" },
               { name: "Redirects", detail: "URL rewrites" }
             ]
           },
           {
             tier: "core",
-            label: "API Handlers (continued)",
+            label: "API Handlers (Management)",
             nodes: [
               { name: "Comments", detail: "User comments" },
               { name: "Revisions", detail: "Content history" },
@@ -538,27 +564,28 @@
             label: "Plugin System",
             nodes: [
               { name: "Plugin Manager", detail: "Lifecycle & hooks" },
-              { name: "Sandbox", detail: "Isolated execution" },
+              { name: "Sandbox", detail: "Dynamic Worker Loaders" },
               { name: "Scheduler", detail: "Cron triggers" },
-              { name: "Marketplace", detail: "Discovery & install" }
+              { name: "Marketplace Client", detail: "Discovery & install" }
             ]
           },
           {
             tier: "storage",
-            label: "Storage Adapters",
+            label: "Storage Adapters (platform-agnostic)",
             nodes: [
-              { name: "DB Adapter", detail: "D1 queries" },
-              { name: "Storage Adapter", detail: "R2 objects" },
-              { name: "Cache Adapter", detail: "KV read/write" }
+              { name: "DB (Kysely)", detail: "D1 / SQLite / Postgres" },
+              { name: "Object Storage", detail: "R2 / S3 / local FS" },
+              { name: "Session Store", detail: "KV / Redis / file" },
+              { name: "Search (FTS5)", detail: "Full-text search" }
             ]
           }
         ],
         flows: [
-          { from: "Hono Router", to: "API Handlers", label: "Route matching" },
+          { from: "Astro Routes", to: "Middleware", label: "Request pipeline" },
+          { from: "Middleware", to: "API Handlers", label: "Authenticated context" },
           { from: "Content", to: "Schema", label: "Validates against type" },
           { from: "Content", to: "Revisions", label: "Auto-versioning" },
-          { from: "Plugin Manager", to: "Sandbox", label: "Isolated runtime" },
-          { from: "Scheduler", to: "Plugin Manager", label: "Cron triggers" },
+          { from: "Plugin Manager", to: "Sandbox", label: "Dynamic Worker Loaders" },
           { from: "All Handlers", to: "Storage Adapters", label: "Platform-agnostic interface" }
         ],
         packages: null
@@ -566,7 +593,7 @@
       {
         id: "auth",
         name: "Auth",
-        description: "The auth package supports multiple authentication strategies with a unified RBAC layer. Adapters allow swapping providers without changing core logic.",
+        description: "The auth package supports multiple strategies with WebAuthn/Passkeys as the primary method. Adapters allow swapping providers without changing core logic. All auth state flows through a unified RBAC layer.",
         tiers: [
           {
             tier: "client",
@@ -579,11 +606,11 @@
           },
           {
             tier: "edge",
-            label: "Entry Points",
+            label: "Strategies",
             nodes: [
+              { name: "Passkey", detail: "WebAuthn (primary)" },
               { name: "OAuth Flow", detail: "Authorization code" },
               { name: "Magic Link", detail: "Email verification" },
-              { name: "Passkey", detail: "WebAuthn challenge" },
               { name: "Device Flow", detail: "Polling-based" }
             ]
           },
@@ -601,8 +628,8 @@
             tier: "core",
             label: "Adapters",
             nodes: [
-              { name: "OAuth Adapters", detail: "GitHub, Google, etc." },
               { name: "Passkey Adapter", detail: "WebAuthn RP" },
+              { name: "OAuth Adapters", detail: "GitHub, Google, etc." },
               { name: "Email Adapter", detail: "Magic link delivery" }
             ]
           },
@@ -611,14 +638,14 @@
             label: "Persistence",
             nodes: [
               { name: "D1", detail: "Users, sessions, roles" },
-              { name: "KV", detail: "Token cache" }
+              { name: "KV", detail: "Session cache" }
             ]
           }
         ],
         flows: [
+          { from: "Passkey", to: "Passkey Adapter", label: "WebAuthn ceremony" },
           { from: "OAuth Flow", to: "OAuth Adapters", label: "Provider callback" },
           { from: "Magic Link", to: "Email Adapter", label: "Send verification" },
-          { from: "Passkey", to: "Passkey Adapter", label: "WebAuthn ceremony" },
           { from: "All strategies", to: "Token Service", label: "Issue JWT" },
           { from: "Token Service", to: "RBAC", label: "Attach permissions" },
           { from: "Device Flow", to: "Token Service", label: "Poll for approval" }
@@ -628,7 +655,7 @@
       {
         id: "plugins",
         name: "Plugins",
-        description: "EmDash has a full plugin ecosystem with sandboxed execution, a marketplace with AI-powered security auditing, scheduled tasks, and hook-based extensibility.",
+        description: "EmDash addresses WordPress\u2019s plugin security problem (96% of WP vulnerabilities come from plugins) by running all plugins in sandboxed Worker isolates with capability manifests. The marketplace uses Workers AI to audit code before publishing.",
         tiers: [
           {
             tier: "client",
@@ -645,7 +672,7 @@
             nodes: [
               { name: "Code Auditor", detail: "Workers AI analysis" },
               { name: "Image Auditor", detail: "Icon & screenshot check" },
-              { name: "Manifest Validator", detail: "Schema verification" }
+              { name: "Manifest Validator", detail: "Capability verification" }
             ]
           },
           {
@@ -655,25 +682,35 @@
               { name: "Plugin Manager", detail: "Install / enable / disable" },
               { name: "Hook System", detail: "Event-driven extensibility" },
               { name: "Route Injection", detail: "Custom endpoints" },
-              { name: "State Manager", detail: "Plugin KV storage" }
+              { name: "Block Kit", detail: "Admin UI via JSON" }
             ]
           },
           {
             tier: "edge",
             label: "Execution",
             nodes: [
-              { name: "Sandbox", detail: "Isolated JS runtime" },
+              { name: "Worker Isolate", detail: "Dynamic Worker Loaders" },
               { name: "Scheduler", detail: "Cron-based triggers" },
               { name: "Email Service", detail: "Plugin email sending" }
             ]
           },
           {
-            tier: "storage",
-            label: "Storage",
+            tier: "external",
+            label: "First-Party Plugins (10)",
             nodes: [
-              { name: "Plugin Storage", detail: "Indexed KV" },
-              { name: "Plugin DB", detail: "D1 namespaced" },
-              { name: "Plugin Assets", detail: "R2 scoped" }
+              { name: "ai-moderation", detail: "Content moderation" },
+              { name: "atproto", detail: "Bluesky federation" },
+              { name: "forms", detail: "Form builder" },
+              { name: "webhook-notifier", detail: "Event webhooks" }
+            ]
+          },
+          {
+            tier: "storage",
+            label: "Plugin Storage (scoped)",
+            nodes: [
+              { name: "Plugin KV", detail: "Namespaced state" },
+              { name: "Plugin DB", detail: "D1 scoped tables" },
+              { name: "Plugin Assets", detail: "R2 scoped bucket" }
             ]
           }
         ],
@@ -681,32 +718,41 @@
           { from: "Marketplace", to: "Code Auditor", label: "Pre-publish scan" },
           { from: "Code Auditor", to: "Workers AI", label: "Threat detection" },
           { from: "Plugin Manager", to: "Hook System", label: "Lifecycle events" },
-          { from: "Hook System", to: "Sandbox", label: "Isolated execution" },
-          { from: "Scheduler", to: "Plugin Manager", label: "Cron trigger" },
-          { from: "Route Injection", to: "Hono Router", label: "Custom /api/plugins/*" }
+          { from: "Hook System", to: "Worker Isolate", label: "Sandboxed execution" },
+          { from: "Admin", to: "Block Kit", label: "Plugin UI interactions" },
+          { from: "Scheduler", to: "Plugin Manager", label: "Cron trigger" }
         ],
         packages: null
       },
       {
         id: "monorepo",
         name: "Monorepo",
-        description: "The codebase is organized as a TypeScript monorepo. The core package is platform-agnostic; the cloudflare package provides Cloudflare-specific adapters via dependency injection.",
+        description: "A pnpm monorepo with 10 packages. The core is platform-agnostic (works with D1, SQLite, or Postgres); the cloudflare package injects Cloudflare-specific adapters. Built with tsdown, tested with Vitest + Playwright, formatted with oxfmt.",
         tiers: [
           {
             tier: "core",
             label: "packages/core",
             nodes: [
-              { name: "API Handlers", detail: "22 REST endpoints" },
+              { name: "Astro Integration", detail: "Middleware + routes" },
+              { name: "22 API Handlers", detail: "ApiResponse&lt;T&gt; pattern" },
               { name: "Plugin System", detail: "Hooks, sandbox, scheduler" },
-              { name: "MCP Server", detail: "AI agent interface" },
-              { name: "Storage Interface", detail: "Abstract adapters" }
+              { name: "MCP Server", detail: "AI agent interface" }
+            ]
+          },
+          {
+            tier: "client",
+            label: "packages/admin + packages/blocks",
+            nodes: [
+              { name: "Admin Dashboard", detail: "CMS management UI" },
+              { name: "Portable Text Blocks", detail: "TipTap block defs" },
+              { name: "Block Playground", detail: "Block previews" }
             ]
           },
           {
             tier: "auth",
             label: "packages/auth",
             nodes: [
-              { name: "Strategies", detail: "OAuth, Magic Link, Passkey" },
+              { name: "Strategies", detail: "Passkey, OAuth, Magic Link" },
               { name: "RBAC", detail: "Roles & permissions" },
               { name: "Tokens", detail: "JWT management" },
               { name: "Adapters", detail: "Provider abstraction" }
@@ -716,10 +762,10 @@
             tier: "edge",
             label: "packages/cloudflare",
             nodes: [
-              { name: "D1 Adapter", detail: "SQL storage" },
-              { name: "R2 Adapter", detail: "Object storage" },
-              { name: "KV Adapter", detail: "Cache layer" },
-              { name: "Plugin Sandbox", detail: "Worker isolation" }
+              { name: "D1 Adapter", detail: "Kysely dialect" },
+              { name: "R2 Adapter", detail: "S3-compatible" },
+              { name: "KV Adapter", detail: "Session store" },
+              { name: "Worker Loaders", detail: "Plugin sandbox" }
             ]
           },
           {
@@ -733,29 +779,33 @@
             ]
           },
           {
-            tier: "external",
-            label: "packages/x402",
+            tier: "storage",
+            label: "packages/plugins (first-party)",
             nodes: [
-              { name: "HTTP 402", detail: "Payment protocol" }
+              { name: "ai-moderation", detail: "Content moderation" },
+              { name: "atproto", detail: "Bluesky / AT Protocol" },
+              { name: "audit-log", detail: "Activity tracking" },
+              { name: "forms + webhooks", detail: "Data collection" }
             ]
           },
           {
             tier: "external",
-            label: "skills/",
+            label: "Tooling & Templates",
             nodes: [
-              { name: "building-emdash-site", detail: "AI agent skill" },
-              { name: "creating-plugins", detail: "AI agent skill" },
-              { name: "wp-to-emdash", detail: "Migration skills" },
-              { name: "adversarial-reviewer", detail: "Code review AI" }
+              { name: "create-emdash", detail: "npm create CLI" },
+              { name: "gutenberg-to-pt", detail: "WP block converter" },
+              { name: "9 templates", detail: "Blog, marketing, portfolio" },
+              { name: "skills/", detail: "AI agent skills" }
             ]
           }
         ],
         flows: [
           { from: "core", to: "auth", label: "Authentication delegation" },
           { from: "core", to: "Storage Interface", label: "Platform-agnostic calls" },
-          { from: "cloudflare", to: "Storage Interface", label: "Implements adapters" },
+          { from: "cloudflare", to: "Storage Interface", label: "Injects D1/R2/KV" },
           { from: "marketplace", to: "Workers AI", label: "Security scanning" },
-          { from: "skills", to: "core", label: "AI-driven site building" }
+          { from: "gutenberg-to-pt", to: "core", label: "WordPress migration" },
+          { from: "create-emdash", to: "templates", label: "Scaffold new site" }
         ],
         packages: null
       }

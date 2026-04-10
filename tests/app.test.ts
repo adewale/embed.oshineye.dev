@@ -1236,6 +1236,9 @@ describe("GET /v1/emdash-architecture-diagram", () => {
     expect(body).toContain("Cloudflare Workers");
     expect(body).toContain("Plugin Manager");
     expect(body).toContain("MCP Server");
+    expect(body).toContain("Astro");
+    expect(body).toContain("Portable Text");
+    expect(body).toContain("Kysely");
   });
 
   it("contains multiple architecture views", async () => {
