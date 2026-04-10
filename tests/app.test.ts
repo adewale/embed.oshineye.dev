@@ -1194,3 +1194,76 @@ describe("catalogue page", () => {
     expect(res.headers.get("Content-Type")).toContain("text/html");
   });
 });
+
+describe("GET /v1/emdash-architecture-diagram", () => {
+  it("returns 200 with correct HTML", async () => {
+    const res = await app.request("/v1/emdash-architecture-diagram");
+    expect(res.status).toBe(200);
+    const body = await res.text();
+    expect(body).toContain("EmDash Architecture");
+    expect(body).toContain("<!DOCTYPE html>");
+    expect(body).toContain("ResizeObserver");
+  });
+
+  it("sets correct response headers", async () => {
+    const res = await app.request("/v1/emdash-architecture-diagram");
+    expect(res.headers.get("X-Frame-Options")).toBe("ALLOWALL");
+    expect(res.headers.get("Access-Control-Allow-Origin")).toBe("*");
+    const csp = res.headers.get("Content-Security-Policy");
+    expect(csp).toContain("frame-ancestors *");
+  });
+
+  it("HTML contains theme reading logic", async () => {
+    const res = await app.request("/v1/emdash-architecture-diagram");
+    const body = await res.text();
+    expect(body).toContain(".get('theme')");
+    expect(body).toContain("'light'");
+    expect(body).toContain("'dark'");
+  });
+
+  it("HTML contains postMessage resize contract", async () => {
+    const res = await app.request("/v1/emdash-architecture-diagram");
+    const body = await res.text();
+    expect(body).toContain("embed.oshineye.resize");
+    expect(body).toContain("document.body.scrollHeight");
+  });
+
+  it("contains architecture data for emdash CMS", async () => {
+    const res = await app.request("/v1/emdash-architecture-diagram");
+    const body = await res.text();
+    expect(body).toContain("packages/core");
+    expect(body).toContain("packages/auth");
+    expect(body).toContain("Cloudflare Workers");
+    expect(body).toContain("Plugin Manager");
+    expect(body).toContain("MCP Server");
+  });
+
+  it("contains multiple architecture views", async () => {
+    const res = await app.request("/v1/emdash-architecture-diagram");
+    const body = await res.text();
+    expect(body).toContain('"overview"');
+    expect(body).toContain('"core"');
+    expect(body).toContain('"auth"');
+    expect(body).toContain('"plugins"');
+    expect(body).toContain('"monorepo"');
+  });
+
+  it("contains emdash monorepo packages", async () => {
+    const res = await app.request("/v1/emdash-architecture-diagram");
+    const body = await res.text();
+    expect(body).toContain("D1");
+    expect(body).toContain("R2");
+    expect(body).toContain("Workers AI");
+    expect(body).toContain("RBAC");
+    expect(body).toContain("OAuth");
+    expect(body).toContain("Magic Link");
+    expect(body).toContain("Passkey");
+  });
+
+  it("is listed in the catalogue page", async () => {
+    const res = await app.request("/");
+    const body = await res.text();
+    expect(body).toContain("emdash-architecture-diagram");
+    expect(body).toContain("EmDash Architecture");
+  });
+});

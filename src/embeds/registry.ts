@@ -3,6 +3,7 @@ import avatarStackPlaygroundHtml from "./v1/avatar-stack-playground/index.html";
 import githubTimelineHtml from "./v1/github-timeline/index.html";
 import bloggingTimelineHtml from "./v1/blogging-timeline/index.html";
 import cloudflareArchitectureVizHtml from "./v1/cloudflare-architecture-viz/index.html";
+import emdashArchitectureDiagramHtml from "./v1/emdash-architecture-diagram/index.html";
 
 export interface EmbedEntry {
   slug: string;
@@ -41,6 +42,12 @@ export const embeds: EmbedEntry[] = [
     title: "Cloudflare Architecture",
     description: "Interactive architecture diagrams showing Cloudflare primitives and data flows for real projects. Switch between projects to compare architectures.",
     html: cloudflareArchitectureVizHtml,
+  },
+  {
+    slug: "emdash-architecture-diagram",
+    title: "EmDash Architecture",
+    description: "Architecture diagram of the EmDash headless CMS, showing its monorepo packages, Cloudflare Workers runtime, plugin ecosystem, and auth system.",
+    html: emdashArchitectureDiagramHtml,
   },
 ];
 
