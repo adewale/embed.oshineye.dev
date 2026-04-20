@@ -1244,11 +1244,11 @@ describe("GET /v1/emdash-architecture-diagram", () => {
   it("contains multiple architecture views", async () => {
     const res = await app.request("/v1/emdash-architecture-diagram");
     const body = await res.text();
-    expect(body).toContain('"overview"');
-    expect(body).toContain('"core"');
-    expect(body).toContain('"auth"');
-    expect(body).toContain('"plugins"');
-    expect(body).toContain('"monorepo"');
+    expect(body).toContain("'overview'");
+    expect(body).toContain("'packages'");
+    expect(body).toContain("'pipeline'");
+    expect(body).toContain("'auth'");
+    expect(body).toContain("'plugins'");
   });
 
   it("contains emdash monorepo packages", async () => {

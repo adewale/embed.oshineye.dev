@@ -16,31 +16,8 @@
       --accent: #8b5cf6;
       --accent-light: #ede9fe;
       --accent-border: #c4b5fd;
-      --tier-client: #dbeafe;
-      --tier-client-border: #93c5fd;
-      --tier-client-text: #1e40af;
-      --tier-edge: #fef3c7;
-      --tier-edge-border: #fcd34d;
-      --tier-edge-text: #92400e;
-      --tier-core: #ede9fe;
-      --tier-core-border: #c4b5fd;
-      --tier-core-text: #5b21b6;
-      --tier-auth: #fce7f3;
-      --tier-auth-border: #f9a8d4;
-      --tier-auth-text: #9d174d;
-      --tier-storage: #d1fae5;
-      --tier-storage-border: #6ee7b7;
-      --tier-storage-text: #065f46;
-      --tier-ai: #ffedd5;
-      --tier-ai-border: #fdba74;
-      --tier-ai-text: #9a3412;
-      --tier-external: #f1f5f9;
-      --tier-external-border: #cbd5e1;
-      --tier-external-text: #475569;
-      --arrow: #9ca3af;
       --font: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
     }
-
     :root.dark {
       --bg: #111827;
       --fg: #f9fafb;
@@ -52,32 +29,8 @@
       --accent: #a78bfa;
       --accent-light: #2e1065;
       --accent-border: #6d28d9;
-      --tier-client: #1e3a5f;
-      --tier-client-border: #2563eb;
-      --tier-client-text: #93c5fd;
-      --tier-edge: #422006;
-      --tier-edge-border: #d97706;
-      --tier-edge-text: #fcd34d;
-      --tier-core: #2e1065;
-      --tier-core-border: #7c3aed;
-      --tier-core-text: #c4b5fd;
-      --tier-auth: #500724;
-      --tier-auth-border: #db2777;
-      --tier-auth-text: #f9a8d4;
-      --tier-storage: #064e3b;
-      --tier-storage-border: #059669;
-      --tier-storage-text: #6ee7b7;
-      --tier-ai: #431407;
-      --tier-ai-border: #ea580c;
-      --tier-ai-text: #fdba74;
-      --tier-external: #1e293b;
-      --tier-external-border: #475569;
-      --tier-external-text: #94a3b8;
-      --arrow: #6b7280;
     }
-
     * { margin: 0; padding: 0; box-sizing: border-box; }
-
     body {
       font-family: var(--font);
       background: var(--bg);
@@ -87,7 +40,6 @@
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
     }
-
     .header {
       display: flex;
       align-items: center;
@@ -96,19 +48,16 @@
       flex-wrap: wrap;
       gap: 12px;
     }
-
     h1 {
       font-size: 1.2rem;
       font-weight: 700;
       color: var(--fg);
     }
-
     .view-selector {
       display: flex;
       gap: 6px;
       flex-wrap: wrap;
     }
-
     .view-btn {
       padding: 6px 16px;
       border: 1px solid var(--border);
@@ -121,229 +70,82 @@
       cursor: pointer;
       transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
     }
-
-    .view-btn:hover {
-      background: var(--surface-hover);
-      color: var(--text);
-    }
-
+    .view-btn:hover { background: var(--surface-hover); color: var(--text); }
     .view-btn.active {
       background: var(--accent-light);
       color: var(--accent);
       border-color: var(--accent-border);
     }
-
     .description {
       font-size: 0.82rem;
       color: var(--text-muted);
-      margin-bottom: 20px;
+      margin-bottom: 16px;
       line-height: 1.55;
     }
-
-    .description a {
-      color: var(--accent);
-      text-decoration: none;
-      font-weight: 500;
-    }
-
-    .description a:hover {
-      text-decoration: underline;
-    }
-
-    .diagram {
+    .description a { color: var(--accent); text-decoration: none; font-weight: 500; }
+    .description a:hover { text-decoration: underline; }
+    .diagram-card {
       border: 1px solid var(--border);
       border-radius: 8px;
       overflow: hidden;
       background: var(--surface);
       box-shadow: 0 1px 3px 0 rgba(0,0,0,0.1), 0 1px 2px -1px rgba(0,0,0,0.1);
     }
-
-    .diagram-content {
-      padding: 20px;
-    }
-
-    .tier {
-      margin-bottom: 12px;
-      position: relative;
-    }
-
-    .tier:last-child {
-      margin-bottom: 0;
-    }
-
-    .tier-label {
-      font-size: 0.65rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      margin-bottom: 6px;
-      padding-left: 2px;
-    }
-
-    .tier-nodes {
+    .diagram-header {
       display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 14px;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
     }
-
-    .node {
-      padding: 10px 14px;
-      border-radius: 6px;
-      border: 1px solid;
-      font-size: 0.8rem;
-      flex: 1;
-      min-width: 120px;
-      max-width: 200px;
-      transition: transform 0.1s ease;
-    }
-
-    .node:hover {
-      transform: translateY(-1px);
-    }
-
-    .node-name {
+    .diagram-header-title {
       font-weight: 600;
-      display: block;
       font-size: 0.82rem;
-      margin-bottom: 2px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
     }
-
-    .node-detail {
-      font-size: 0.7rem;
-      opacity: 0.75;
-      display: block;
-      line-height: 1.4;
-    }
-
-    .tier-client .tier-label { color: var(--tier-client-text); }
-    .tier-client .node { background: var(--tier-client); border-color: var(--tier-client-border); color: var(--tier-client-text); }
-
-    .tier-edge .tier-label { color: var(--tier-edge-text); }
-    .tier-edge .node { background: var(--tier-edge); border-color: var(--tier-edge-border); color: var(--tier-edge-text); }
-
-    .tier-core .tier-label { color: var(--tier-core-text); }
-    .tier-core .node { background: var(--tier-core); border-color: var(--tier-core-border); color: var(--tier-core-text); }
-
-    .tier-auth .tier-label { color: var(--tier-auth-text); }
-    .tier-auth .node { background: var(--tier-auth); border-color: var(--tier-auth-border); color: var(--tier-auth-text); }
-
-    .tier-storage .tier-label { color: var(--tier-storage-text); }
-    .tier-storage .node { background: var(--tier-storage); border-color: var(--tier-storage-border); color: var(--tier-storage-text); }
-
-    .tier-ai .tier-label { color: var(--tier-ai-text); }
-    .tier-ai .node { background: var(--tier-ai); border-color: var(--tier-ai-border); color: var(--tier-ai-text); }
-
-    .tier-external .tier-label { color: var(--tier-external-text); }
-    .tier-external .node { background: var(--tier-external); border-color: var(--tier-external-border); color: var(--tier-external-text); }
-
-    .flow-arrows {
+    .mermaid-container {
+      padding: 14px;
+      overflow-x: auto;
       display: flex;
       justify-content: center;
-      padding: 4px 0;
-      color: var(--arrow);
-      font-size: 0.7rem;
-      gap: 24px;
-      flex-wrap: wrap;
-    }
-
-    .flow-arrows svg {
-      display: block;
-      margin: 0 auto;
-    }
-
-    .flows-section {
-      padding: 14px 20px;
-      border-top: 1px solid var(--border);
       background: var(--surface);
     }
-
-    .flows-title {
+    .mermaid-container svg {
+      max-width: 100%;
+      height: auto;
+    }
+    .emdash-view-svg { display: none; }
+    .emdash-view-svg.active { display: block; }
+    .mermaid-flows {
+      padding: 12px 14px;
+      border-top: 1px solid var(--border);
+      font-size: 0.875rem;
+      line-height: 1.7;
+      color: var(--text-muted);
+      background: var(--surface);
+    }
+    .mermaid-flows-title {
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.05em;
       font-size: 0.72rem;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
       color: var(--text-muted);
     }
-
-    .flow-item {
+    .mermaid-flow-item {
       display: flex;
       gap: 6px;
       align-items: baseline;
-      font-size: 0.82rem;
-      color: var(--text-muted);
-      line-height: 1.7;
     }
-
-    .flow-arrow {
-      color: var(--accent);
-      flex-shrink: 0;
-    }
-
-    .flow-label {
-      opacity: 0.75;
-    }
-
-    .packages-section {
-      padding: 14px 20px;
-      border-top: 1px solid var(--border);
-      background: var(--surface);
-    }
-
-    .packages-title {
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      font-size: 0.72rem;
-      margin-bottom: 8px;
-      color: var(--text-muted);
-    }
-
-    .package-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-      gap: 6px;
-    }
-
-    .package-item {
-      font-size: 0.78rem;
-      padding: 6px 10px;
-      border-radius: 4px;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      color: var(--text);
-    }
-
-    .package-item .pkg-name {
-      font-weight: 600;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      font-size: 0.75rem;
-    }
-
-    .package-item .pkg-desc {
-      font-size: 0.68rem;
-      color: var(--text-muted);
-      display: block;
-      margin-top: 1px;
-    }
-
-    .connector {
-      display: flex;
-      justify-content: center;
-      padding: 2px 0;
-    }
-
-    .connector svg {
-      display: block;
-    }
+    .mermaid-flow-arrow { color: var(--accent); flex-shrink: 0; }
+    .mermaid-flow-label { color: var(--text-muted); opacity: 0.75; }
 
     @media (max-width: 640px) {
       body { padding: 14px; }
-      .header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-      }
+      .header { flex-direction: column; align-items: flex-start; gap: 10px; }
       .view-selector {
         flex-wrap: nowrap;
         overflow-x: auto;
@@ -359,30 +161,13 @@
         white-space: nowrap;
         flex-shrink: 0;
       }
-      .node {
-        min-width: 100px;
-        max-width: none;
-        padding: 8px 10px;
-      }
-      .node-name { font-size: 0.78rem; }
-      .node-detail { font-size: 0.65rem; }
-      .diagram-content { padding: 14px; }
-      .flows-section, .packages-section { padding: 12px 14px; }
-      .description { font-size: 0.78rem; }
-      .package-grid {
-        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-      }
+      .mermaid-container { padding: 8px; }
+      .mermaid-flows { padding: 10px 12px; font-size: 0.8rem; }
     }
-
     @media (max-width: 380px) {
       body { padding: 10px; }
       h1 { font-size: 1rem; }
-      .view-btn {
-        padding: 8px 12px;
-        font-size: 0.75rem;
-      }
-      .tier-nodes { gap: 6px; }
-      .node { min-width: 80px; padding: 6px 8px; }
+      .view-btn { padding: 8px 12px; font-size: 0.75rem; }
     }
   </style>
 </head>
@@ -392,426 +177,83 @@
     <div class="view-selector" id="viewSelector"></div>
   </div>
   <div class="description" id="viewDescription"></div>
-  <div class="diagram" id="diagram">
-    <div class="diagram-content" id="diagramContent"></div>
-    <div class="flows-section" id="flowsSection"></div>
-    <div class="packages-section" id="packagesSection" style="display:none"></div>
+
+  <div class="diagram-card">
+    <div class="diagram-header">
+      <span class="diagram-code-title diagram-header-title" id="diagramTitle">Mermaid</span>
+    </div>
+    <div class="mermaid-container">
+      <!-- EMDASH_DIAGRAMS -->
+    </div>
+    <div class="mermaid-flows" id="mermaidFlows"></div>
   </div>
 
   <script>
     var VIEWS = [
       {
-        id: "overview",
-        name: "Overview",
-        description: 'EmDash is an agent-portable reimagination of WordPress, built on Astro and Cloudflare. Content is stored as Portable Text (structured JSON), edited with TipTap, and queried via Kysely. Plugins run in sandboxed Worker isolates. <a href="https://github.com/emdash-cms/emdash" target="_blank" rel="noopener">github.com/emdash-cms/emdash</a>',
-        tiers: [
-          {
-            tier: "client",
-            label: "Clients",
-            nodes: [
-              { name: "Admin Dashboard", detail: "TipTap editor UI" },
-              { name: "API Consumers", detail: "REST / JSON API" },
-              { name: "AI Agents", detail: "MCP Protocol" },
-              { name: "CLI", detail: "emdash-cli" }
-            ]
-          },
-          {
-            tier: "edge",
-            label: "Edge / Runtime",
-            nodes: [
-              { name: "Astro", detail: "Site framework + SSR" },
-              { name: "Cloudflare Workers", detail: "Serverless compute" },
-              { name: "Static Assets", detail: "Admin UI / CDN" }
-            ]
-          },
-          {
-            tier: "core",
-            label: "Core Engine (packages/core)",
-            nodes: [
-              { name: "Content API", detail: "22 REST handlers" },
-              { name: "Schema Engine", detail: "DB-driven content types" },
-              { name: "Plugin Manager", detail: "Sandboxed plugins" },
-              { name: "MCP Server", detail: "AI tool interface" }
-            ]
-          },
-          {
-            tier: "edge",
-            label: "Middleware Chain",
-            nodes: [
-              { name: "setup", detail: "Init + migration check" },
-              { name: "auth", detail: "Session validation" },
-              { name: "request-context", detail: "DB, user, locale" },
-              { name: "redirect", detail: "URL rewrite rules" }
-            ]
-          },
-          {
-            tier: "auth",
-            label: "Auth (packages/auth)",
-            nodes: [
-              { name: "Passkey", detail: "WebAuthn (primary)" },
-              { name: "OAuth", detail: "Social providers" },
-              { name: "Magic Link", detail: "Email-based" },
-              { name: "RBAC", detail: "Role-based access" }
-            ]
-          },
-          {
-            tier: "storage",
-            label: "Cloudflare Services",
-            nodes: [
-              { name: "D1", detail: "SQLite database" },
-              { name: "R2", detail: "Object storage" },
-              { name: "KV", detail: "Sessions & cache" },
-              { name: "Queues", detail: "Async tasks" }
-            ]
-          },
-          {
-            tier: "ai",
-            label: "AI",
-            nodes: [
-              { name: "Workers AI", detail: "Plugin security audit" },
-              { name: "Vectorize", detail: "Embeddings search" }
-            ]
-          }
-        ],
+        id: 'overview',
+        name: 'Overview',
+        description: 'EmDash is an agent-portable reimagination of WordPress built on Astro and Cloudflare Workers. Content is Portable Text (structured JSON) edited with TipTap and stored in D1 via Kysely. Plugins run in sandboxed Dynamic Worker Loader isolates. <a href="https://github.com/emdash-cms/emdash" target="_blank" rel="noopener">github.com/emdash-cms/emdash</a>',
         flows: [
-          { from: "Admin Dashboard", to: "Astro SSR", label: "REST API calls" },
-          { from: "AI Agents", to: "MCP Server", label: "MCP protocol" },
-          { from: "Astro", to: "Middleware Chain", label: "Request pipeline" },
-          { from: "Middleware", to: "Content API", label: "Route dispatch" },
-          { from: "Content API", to: "D1", label: "Kysely SQL queries" },
-          { from: "Content API", to: "R2", label: "Media upload/download" },
-          { from: "Plugin Manager", to: "Workers AI", label: "Security audit" }
-        ],
-        packages: [
-          { name: "core", desc: "Astro integration + CMS engine" },
-          { name: "admin", desc: "Dashboard UI" },
-          { name: "auth", desc: "WebAuthn, OAuth, RBAC" },
-          { name: "blocks", desc: "Portable Text blocks" },
-          { name: "cloudflare", desc: "D1/R2/KV adapters" },
-          { name: "plugins", desc: "10 first-party plugins" },
-          { name: "marketplace", desc: "Plugin store Worker" },
-          { name: "create-emdash", desc: "Scaffolding CLI" },
-          { name: "gutenberg-to-pt", desc: "WP block converter" },
-          { name: "x402", desc: "Payment protocol" }
+          { from: 'Admin / API / CLI', to: 'Astro', label: 'HTTP requests' },
+          { from: 'AI Agents', to: 'MCP Server', label: 'MCP protocol' },
+          { from: 'Astro', to: 'Content API', label: 'middleware chain' },
+          { from: 'Content API', to: 'D1', label: 'Kysely SQL' },
+          { from: 'Content API', to: 'Schema Engine', label: 'validates type' },
+          { from: 'Plugin Manager', to: 'Workers AI', label: 'security audit' }
         ]
       },
       {
-        id: "core",
-        name: "Core Engine",
-        description: "The core package is an Astro integration containing platform-agnostic CMS logic. Content is Portable Text stored in SQL via Kysely. Schema lives in the database (non-devs can create content types via admin). All handlers return ApiResponse&lt;T&gt; discriminated unions.",
-        tiers: [
-          {
-            tier: "client",
-            label: "Inbound",
-            nodes: [
-              { name: "Astro Routes", detail: "Thin wrappers \u2192 handlers" },
-              { name: "MCP Server", detail: "AI agent tools" },
-              { name: "CLI", detail: "Programmatic access" }
-            ]
-          },
-          {
-            tier: "edge",
-            label: "Middleware Pipeline",
-            nodes: [
-              { name: "setup.ts", detail: "Runtime init, migrations" },
-              { name: "auth.ts", detail: "Session + WebAuthn" },
-              { name: "request-context.ts", detail: "DB, user, locale" },
-              { name: "redirect.ts", detail: "URL rewrite rules" }
-            ]
-          },
-          {
-            tier: "core",
-            label: "API Handlers (Content)",
-            nodes: [
-              { name: "Content", detail: "CRUD, Portable Text" },
-              { name: "Schema", detail: "DB-driven type defs" },
-              { name: "Media", detail: "Upload / transform" },
-              { name: "Taxonomies", detail: "Tags & categories" }
-            ]
-          },
-          {
-            tier: "core",
-            label: "API Handlers (Structure)",
-            nodes: [
-              { name: "Menus", detail: "Navigation trees" },
-              { name: "Sections", detail: "Page sections" },
-              { name: "SEO", detail: "Meta, sitemap, robots" },
-              { name: "Redirects", detail: "URL rewrites" }
-            ]
-          },
-          {
-            tier: "core",
-            label: "API Handlers (Management)",
-            nodes: [
-              { name: "Comments", detail: "User comments" },
-              { name: "Revisions", detail: "Content history" },
-              { name: "Snapshots", detail: "Point-in-time backup" },
-              { name: "Dashboard", detail: "Analytics & stats" }
-            ]
-          },
-          {
-            tier: "auth",
-            label: "Auth Handlers",
-            nodes: [
-              { name: "API Tokens", detail: "Service auth" },
-              { name: "OAuth Clients", detail: "App registration" },
-              { name: "OAuth Auth", detail: "Authorization flow" },
-              { name: "Device Flow", detail: "CLI/device login" }
-            ]
-          },
-          {
-            tier: "edge",
-            label: "Plugin System",
-            nodes: [
-              { name: "Plugin Manager", detail: "Lifecycle & hooks" },
-              { name: "Sandbox", detail: "Dynamic Worker Loaders" },
-              { name: "Scheduler", detail: "Cron triggers" },
-              { name: "Marketplace Client", detail: "Discovery & install" }
-            ]
-          },
-          {
-            tier: "storage",
-            label: "Storage Adapters (platform-agnostic)",
-            nodes: [
-              { name: "DB (Kysely)", detail: "D1 / SQLite / Postgres" },
-              { name: "Object Storage", detail: "R2 / S3 / local FS" },
-              { name: "Session Store", detail: "KV / Redis / file" },
-              { name: "Search (FTS5)", detail: "Full-text search" }
-            ]
-          }
-        ],
+        id: 'packages',
+        name: 'Packages',
+        description: 'A pnpm monorepo with 10 packages. The core is platform-agnostic (works with D1, SQLite, or Postgres). The cloudflare package injects Cloudflare-specific adapters at runtime. The marketplace runs as a standalone Worker with AI-powered security auditing.',
         flows: [
-          { from: "Astro Routes", to: "Middleware", label: "Request pipeline" },
-          { from: "Middleware", to: "API Handlers", label: "Authenticated context" },
-          { from: "Content", to: "Schema", label: "Validates against type" },
-          { from: "Content", to: "Revisions", label: "Auto-versioning" },
-          { from: "Plugin Manager", to: "Sandbox", label: "Dynamic Worker Loaders" },
-          { from: "All Handlers", to: "Storage Adapters", label: "Platform-agnostic interface" }
-        ],
-        packages: null
+          { from: 'packages/core', to: 'packages/auth', label: 'delegates auth' },
+          { from: 'packages/core', to: 'packages/cloudflare', label: 'storage interface' },
+          { from: 'packages/plugins', to: 'packages/core', label: 'hooks + routes' },
+          { from: 'packages/marketplace', to: 'packages/core', label: 'install + discover' },
+          { from: 'gutenberg-to-pt', to: 'packages/core', label: 'WordPress migration' }
+        ]
       },
       {
-        id: "auth",
-        name: "Auth",
-        description: "The auth package supports multiple strategies with WebAuthn/Passkeys as the primary method. Adapters allow swapping providers without changing core logic. All auth state flows through a unified RBAC layer.",
-        tiers: [
-          {
-            tier: "client",
-            label: "Auth Consumers",
-            nodes: [
-              { name: "Admin UI", detail: "Login / signup" },
-              { name: "API Client", detail: "Bearer tokens" },
-              { name: "CLI / Device", detail: "Device flow" }
-            ]
-          },
-          {
-            tier: "edge",
-            label: "Strategies",
-            nodes: [
-              { name: "Passkey", detail: "WebAuthn (primary)" },
-              { name: "OAuth Flow", detail: "Authorization code" },
-              { name: "Magic Link", detail: "Email verification" },
-              { name: "Device Flow", detail: "Polling-based" }
-            ]
-          },
-          {
-            tier: "auth",
-            label: "Auth Core",
-            nodes: [
-              { name: "Token Service", detail: "JWT issue & verify" },
-              { name: "RBAC", detail: "Roles & permissions" },
-              { name: "Signup", detail: "User registration" },
-              { name: "Invite", detail: "Team invitations" }
-            ]
-          },
-          {
-            tier: "core",
-            label: "Adapters",
-            nodes: [
-              { name: "Passkey Adapter", detail: "WebAuthn RP" },
-              { name: "OAuth Adapters", detail: "GitHub, Google, etc." },
-              { name: "Email Adapter", detail: "Magic link delivery" }
-            ]
-          },
-          {
-            tier: "storage",
-            label: "Persistence",
-            nodes: [
-              { name: "D1", detail: "Users, sessions, roles" },
-              { name: "KV", detail: "Session cache" }
-            ]
-          }
-        ],
+        id: 'pipeline',
+        name: 'Request Pipeline',
+        description: 'Every request passes through a four-step middleware chain before reaching the API handler. All handlers return ApiResponse\u003cT\u003e discriminated unions. Storage is accessed through platform-agnostic adapters (D1/SQLite/Postgres, R2/S3/local, KV/Redis).',
         flows: [
-          { from: "Passkey", to: "Passkey Adapter", label: "WebAuthn ceremony" },
-          { from: "OAuth Flow", to: "OAuth Adapters", label: "Provider callback" },
-          { from: "Magic Link", to: "Email Adapter", label: "Send verification" },
-          { from: "All strategies", to: "Token Service", label: "Issue JWT" },
-          { from: "Token Service", to: "RBAC", label: "Attach permissions" },
-          { from: "Device Flow", to: "Token Service", label: "Poll for approval" }
-        ],
-        packages: null
+          { from: 'setup.ts', to: 'auth.ts', label: 'run migrations first' },
+          { from: 'auth.ts', to: 'request-context.ts', label: 'validated session' },
+          { from: 'Astro Route', to: 'Handler', label: 'parse + forward' },
+          { from: 'Content Service', to: 'Schema Registry', label: 'validate type' },
+          { from: 'Content Service', to: 'Revision Service', label: 'auto-version' },
+          { from: 'All handlers', to: 'Storage Adapters', label: 'platform-agnostic' }
+        ]
       },
       {
-        id: "plugins",
-        name: "Plugins",
-        description: "EmDash addresses WordPress\u2019s plugin security problem (96% of WP vulnerabilities come from plugins) by running all plugins in sandboxed Worker isolates with capability manifests. The marketplace uses Workers AI to audit code before publishing.",
-        tiers: [
-          {
-            tier: "client",
-            label: "Plugin Sources",
-            nodes: [
-              { name: "Marketplace", detail: "Browse & install" },
-              { name: "Direct Upload", detail: "Custom plugins" },
-              { name: "WP Converter", detail: "WordPress migration" }
-            ]
-          },
-          {
-            tier: "ai",
-            label: "Security Gate",
-            nodes: [
-              { name: "Code Auditor", detail: "Workers AI analysis" },
-              { name: "Image Auditor", detail: "Icon & screenshot check" },
-              { name: "Manifest Validator", detail: "Capability verification" }
-            ]
-          },
-          {
-            tier: "core",
-            label: "Plugin Runtime",
-            nodes: [
-              { name: "Plugin Manager", detail: "Install / enable / disable" },
-              { name: "Hook System", detail: "Event-driven extensibility" },
-              { name: "Route Injection", detail: "Custom endpoints" },
-              { name: "Block Kit", detail: "Admin UI via JSON" }
-            ]
-          },
-          {
-            tier: "edge",
-            label: "Execution",
-            nodes: [
-              { name: "Worker Isolate", detail: "Dynamic Worker Loaders" },
-              { name: "Scheduler", detail: "Cron-based triggers" },
-              { name: "Email Service", detail: "Plugin email sending" }
-            ]
-          },
-          {
-            tier: "external",
-            label: "First-Party Plugins (10)",
-            nodes: [
-              { name: "ai-moderation", detail: "Content moderation" },
-              { name: "atproto", detail: "Bluesky federation" },
-              { name: "forms", detail: "Form builder" },
-              { name: "webhook-notifier", detail: "Event webhooks" }
-            ]
-          },
-          {
-            tier: "storage",
-            label: "Plugin Storage (scoped)",
-            nodes: [
-              { name: "Plugin KV", detail: "Namespaced state" },
-              { name: "Plugin DB", detail: "D1 scoped tables" },
-              { name: "Plugin Assets", detail: "R2 scoped bucket" }
-            ]
-          }
-        ],
+        id: 'auth',
+        name: 'Auth',
+        description: 'WebAuthn Passkeys are the primary authentication method \u2014 no passwords. OAuth and Magic Link serve as fallbacks. All strategies converge at a JWT Token Service before RBAC attaches permissions.',
         flows: [
-          { from: "Marketplace", to: "Code Auditor", label: "Pre-publish scan" },
-          { from: "Code Auditor", to: "Workers AI", label: "Threat detection" },
-          { from: "Plugin Manager", to: "Hook System", label: "Lifecycle events" },
-          { from: "Hook System", to: "Worker Isolate", label: "Sandboxed execution" },
-          { from: "Admin", to: "Block Kit", label: "Plugin UI interactions" },
-          { from: "Scheduler", to: "Plugin Manager", label: "Cron trigger" }
-        ],
-        packages: null
+          { from: 'Passkey', to: 'WebAuthn RP Adapter', label: 'challenge + response' },
+          { from: 'OAuth Flow', to: 'Provider Callback', label: 'authorization code' },
+          { from: 'Magic Link', to: 'Email Adapter', label: 'send + verify token' },
+          { from: 'All strategies', to: 'Token Service', label: 'issue JWT' },
+          { from: 'Token Service', to: 'RBAC', label: 'attach permissions' }
+        ]
       },
       {
-        id: "monorepo",
-        name: "Monorepo",
-        description: "A pnpm monorepo with 10 packages. The core is platform-agnostic (works with D1, SQLite, or Postgres); the cloudflare package injects Cloudflare-specific adapters. Built with tsdown, tested with Vitest + Playwright, formatted with oxfmt.",
-        tiers: [
-          {
-            tier: "core",
-            label: "packages/core",
-            nodes: [
-              { name: "Astro Integration", detail: "Middleware + routes" },
-              { name: "22 API Handlers", detail: "ApiResponse<T> pattern" },
-              { name: "Plugin System", detail: "Hooks, sandbox, scheduler" },
-              { name: "MCP Server", detail: "AI agent interface" }
-            ]
-          },
-          {
-            tier: "client",
-            label: "packages/admin + packages/blocks",
-            nodes: [
-              { name: "Admin Dashboard", detail: "CMS management UI" },
-              { name: "Portable Text Blocks", detail: "TipTap block defs" },
-              { name: "Block Playground", detail: "Block previews" }
-            ]
-          },
-          {
-            tier: "auth",
-            label: "packages/auth",
-            nodes: [
-              { name: "Strategies", detail: "Passkey, OAuth, Magic Link" },
-              { name: "RBAC", detail: "Roles & permissions" },
-              { name: "Tokens", detail: "JWT management" },
-              { name: "Adapters", detail: "Provider abstraction" }
-            ]
-          },
-          {
-            tier: "edge",
-            label: "packages/cloudflare",
-            nodes: [
-              { name: "D1 Adapter", detail: "Kysely dialect" },
-              { name: "R2 Adapter", detail: "S3-compatible" },
-              { name: "KV Adapter", detail: "Session store" },
-              { name: "Worker Loaders", detail: "Plugin sandbox" }
-            ]
-          },
-          {
-            tier: "ai",
-            label: "packages/marketplace",
-            nodes: [
-              { name: "Discovery", detail: "Plugin search & browse" },
-              { name: "Publishing", detail: "Submit & version" },
-              { name: "Security Audit", detail: "AI-powered review" },
-              { name: "Moderation", detail: "Approval workflow" }
-            ]
-          },
-          {
-            tier: "storage",
-            label: "packages/plugins (first-party)",
-            nodes: [
-              { name: "ai-moderation", detail: "Content moderation" },
-              { name: "atproto", detail: "Bluesky / AT Protocol" },
-              { name: "audit-log", detail: "Activity tracking" },
-              { name: "forms + webhooks", detail: "Data collection" }
-            ]
-          },
-          {
-            tier: "external",
-            label: "Tooling & Templates",
-            nodes: [
-              { name: "create-emdash", detail: "npm create CLI" },
-              { name: "gutenberg-to-pt", detail: "WP block converter" },
-              { name: "9 templates", detail: "Blog, marketing, portfolio" },
-              { name: "skills/", detail: "AI agent skills" }
-            ]
-          }
-        ],
+        id: 'plugins',
+        name: 'Plugins',
+        description: '96% of WordPress vulnerabilities come from plugins. EmDash runs every plugin in a sandboxed Dynamic Worker Loader isolate with a capability manifest. The marketplace uses Workers AI to audit code before publishing.',
         flows: [
-          { from: "core", to: "auth", label: "Authentication delegation" },
-          { from: "core", to: "Storage Interface", label: "Platform-agnostic calls" },
-          { from: "cloudflare", to: "Storage Interface", label: "Injects D1/R2/KV" },
-          { from: "marketplace", to: "Workers AI", label: "Security scanning" },
-          { from: "gutenberg-to-pt", to: "core", label: "WordPress migration" },
-          { from: "create-emdash", to: "templates", label: "Scaffold new site" }
-        ],
-        packages: null
+          { from: 'Marketplace', to: 'Code Auditor', label: 'pre-publish scan' },
+          { from: 'Workers AI', to: 'Code Auditor', label: 'threat detection model' },
+          { from: 'Plugin Manager', to: 'Hook System', label: 'lifecycle events' },
+          { from: 'Hook System', to: 'Worker Isolate', label: 'sandboxed execution' },
+          { from: 'Scheduler', to: 'Plugin Manager', label: 'cron trigger' }
+        ]
       }
     ];
 
-    // Theme
     var params = new URL(location.href).searchParams;
     var theme = params.get('theme') || 'light';
     if (theme === 'dark') document.documentElement.classList.add('dark');
@@ -819,7 +261,7 @@
     var activeView = params.get('view') || 'overview';
     if (!VIEWS.some(function(v) { return v.id === activeView; })) activeView = 'overview';
 
-    function renderViewSelector() {
+    function renderSelector() {
       var sel = document.getElementById('viewSelector');
       sel.innerHTML = '';
       VIEWS.forEach(function(v) {
@@ -836,119 +278,50 @@
       var url = new URL(location.href);
       url.searchParams.set('view', id);
       history.replaceState(null, '', url);
-      renderViewSelector();
-      renderDiagram();
+      renderSelector();
+      renderView();
     }
 
-    function renderConnector() {
-      var div = document.createElement('div');
-      div.className = 'connector';
-      var arrowColor = getComputedStyle(document.documentElement).getPropertyValue('--arrow').trim() || '#9ca3af';
-      div.innerHTML = '<svg width="2" height="12" viewBox="0 0 2 12"><line x1="1" y1="0" x2="1" y2="12" stroke="' + arrowColor + '" stroke-width="1.5" stroke-dasharray="3,2"/></svg>';
-      return div;
-    }
-
-    function renderDiagram() {
+    function renderView() {
       var view = VIEWS.find(function(v) { return v.id === activeView; });
       if (!view) return;
 
-      // Description
       document.getElementById('viewDescription').innerHTML = view.description;
 
-      // Tiers
-      var content = document.getElementById('diagramContent');
-      content.innerHTML = '';
-
-      view.tiers.forEach(function(t, i) {
-        if (i > 0) {
-          content.appendChild(renderConnector());
+      // Show active SVG, hide others
+      var svgs = document.querySelectorAll('.emdash-view-svg');
+      svgs.forEach(function(el) {
+        if (el.getAttribute('data-view-id') === activeView) {
+          el.classList.add('active');
+        } else {
+          el.classList.remove('active');
         }
-
-        var tierDiv = document.createElement('div');
-        tierDiv.className = 'tier tier-' + t.tier;
-
-        var label = document.createElement('div');
-        label.className = 'tier-label';
-        label.textContent = t.label;
-        tierDiv.appendChild(label);
-
-        var nodesDiv = document.createElement('div');
-        nodesDiv.className = 'tier-nodes';
-
-        t.nodes.forEach(function(n) {
-          var nodeDiv = document.createElement('div');
-          nodeDiv.className = 'node';
-          var nameSpan = document.createElement('span');
-          nameSpan.className = 'node-name';
-          nameSpan.textContent = n.name;
-          var detailSpan = document.createElement('span');
-          detailSpan.className = 'node-detail';
-          detailSpan.textContent = n.detail;
-          nodeDiv.appendChild(nameSpan);
-          nodeDiv.appendChild(detailSpan);
-          nodesDiv.appendChild(nodeDiv);
-        });
-
-        tierDiv.appendChild(nodesDiv);
-        content.appendChild(tierDiv);
       });
 
-      // Flows
-      var flowsSection = document.getElementById('flowsSection');
-      flowsSection.innerHTML = '';
-      if (view.flows && view.flows.length > 0) {
-        flowsSection.style.display = '';
-        var title = document.createElement('div');
-        title.className = 'flows-title';
-        title.textContent = 'Data Flows';
-        flowsSection.appendChild(title);
+      // Render flows
+      var flowsEl = document.getElementById('mermaidFlows');
+      flowsEl.innerHTML = '<div class="mermaid-flows-title">Flows</div>';
+      view.flows.forEach(function(flow) {
+        var item = document.createElement('div');
+        item.className = 'mermaid-flow-item';
+        item.innerHTML = '<span>' + flow.from + '</span>' +
+          '<span class="mermaid-flow-arrow">\u2192</span>' +
+          '<span>' + flow.to + '</span>' +
+          '<span class="mermaid-flow-label">' + flow.label + '</span>';
+        flowsEl.appendChild(item);
+      });
 
-        view.flows.forEach(function(f) {
-          var item = document.createElement('div');
-          item.className = 'flow-item';
-          item.innerHTML = '<span>' + f.from + '</span>' +
-            '<span class="flow-arrow">\u2192</span>' +
-            '<span>' + f.to + '</span>' +
-            '<span class="flow-label">' + f.label + '</span>';
-          flowsSection.appendChild(item);
-        });
-      } else {
-        flowsSection.style.display = 'none';
-      }
-
-      // Packages
-      var pkgSection = document.getElementById('packagesSection');
-      if (view.packages && view.packages.length > 0) {
-        pkgSection.style.display = '';
-        pkgSection.innerHTML = '';
-        var pkgTitle = document.createElement('div');
-        pkgTitle.className = 'packages-title';
-        pkgTitle.textContent = 'Monorepo Packages';
-        pkgSection.appendChild(pkgTitle);
-
-        var grid = document.createElement('div');
-        grid.className = 'package-grid';
-        view.packages.forEach(function(p) {
-          var item = document.createElement('div');
-          item.className = 'package-item';
-          item.innerHTML = '<span class="pkg-name">' + p.name + '</span><span class="pkg-desc">' + p.desc + '</span>';
-          grid.appendChild(item);
-        });
-        pkgSection.appendChild(grid);
-      } else {
-        pkgSection.style.display = 'none';
-      }
+      window.parent.postMessage(
+        { type: 'embed.oshineye.resize', height: document.body.scrollHeight }, '*'
+      );
     }
 
-    // Initialize
-    renderViewSelector();
-    renderDiagram();
+    renderSelector();
+    renderView();
 
-    // ResizeObserver for iframe auto-height
     new ResizeObserver(function() {
       window.parent.postMessage(
-        { type: 'embed.oshineye.resize', height: document.body.scrollHeight },
-        '*'
+        { type: 'embed.oshineye.resize', height: document.body.scrollHeight }, '*'
       );
     }).observe(document.body);
   </script>

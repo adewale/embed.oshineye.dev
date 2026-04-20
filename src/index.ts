@@ -11,6 +11,8 @@ import type { UserEntry } from "./embeds/v1/cloudflare-architecture-viz/mermaid"
 import { TEAM_RENDERED, ADE_RENDERED } from "./embeds/v1/cloudflare-architecture-viz/team-svgs";
 import type { PreRenderedDiagrams } from "./embeds/v1/cloudflare-architecture-viz/team-svgs";
 import archVizHtml from "./embeds/v1/cloudflare-architecture-viz/index.html";
+import { EMDASH_LIGHT, EMDASH_DARK } from "./embeds/v1/emdash-architecture-diagram/svgs";
+import emdashHtml from "./embeds/v1/emdash-architecture-diagram/index.html";
 
 const TIER_ORDER = ["client", "edge", "compute", "storage", "ai"];
 const TIER_LABELS: Record<string, string> = {
@@ -442,6 +444,17 @@ app.get("/team-architectures/:username/:projectId", (c) => {
   const theme = c.req.query("theme") || "light";
   const html = renderProjectPage(entry, username, theme, projectId);
   if (!html) return c.text("Not Found", 404);
+  return c.html(html);
+});
+
+// Serve emdash architecture diagram with pre-rendered SVGs
+app.get("/v1/emdash-architecture-diagram", (c) => {
+  const theme = c.req.query("theme") || "light";
+  const svgs = theme === "dark" ? EMDASH_DARK : EMDASH_LIGHT;
+  const viewSvgsHtml = Object.entries(svgs)
+    .map(([id, svg]) => `<div class="emdash-view-svg" data-view-id="${id}">${svg}</div>`)
+    .join("\n");
+  const html = emdashHtml.replace("<!-- EMDASH_DIAGRAMS -->", viewSvgsHtml);
   return c.html(html);
 });
 
