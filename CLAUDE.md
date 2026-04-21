@@ -16,6 +16,8 @@ npx wrangler deploy           # Deploy to Cloudflare Workers
 npx wrangler whoami           # Verify Cloudflare auth
 npm test                      # Run tests
 npm run test -- --testNamePattern "pattern"  # Run a single test
+npm run build:team-architectures             # Refresh team architecture data + SVGs
+python3 scripts/build_user_architectures.py <username> --open  # One-user standalone report
 ```
 
 ## Architecture
@@ -27,6 +29,10 @@ npm run test -- --testNamePattern "pattern"  # Run a single test
 ### URL scheme
 
 - `GET /` — catalogue page
+- `GET /team-architectures` — team architecture gallery
+- `GET /team-architectures/:username` — user architecture page
+- `GET /team-architectures/:username/:projectId` — project architecture page
+- `GET /user-architectures/:username` — redirect to generated standalone report
 - `GET /v1/:slug` — embed page (iframe target), accepts `?theme=light|dark`
 - `GET /static/*` — JS/CSS/image assets
 
@@ -35,6 +41,8 @@ npm run test -- --testNamePattern "pattern"  # Run a single test
 - `src/index.ts` — Hono app, routes, headers middleware
 - `src/middleware/embed-headers.ts` — X-Frame-Options, CSP, CORS, Cache headers
 - `src/embeds/v1/{slug}/index.html` — one self-contained HTML page per visualisation
+- `data/team-discovery.json` — cached team repo snapshots and discovered projects
+- `public/user-architectures/*.html` — generated standalone user architecture reports
 - `public/static/loader.js` — universal embed loader script (creates iframe, handles postMessage resize)
 
 ### Required response headers for `/v1/:slug`
@@ -85,5 +93,6 @@ Use test-driven development with red-green-refactor. Work in vertical slices (on
 
 - Prefer `wrangler.jsonc` over `wrangler.toml` for comments support
 - Workers Static Assets are configured via `wrangler.jsonc` `assets` field
+- Wrangler's built-in text-module defaults already cover `.html`; don't add a redundant custom `.html` rule
 - Static asset requests are free and unlimited on Cloudflare
 - For Hono on Workers, export the app as default: `export default app`

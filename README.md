@@ -21,11 +21,17 @@ npm run dev
 Then open in your browser:
 
 - **Catalogue page:** http://localhost:8787/
+- **Team Architectures:** http://localhost:8787/team-architectures
 - **Avatar Stack:** http://localhost:8787/v1/avatar-stack
 - **GitHub Timeline:** http://localhost:8787/v1/github-timeline
 - **Blogging Timeline:** http://localhost:8787/v1/blogging-timeline
+- **Cloudflare Architecture Viz:** http://localhost:8787/v1/cloudflare-architecture-viz
 
 Add `?theme=dark` or `?theme=light` to any embed URL to switch themes.
+
+Generated standalone user architecture reports are also served locally when present:
+
+- **Standalone report route:** http://localhost:8787/user-architectures/{username}
 
 ### GitHub Timeline query parameters
 
@@ -59,6 +65,17 @@ npm run build:github-timeline   # GitHub only
 npm run build:blogging-timeline # Blog only
 ```
 
+### Rebuilding architecture data
+
+```bash
+npm run build:team-architectures                           # Refresh team registry + SVGs
+python3 scripts/build_team_architectures.py --refresh     # Refresh changed repos/users
+python3 scripts/build_team_architectures.py --force-refresh # Reanalyze all targeted repos
+python3 scripts/build_user_architectures.py timowilhelm --display-name "Timo Wilhelm" --open
+```
+
+The team build uses GitHub repo snapshots in `data/team-discovery.json` so unchanged repos can be reanalyzed from cached local blobs instead of re-fetching every Wrangler config and `package.json` file.
+
 ## Embedding on a Page
 
 ### Option 1: Loader script (recommended)
@@ -90,6 +107,8 @@ npm install        # Install dependencies
 npm run dev        # Start local dev server
 npm test           # Run tests
 ```
+
+Embed HTML files under `src/embeds/v1/*/index.html` are imported directly as text modules. Wrangler already provides a default text-module rule for `.html`, so this project does not need a custom `.html` rule in `wrangler.jsonc`.
 
 ## Deployment
 

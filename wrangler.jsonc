@@ -7,9 +7,6 @@
   "assets": {
     "directory": "public"
   },
-  "rules": [
-    { "type": "Text", "globs": ["**/*.html"] }
-  ],
   "durable_objects": {
     "bindings": [
       { "name": "PRESENCE_ROOM", "class_name": "PresenceRoom" }
