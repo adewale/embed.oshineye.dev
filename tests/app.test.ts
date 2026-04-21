@@ -1031,6 +1031,14 @@ describe("GET /team-architectures/:username/:projectId (paginated)", () => {
   });
 });
 
+describe("GET /user-architectures/:username", () => {
+  it("redirects to the generated static HTML report", async () => {
+    const res = await app.request("/user-architectures/timowilhelm");
+    expect(res.status).toBe(302);
+    expect(res.headers.get("Location")).toBe("/user-architectures/timowilhelm.html");
+  });
+});
+
 describe("TEAM_RENDERED / TEAM_REGISTRY sync", () => {
   it("TEAM_RENDERED has an entry for every user in TEAM_REGISTRY with projects", async () => {
     const { TEAM_REGISTRY } = await import(

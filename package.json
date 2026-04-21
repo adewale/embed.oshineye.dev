@@ -12,6 +12,7 @@
     "build:blogging-timeline": "tsx scripts/build-blogging-timeline.ts",
     "build:timelines": "tsx scripts/build-github-timeline.ts && tsx scripts/build-blogging-timeline.ts",
     "build:team-architectures": "python3 scripts/build_team_architectures.py && tsx scripts/build-team-svgs.ts",
+    "build:user-architectures": "python3 scripts/build_user_architectures.py",
     "postinstall": "patch-package"
   },
   "dependencies": {

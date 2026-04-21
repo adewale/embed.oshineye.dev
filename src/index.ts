@@ -445,6 +445,12 @@ app.get("/team-architectures/:username/:projectId", (c) => {
   return c.html(html);
 });
 
+// Standalone user architecture reports are emitted into public/user-architectures/*.html
+app.get("/user-architectures/:username", (c) => {
+  const username = c.req.param("username");
+  return c.redirect(`/user-architectures/${username}.html`, 302);
+});
+
 // Serve embed by slug
 app.get("/v1/:slug", (c) => {
   const slug = c.req.param("slug");
