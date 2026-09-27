@@ -16,11 +16,15 @@ export default defineConfig({
       use: { browserName: "chromium" },
     },
   ],
-  // Uncomment to auto-start wrangler dev:
-  // webServer: {
-  //   command: 'npx wrangler dev',
-  //   port: 8787,
-  //   reuseExistingServer: true,
-  //   timeout: 15_000,
-  // },
+  // Start a local Worker unless BASE_URL points the suite at a running server
+  // (for example a preview deployment). Locally an already-running
+  // `wrangler dev` on :8787 is reused; in CI a fresh one is always started.
+  webServer: process.env.BASE_URL
+    ? undefined
+    : {
+        command: "npx wrangler dev --port 8787",
+        url: "http://localhost:8787",
+        reuseExistingServer: !process.env.CI,
+        timeout: 15_000,
+      },
 });

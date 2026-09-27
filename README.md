@@ -105,8 +105,12 @@ Replace `avatar-stack` with any embed slug.
 ```bash
 npm install        # Install dependencies
 npm run dev        # Start local dev server
-npm test           # Run tests
+npm test           # Run Vitest tests
+npm run check      # Typecheck + Vitest + Python unittest (what CI runs)
+npm run test:e2e   # Playwright; starts `wrangler dev` itself unless BASE_URL is set
 ```
+
+Screenshot baselines are per-platform. Only macOS baselines are committed; Linux ones are rendered on the CI runner by the manual **Regenerate visual baselines** workflow, which uploads them as an artifact to review and commit.
 
 Embed HTML files under `src/embeds/v1/*/index.html` are imported directly as text modules. Wrangler already provides a default text-module rule for `.html`, so this project does not need a custom `.html` rule in `wrangler.jsonc`.
 
