@@ -14,8 +14,10 @@ The full spec is in `specs/embeds.md` — read it before making architectural de
 npx wrangler dev              # Local dev server
 npx wrangler deploy           # Deploy to Cloudflare Workers
 npx wrangler whoami           # Verify Cloudflare auth
-npm test                      # Run tests
+npm test                      # Run Vitest tests
 npm run test -- --testNamePattern "pattern"  # Run a single test
+npm run check                 # Fast check: typecheck + Vitest + Python unittest (CI runs this)
+npm run test:e2e              # Playwright E2E; starts wrangler dev unless BASE_URL is set
 npm run build:team-architectures             # Refresh team architecture data + SVGs
 python3 scripts/build_user_architectures.py <username> --open  # One-user standalone report
 ```
@@ -81,6 +83,11 @@ Use test-driven development with red-green-refactor. Work in vertical slices (on
 2. **Tracer bullet** — write ONE test for ONE behavior, watch it fail, write minimal code to pass
 3. **Incremental loop** — repeat for each remaining behavior
 4. **Refactor** — only after all tests pass; never refactor while red
+
+### Verification gates
+
+- CI (`.github/workflows/ci.yml`) runs `npm run check` on every push to `main` and every pull request.
+- The vendored guardrails skill (`.claude/skills/guardrails`) describes lifecycle hooks. Only the Stop hook is wired: `.claude/settings.json` runs `.claude/hooks/stop-check.sh`, which runs `npm run check` when the working tree has changes and blocks the stop once if it fails. The skill's commit-time hook is not wired locally; CI is the commit gate.
 
 ### Test quality
 
