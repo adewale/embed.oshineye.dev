@@ -43,6 +43,10 @@
     if (event.origin !== EMBED_ORIGIN) {
       return;
     }
+    // Every embed on the page shares this origin; only resize our own iframe.
+    if (event.source !== iframe.contentWindow) {
+      return;
+    }
 
     var data = event.data;
     if (data && data.type === MESSAGE_TYPE && typeof data.height === "number") {
