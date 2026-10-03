@@ -133,3 +133,16 @@ describe("hash edge cases", () => {
     }
   });
 });
+
+describe("colour name matches colour", () => {
+  it("the name's colour word is the name of the returned hex colour", () => {
+    // Hand-derived: "Red Fox"-style names must describe the swatch shown.
+    const hexByName = new Map(COLOR_NAMES.map((n, i) => [n, PALETTE[i]]));
+    expect(hexByName.get("Red")).toBe("#E53935");
+    expect(hexByName.get("Grey")).toBe("#757575");
+    for (let i = 0; i < 200; i++) {
+      const id = getIdentity(`player-${i}`);
+      expect(hexByName.get(id.name.split(" ")[0]), id.name).toBe(id.color);
+    }
+  });
+});

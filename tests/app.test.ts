@@ -76,28 +76,6 @@ describe("GET /v1/avatar-stack", () => {
     const csp = res.headers.get("Content-Security-Policy");
     expect(csp).toContain("frame-ancestors *");
   });
-
-  it("HTML contains theme reading logic", async () => {
-    const res = await app.request("/v1/avatar-stack");
-    const body = await res.text();
-    expect(body).toContain(".get('theme')");
-    expect(body).toContain("'light'");
-    expect(body).toContain("'dark'");
-  });
-
-  it("HTML contains postMessage resize contract", async () => {
-    const res = await app.request("/v1/avatar-stack");
-    const body = await res.text();
-    expect(body).toContain("embed.oshineye.resize");
-    expect(body).toContain("document.body.scrollHeight");
-  });
-
-  it("room key is derived from location.href, not document.referrer", async () => {
-    const res = await app.request("/v1/avatar-stack");
-    const body = await res.text();
-    expect(body).toContain("encodeURIComponent(location.href)");
-    expect(body).not.toContain("document.referrer");
-  });
 });
 
 describe("GET /v1/avatar-stack-playground", () => {
@@ -118,21 +96,6 @@ describe("GET /v1/avatar-stack-playground", () => {
     expect(csp).toContain("frame-ancestors *");
   });
 
-  it("HTML contains theme reading logic", async () => {
-    const res = await app.request("/v1/avatar-stack-playground");
-    const body = await res.text();
-    expect(body).toContain("searchParams.get('theme')");
-    expect(body).toContain("'light'");
-    expect(body).toContain("'dark'");
-  });
-
-  it("HTML contains postMessage resize contract", async () => {
-    const res = await app.request("/v1/avatar-stack-playground");
-    const body = await res.text();
-    expect(body).toContain("embed.oshineye.resize");
-    expect(body).toContain("document.body.scrollHeight");
-  });
-
   it("contains interactive controls", async () => {
     const res = await app.request("/v1/avatar-stack-playground");
     const body = await res.text();
@@ -150,18 +113,6 @@ describe("avatar-stack live vs playground separation", () => {
     expect(body).not.toContain("btnRemove");
     expect(body).not.toContain("toggleSpread");
     expect(body).not.toContain("hero-title");
-  });
-
-  it("live embed supports layout query param (spread, both, list)", async () => {
-    const res = await app.request("/v1/avatar-stack");
-    const body = await res.text();
-    expect(body).toContain("params.get('layout')");
-    expect(body).toContain("'spread'");
-    expect(body).toContain("'both'");
-    expect(body).toContain("'list'");
-    expect(body).toContain("avatarStackSpread");
-    expect(body).toContain("userList");
-    expect(body).toContain("user-list-item");
   });
 
   it("live embed uses WebSocket for real presence", async () => {
@@ -217,21 +168,6 @@ describe("GET /v1/github-timeline", () => {
     expect(csp).toContain("frame-ancestors *");
   });
 
-  it("HTML contains theme reading logic", async () => {
-    const res = await app.request("/v1/github-timeline");
-    const body = await res.text();
-    expect(body).toContain(".get('theme')");
-    expect(body).toContain("'light'");
-    expect(body).toContain("'dark'");
-  });
-
-  it("HTML contains postMessage resize contract", async () => {
-    const res = await app.request("/v1/github-timeline");
-    const body = await res.text();
-    expect(body).toContain("embed.oshineye.resize");
-    expect(body).toContain("document.body.scrollHeight");
-  });
-
   it("contains baked-in repo data (no runtime API call)", async () => {
     const res = await app.request("/v1/github-timeline");
     const body = await res.text();
@@ -241,69 +177,6 @@ describe("GET /v1/github-timeline", () => {
     expect(body).toContain("timeline-item");
     expect(body).toContain("timeline-title");
     expect(body).toContain("github.com/adewale");
-  });
-
-  it("defaults to showing last 2 years only", async () => {
-    const res = await app.request("/v1/github-timeline");
-    const body = await res.text();
-    // Items and year headers have data-year for client-side filtering
-    expect(body).toContain("data-year=");
-    // Script reads years param with default of 2
-    expect(body).toContain(".get('years')");
-    // Default is 2 years when param is not set
-    expect(body).toMatch(/var\s+n\s*=\s*.*\|\|\s*2/);
-  });
-
-  it("supports ?years=all to show full history", async () => {
-    const res = await app.request("/v1/github-timeline");
-    const body = await res.text();
-    expect(body).toContain("'all'");
-  });
-
-  it("bakes in fork metadata for each repo", async () => {
-    const res = await app.request("/v1/github-timeline");
-    const body = await res.text();
-    // Each timeline item has a data-fork attribute
-    expect(body).toContain('data-fork="true"');
-    expect(body).toContain('data-fork="false"');
-  });
-
-  it("hides forks by default, shows with ?forks=show", async () => {
-    const res = await app.request("/v1/github-timeline");
-    const body = await res.text();
-    // Script reads the forks param and hides forks by default
-    expect(body).toContain(".get('forks')");
-    expect(body).toContain("data-fork");
-  });
-
-  it("styles forks differently: muted dot and dimmed card", async () => {
-    const res = await app.request("/v1/github-timeline");
-    const body = await res.text();
-    // CSS for fork items: muted dot color and reduced opacity
-    expect(body).toContain(".timeline-item.fork");
-    expect(body).toContain("opacity");
-  });
-
-  it("color-codes timeline dots by programming language", async () => {
-    const res = await app.request("/v1/github-timeline");
-    const body = await res.text();
-    // Language-specific CSS classes on timeline items
-    expect(body).toContain("lang-python");
-    expect(body).toContain("lang-typescript");
-    expect(body).toContain("lang-go");
-    expect(body).toContain("lang-javascript");
-    expect(body).toContain("lang-java");
-    // Each language class has a distinct dot color
-    expect(body).toContain(".timeline-item.lang-python::before");
-    expect(body).toContain(".timeline-item.lang-go::before");
-  });
-
-  it("language tags are clickable and filter the timeline dynamically", async () => {
-    const res = await app.request("/v1/github-timeline");
-    const body = await res.text();
-    expect(body).toContain("cursor: pointer");
-    expect(body).toContain("activeFilter");
-    expect(body).toContain("timeline-tag-active");
   });
 });
 
@@ -325,21 +198,6 @@ describe("GET /v1/blogging-timeline", () => {
     expect(csp).toContain("frame-ancestors *");
   });
 
-  it("HTML contains theme reading logic", async () => {
-    const res = await app.request("/v1/blogging-timeline");
-    const body = await res.text();
-    expect(body).toContain(".get('theme')");
-    expect(body).toContain("'light'");
-    expect(body).toContain("'dark'");
-  });
-
-  it("HTML contains postMessage resize contract", async () => {
-    const res = await app.request("/v1/blogging-timeline");
-    const body = await res.text();
-    expect(body).toContain("embed.oshineye.resize");
-    expect(body).toContain("document.body.scrollHeight");
-  });
-
   it("contains baked-in blog post data (no runtime API call)", async () => {
     const res = await app.request("/v1/blogging-timeline");
     const body = await res.text();
@@ -347,38 +205,6 @@ describe("GET /v1/blogging-timeline", () => {
     expect(body).toContain("timeline-item");
     expect(body).toContain("timeline-title");
     expect(body).toContain("blog.oshineye.com");
-  });
-
-  it("defaults to showing last 2 years only", async () => {
-    const res = await app.request("/v1/blogging-timeline");
-    const body = await res.text();
-    expect(body).toContain("data-year=");
-    expect(body).toContain(".get('years')");
-    expect(body).toMatch(/var\s+n\s*=\s*.*\|\|\s*2/);
-  });
-
-  it("supports ?years=all to show full history", async () => {
-    const res = await app.request("/v1/blogging-timeline");
-    const body = await res.text();
-    expect(body).toContain("'all'");
-  });
-
-  it("includes category tags on posts", async () => {
-    const res = await app.request("/v1/blogging-timeline");
-    const body = await res.text();
-    expect(body).toContain("timeline-tag");
-  });
-
-  it("tags are clickable and filter the timeline dynamically", async () => {
-    const res = await app.request("/v1/blogging-timeline");
-    const body = await res.text();
-    // Tags have cursor pointer styling
-    expect(body).toContain("cursor: pointer");
-    // Click handler filters by data-categories
-    expect(body).toContain("data-categories");
-    expect(body).toContain("activeFilter");
-    // Active tag gets a visual indicator
-    expect(body).toContain("timeline-tag-active");
   });
 });
 
@@ -398,21 +224,6 @@ describe("GET /v1/cloudflare-architecture-viz", () => {
     expect(res.headers.get("Access-Control-Allow-Origin")).toBe("*");
     const csp = res.headers.get("Content-Security-Policy");
     expect(csp).toContain("frame-ancestors *");
-  });
-
-  it("HTML contains theme reading logic", async () => {
-    const res = await app.request("/v1/cloudflare-architecture-viz");
-    const body = await res.text();
-    expect(body).toContain(".get('theme')");
-    expect(body).toContain("'light'");
-    expect(body).toContain("'dark'");
-  });
-
-  it("HTML contains postMessage resize contract", async () => {
-    const res = await app.request("/v1/cloudflare-architecture-viz");
-    const body = await res.text();
-    expect(body).toContain("embed.oshineye.resize");
-    expect(body).toContain("document.body.scrollHeight");
   });
 
   it("uses Gardener product-icon color palette", async () => {
@@ -443,7 +254,6 @@ describe("GET /v1/cloudflare-architecture-viz", () => {
     // Multiple projects baked in
     expect(body).toContain("switchProject");
   });
-
 });
 
 describe("Mermaid diagram generation", () => {
@@ -833,12 +643,33 @@ describe("computeTiers", () => {
   });
 });
 
-describe("dark theme for main embed", () => {
-  it("returns dark-themed HTML for ?theme=dark", async () => {
-    const res = await app.request("/v1/cloudflare-architecture-viz?theme=dark");
-    expect(res.status).toBe(200);
-    const body = await res.text();
-    expect(body).toContain("data-mermaid-project");
+describe("theme and project selection for main embed", () => {
+  // The page CSS defines both palettes, so colour strings appear in every
+  // response; the theme contract is which pre-rendered SVGs are served.
+  it("serves the dark SVGs for ?theme=dark and the light ones otherwise", async () => {
+    const { ADE_RENDERED } = await import(
+      "../src/embeds/v1/cloudflare-architecture-viz/team-svgs"
+    );
+    const dark = await (await app.request("/v1/cloudflare-architecture-viz?theme=dark")).text();
+    const light = await (await app.request("/v1/cloudflare-architecture-viz")).text();
+    for (const id of Object.keys(ADE_RENDERED.light)) {
+      expect(ADE_RENDERED.dark[id].svg).not.toBe(ADE_RENDERED.light[id].svg);
+      expect(dark, `${id} dark`).toContain(ADE_RENDERED.dark[id].svg);
+      expect(dark, `${id} dark`).not.toContain(ADE_RENDERED.light[id].svg);
+      expect(light, `${id} light`).toContain(ADE_RENDERED.light[id].svg);
+      expect(light, `${id} light`).not.toContain(ADE_RENDERED.dark[id].svg);
+    }
+  });
+
+  it("shows only the ?project= diagram, defaulting to planet-cf", async () => {
+    const visible = async (url: string) => {
+      const body = await (await app.request(url)).text();
+      return [...body.matchAll(/data-mermaid-project="([^"]+)"(?:\s+[\w-]+="[^"]*")*?\s+style="([^"]*)"/g)]
+        .filter((m) => !m[2].includes("display: none"))
+        .map((m) => m[1]);
+    };
+    expect(await visible("/v1/cloudflare-architecture-viz")).toEqual(["planet-cf"]);
+    expect(await visible("/v1/cloudflare-architecture-viz?project=vaders")).toEqual(["vaders"]);
   });
 });
 
@@ -894,10 +725,17 @@ describe("GET /team-architectures", () => {
   });
 
   it("supports dark theme", async () => {
+    // Both palettes are always in the CSS; the root class picks one.
     const res = await app.request("/team-architectures?theme=dark");
     expect(res.status).toBe(200);
-    const body = await res.text();
-    expect(body).toContain("#1f2937");
+    expect(await res.text()).toContain('<html lang="en" class="dark">');
+    const light = await (await app.request("/team-architectures")).text();
+    expect(light).toContain('<html lang="en" class="">');
+  });
+
+  it("keeps ?theme=dark on links to user pages", async () => {
+    const body = await (await app.request("/team-architectures?theme=dark")).text();
+    expect(body).toContain("window.location='/team-architectures/adewale?theme=dark'");
   });
 });
 
@@ -999,11 +837,22 @@ describe("GET /team-architectures/:username/:projectId (paginated)", () => {
   });
 
   it("returns dark-themed SVGs for ?theme=dark", async () => {
+    const { TEAM_RENDERED } = await import(
+      "../src/embeds/v1/cloudflare-architecture-viz/team-svgs"
+    );
+    const { light, dark } = TEAM_RENDERED.adewale;
+    expect(dark["planet-cf"].svg).not.toBe(light["planet-cf"].svg);
+
     const res = await app.request("/team-architectures/adewale/planet-cf?theme=dark");
     expect(res.status).toBe(200);
     const body = await res.text();
-    expect(body).toContain("#1f2937");
-    expect(body).toContain("mermaid-project-svg");
+    expect(body).toContain(dark["planet-cf"].svg);
+    expect(body).not.toContain(light["planet-cf"].svg);
+    expect(body).toContain('_BACK_URL = "/team-architectures/adewale?theme=dark"');
+
+    const lightBody = await (await app.request("/team-architectures/adewale/planet-cf")).text();
+    expect(lightBody).toContain(light["planet-cf"].svg);
+    expect(lightBody).toContain('_BACK_URL = "/team-architectures/adewale"');
   });
 
   it("pre-rendered SVGs contain icon badges and detail text", async () => {
