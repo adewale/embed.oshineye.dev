@@ -26,6 +26,8 @@ The `?theme=light|dark` parameter is read by JavaScript in the embed HTML, not b
 
 The `loader.js` validates `event.origin === "https://embed.oshineye.dev"` before acting on any postMessage. This is critical security — without it, any page could send resize messages and manipulate the iframe height. The spec was explicit about this, and the implementation follows it exactly.
 
+The origin check is not enough on its own: every embed posts from that same origin, so with two embeds on one page each loader resized its iframe on the other embed's messages too (a timeline ended up the height of an avatar stack). The loader now also requires `event.source === iframe.contentWindow`. `tests/e2e/loader.spec.ts` runs the real loader in Chromium on a host page with two embeds, and with a second frame on the embed origin, so removing either check fails a test.
+
 ## 7. The registry pattern makes adding embeds straightforward
 
 Each embed is an entry in `registry.ts` with a slug, title, description, and imported HTML. Adding a new visualisation is: create the HTML file, add one entry to the array, done. The catalogue page and slug routing both read from this single source of truth. This is slightly more coupled than filesystem-based discovery, but simpler and more explicit.
@@ -36,7 +38,7 @@ All embeds are fully self-contained single HTML files with inline CSS and JS. No
 
 ## 9. Test what the spec specifies, not what the implementation does
 
-The tests check for `searchParams.get('theme')`, `embed.oshineye.resize`, `document.body.scrollHeight` — strings that the spec defines as part of the contract. They don't test internal function calls or module structure. When the auditor reviewed the tests, the question was "would this test break if we refactored the internals?" and the answer was no for all 14 tests.
+*Revised.* The original tests checked that the embed HTML contained strings such as `searchParams.get('theme')`, `embed.oshineye.resize` and `document.body.scrollHeight`, on the grounds that the spec names them. Those tests passed as long as the words were present: inverting the years cutoff, ignoring `?forks=show`, breaking the tag filter or posting the wrong height all left them green. Three dark-theme checks also passed on light pages, because both palettes' colours are always in the CSS. The spec's contract is the behaviour, so `tests/e2e/embed-behaviour.spec.ts` now checks it in a real browser (computed colours, visible items, the posted height), and the Vitest route tests compare the server's output against both theme variants. A test must fail when the behaviour breaks, not only when a word is renamed.
 
 ## 10. Audit-then-fix cycles are efficient
 
