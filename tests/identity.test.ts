@@ -118,3 +118,18 @@ describe("collision resistance", () => {
     expect(names.size).toBeGreaterThanOrEqual(80);
   });
 });
+
+describe("hash edge cases", () => {
+  // "polygenelubricants" hashes to -2^31 under this (Java-style) string hash,
+  // the one value Math.abs cannot make positive. playerId comes straight from
+  // the WebSocket query string, so any client can send it.
+  it("gives a valid identity when the hash is -2^31", () => {
+    for (const playerId of ["polygenelubricants", "GydZG_", "DESIGNING WORKHOUSES"]) {
+      const result = getIdentity(playerId);
+      const [colorName, ...animal] = result.name.split(" ");
+      expect(COLOR_NAMES).toContain(colorName);
+      expect(ANIMALS).toContain(animal.join(" "));
+      expect(PALETTE).toContain(result.color);
+    }
+  });
+});

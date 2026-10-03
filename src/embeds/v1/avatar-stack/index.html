@@ -533,7 +533,7 @@
       }
       var fbHash = hashStr(playerId);
       var fbColorIdx = fbHash % FALLBACK_PALETTE.length;
-      var fbAnimalIdx = (fbHash >> 8) % FALLBACK_ANIMALS.length;
+      var fbAnimalIdx = Math.floor(fbHash / 256) % FALLBACK_ANIMALS.length;
       var fbColor = FALLBACK_PALETTE[fbColorIdx];
       var fbAnimal = FALLBACK_ANIMALS[fbAnimalIdx];
       var fbName = FALLBACK_COLOR_NAMES[fbColorIdx] + ' ' + fbAnimal;
