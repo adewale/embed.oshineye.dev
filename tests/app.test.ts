@@ -652,7 +652,9 @@ describe("theme and project selection for main embed", () => {
     );
     const dark = await (await app.request("/v1/cloudflare-architecture-viz?theme=dark")).text();
     const light = await (await app.request("/v1/cloudflare-architecture-viz")).text();
-    for (const id of Object.keys(ADE_RENDERED.light)) {
+    const ids = Object.keys(ADE_RENDERED.light);
+    expect(ids.length).toBeGreaterThan(0);
+    for (const id of ids) {
       expect(ADE_RENDERED.dark[id].svg).not.toBe(ADE_RENDERED.light[id].svg);
       expect(dark, `${id} dark`).toContain(ADE_RENDERED.dark[id].svg);
       expect(dark, `${id} dark`).not.toContain(ADE_RENDERED.light[id].svg);
@@ -728,9 +730,9 @@ describe("GET /team-architectures", () => {
     // Both palettes are always in the CSS; the root class picks one.
     const res = await app.request("/team-architectures?theme=dark");
     expect(res.status).toBe(200);
-    expect(await res.text()).toContain('<html lang="en" class="dark">');
+    expect(await res.text()).toMatch(/<html[^>]*\sclass="dark"/);
     const light = await (await app.request("/team-architectures")).text();
-    expect(light).toContain('<html lang="en" class="">');
+    expect(light).not.toMatch(/<html[^>]*\sclass="[^"]*dark/);
   });
 
   it("keeps ?theme=dark on links to user pages", async () => {

@@ -98,15 +98,18 @@ for (const slug of ["github-timeline", "blogging-timeline"]) {
     });
 
     test("shows only the last two calendar years by default", async ({ page }) => {
+      // Mid-2017, where both datasets have 2015, 2016 and 2017 items: the
+      // window is 2016-2017, so this pins both the "2" and the boundary.
+      await page.clock.setFixedTime(new Date("2017-06-15T12:00:00Z"));
       await page.goto(`/v1/${slug}?forks=show`);
       const items = await timelineItems(page);
-      const recent = items.filter((i) => i.year >= 2025);
-      const older = items.filter((i) => i.year <= 2024);
-      expect(recent.length).toBeGreaterThan(0);
+      const edge = items.filter((i) => i.year === 2016);
+      const older = items.filter((i) => i.year <= 2015);
+      expect(edge.length).toBeGreaterThan(0);
       expect(older.length).toBeGreaterThan(0);
-      expect(recent.every((i) => i.visible)).toBe(true);
+      expect(items.filter((i) => i.year >= 2016).every((i) => i.visible)).toBe(true);
       expect(older.some((i) => i.visible)).toBe(false);
-      expect((await visibleYearHeaders(page)).every((y) => y >= 2025)).toBe(true);
+      expect((await visibleYearHeaders(page)).every((y) => y >= 2016)).toBe(true);
     });
 
     test("?years=all shows every item and ?years=N widens the window", async ({ page }) => {
@@ -125,11 +128,16 @@ for (const slug of ["github-timeline", "blogging-timeline"]) {
     });
 
     test("the window follows the current date", async ({ page }) => {
+      // 2025 items are inside the window in 2026 and outside it in 2027.
+      await page.goto(`/v1/${slug}?forks=show`);
+      const in2026 = (await timelineItems(page)).filter((i) => i.year === 2025);
+      expect(in2026.length).toBeGreaterThan(0);
+      expect(in2026.every((i) => i.visible)).toBe(true);
+
       await page.clock.setFixedTime(new Date("2027-06-15T12:00:00Z"));
       await page.goto(`/v1/${slug}?forks=show`);
-      const items = await timelineItems(page);
-      expect(items.filter((i) => i.year === 2025).some((i) => i.visible)).toBe(false);
-      expect(items.filter((i) => i.year === 2026).every((i) => i.visible)).toBe(true);
+      const in2027 = (await timelineItems(page)).filter((i) => i.year === 2025);
+      expect(in2027.some((i) => i.visible)).toBe(false);
     });
   });
 }
@@ -155,8 +163,10 @@ test.describe("/v1/github-timeline forks and language filter", () => {
     const dot = (lang: string) =>
       page.locator(`.timeline-item[data-language="${lang}"]`).first()
         .evaluate((el) => getComputedStyle(el, "::before").backgroundColor);
-    const colours = new Set([await dot("python"), await dot("typescript"), await dot("go")]);
-    expect(colours.size).toBe(3);
+    const languages = ["python", "typescript", "go", "javascript", "java"];
+    const colours = new Set<string>();
+    for (const lang of languages) colours.add(await dot(lang));
+    expect(colours.size).toBe(languages.length);
   });
 
   test("clicking a language tag filters to that language; clicking again clears it", async ({ page }) => {
@@ -228,11 +238,15 @@ test.describe("/v1/avatar-stack", () => {
       await page.goto(`/v1/avatar-stack${layout ? `?layout=${layout}` : ""}`);
       for (const id of ["compactSection", "spreadSection", "listSection"]) {
         const section = page.locator(`#${id}`);
-        if ((shown as readonly string[]).includes(id)) await expect(section).toBeVisible();
-        else await expect(section).toBeHidden();
+        if ((shown as readonly string[]).includes(id)) {
+          await expect(section).toBeVisible();
+          // Each visible layout renders at least the local player.
+          const entry = id === "listSection" ? ".user-list-item" : ".avatar";
+          await expect(section.locator(entry).first()).toBeVisible();
+        } else {
+          await expect(section).toBeHidden();
+        }
       }
-      // The visible layout renders the local player once the page has loaded.
-      await expect(page.locator("#userCount")).toHaveText(/\d+ online/);
     });
   }
 });

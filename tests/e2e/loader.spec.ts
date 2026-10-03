@@ -4,12 +4,15 @@ import { test, expect, type Page } from "@playwright/test";
 // It hard-codes https://embed.oshineye.dev as the iframe origin and only
 // trusts resize messages from that origin, so the test serves a host page on
 // another origin and routes embed.oshineye.dev to the local Worker. No request
-// leaves the machine: anything not routed is aborted.
+// leaves the machine: anything not routed is aborted, and every WebSocket
+// (page.route does not see them; avatar-stack opens one to its own origin,
+// which here would be production) is held open without a server behind it.
 
 const EMBED_ORIGIN = "https://embed.oshineye.dev";
 const HOST = "https://blog.example";
 
 async function serveHostPage(page: Page, baseURL: string, body: string) {
+  await page.routeWebSocket(/.*/, () => {});
   await page.route("**/*", async (route) => {
     const url = new URL(route.request().url());
     if (url.origin === HOST) {
@@ -63,14 +66,30 @@ function hostReceives(page: Page, height: number) {
   );
 }
 
-test("ignores resize messages that do not come from its iframe", async ({ page, baseURL }) => {
-  await serveHostPage(page, baseURL!, `<!DOCTYPE html><body>${loaderTag("github-timeline", "a")}</body>`);
+test("ignores resize messages from another window on the embed origin", async ({ page, baseURL }) => {
+  // A second frame on https://embed.oshineye.dev passes the origin check, so
+  // only the event.source check can reject its message.
+  await serveHostPage(
+    page,
+    baseURL!,
+    `<!DOCTYPE html><body>${loaderTag("github-timeline", "a")}<div id="forger"></div></body>`,
+  );
+  await page.route(`${EMBED_ORIGIN}/forged`, (route) =>
+    route.fulfill({
+      contentType: "text/html",
+      body: `<script>parent.postMessage({ type: "embed.oshineye.resize", height: 7 }, "*")</script>`,
+    }),
+  );
   await page.goto(HOST + "/post");
   const content = await contentHeightOf(page, "a");
   await expect.poll(() => heightOf(page, "a")).toBe(`${content}px`);
 
   const received = hostReceives(page, 7);
-  await page.evaluate(() => window.postMessage({ type: "embed.oshineye.resize", height: 7 }, "*"));
+  await page.evaluate((src) => {
+    const f = document.createElement("iframe");
+    f.src = src;
+    document.getElementById("forger")!.appendChild(f);
+  }, `${EMBED_ORIGIN}/forged`);
   await received;
   expect(await heightOf(page, "a")).toBe(`${content}px`);
 });
