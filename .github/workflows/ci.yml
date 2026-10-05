@@ -43,3 +43,30 @@ jobs:
 
       - name: Run checks
         run: npm run check
+
+  # Browser tests against a local `wrangler dev` (started by playwright.config.ts).
+  # Screenshot tests are excluded until Linux baselines are committed via the
+  # manual "Regenerate visual baselines" workflow; --update-snapshots=none stops
+  # a missing baseline from being written and then passing against itself.
+  e2e:
+    name: playwright (no screenshots)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Playwright
+        run: npx playwright test --grep-invert screenshot --update-snapshots=none
