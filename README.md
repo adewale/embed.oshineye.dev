@@ -136,4 +136,4 @@ Deploys to `embed.oshineye.dev` via Cloudflare Workers.
      );
    }).observe(document.body);
    ```
-5. Add tests in `tests/app.test.ts`
+5. Add tests: routes and headers in `tests/app.test.ts`; client-side behaviour (theme, resize, filters) in `tests/e2e/embed-behaviour.spec.ts`
