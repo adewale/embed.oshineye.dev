@@ -102,6 +102,10 @@ Replace `avatar-stack` with any embed slug.
 
 ## Development
 
+Install Git as well as Node.js: `postinstall` applies the single reviewed,
+version-pinned beautiful-mermaid patch using `git apply`. Reinstalling accepts
+an already-applied patch; version or patch drift fails the install.
+
 ```bash
 npm install        # Install dependencies
 npm run dev        # Start local dev server
