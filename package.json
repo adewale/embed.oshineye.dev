@@ -23,13 +23,13 @@
     "hono": "^4.13.7"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20260303.0",
+    "@cloudflare/workers-types": "^5.20261009.1",
     "@playwright/test": "^1.58.2",
     "beautiful-mermaid": "^1.0.2",
     "patch-package": "^8.0.1",
     "typescript": "^5.7.0",
-    "vite": "^7.3.1",
-    "vitest": "^4.0.18",
-    "wrangler": "^4.68.0"
+    "vite": "^7.3.7",
+    "vitest": "^4.1.11",
+    "wrangler": "^4.149.0"
   }
 }
