@@ -2,6 +2,11 @@ import { defineConfig } from "@playwright/test";
 
 export default defineConfig({
   testDir: "./tests/e2e",
+  // Additional behaviour checks remain explicit review work, not a larger
+  // default browser budget. The real loader fence checks stay in the default.
+  testIgnore: process.env.EMBED_BEHAVIOUR_CHECKS === "1"
+    ? []
+    : ["**/embed-behaviour.spec.ts"],
   timeout: 30_000,
   expect: {
     timeout: 10_000,

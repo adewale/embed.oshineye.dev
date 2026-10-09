@@ -106,11 +106,20 @@ Replace `avatar-stack` with any embed slug.
 npm install        # Install dependencies
 npm run dev        # Start local dev server
 npm test           # Run Vitest tests
-npm run check      # Typecheck + Vitest + Python unittest (what CI runs)
+npm run check      # Opt-in local typecheck + Vitest + Python unittest
 npm run test:e2e   # Playwright; starts `wrangler dev` itself unless BASE_URL is set
+npm run test:e2e:behaviour # Explicit additional 27 client-behaviour checks
 ```
 
-Screenshot baselines are per-platform. Only macOS baselines are committed; Linux ones are rendered on the CI runner by the manual **Regenerate visual baselines** workflow, which uploads them as an artifact to review and commit.
+Screenshot baselines are per-platform. Only macOS baselines are committed. No automatic browser lane, baseline workflow or stop hook is added by this repair.
+
+The default browser command collects 56 tests (58 on main): four real loader
+checks replace six weaker resize checks, including same-origin wrong-window
+rejection and independently sized embeds. The additional 27 theme/filter/layout
+and offline-identity checks run only via `test:e2e:behaviour`. To explicitly run
+all 83 checks, use `EMBED_BEHAVIOUR_CHECKS=1 npm run test:e2e`. No worker, retry or
+timeout budget is expanded. These local checks do not establish production
+deployment or cross-platform screenshot compatibility.
 
 Embed HTML files under `src/embeds/v1/*/index.html` are imported directly as text modules. Wrangler already provides a default text-module rule for `.html`, so this project does not need a custom `.html` rule in `wrangler.jsonc`.
 
@@ -136,4 +145,4 @@ Deploys to `embed.oshineye.dev` via Cloudflare Workers.
      );
    }).observe(document.body);
    ```
-5. Add tests: routes and headers in `tests/app.test.ts`; client-side behaviour (theme, resize, filters) in `tests/e2e/embed-behaviour.spec.ts`
+5. Add tests: routes and headers in `tests/app.test.ts`; opt-in client-side behaviour (theme, resize, filters) in `tests/e2e/embed-behaviour.spec.ts`, verified with `npm run test:e2e:behaviour`

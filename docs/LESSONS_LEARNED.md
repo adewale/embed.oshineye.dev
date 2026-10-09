@@ -71,3 +71,16 @@ For one-off users who should not be added to the shared team registry, the simpl
 ## 17. Docs drift quickly around infrastructure defaults and generated routes
 
 The recent work exposed stale documentation in two places: HTML import behavior and generated standalone architecture routes. Keeping `README.md`, `CLAUDE.md`, and `docs/LESSONS_LEARNED.md` aligned with the actual Worker, Wrangler, and generation pipeline is part of the implementation work, not cleanup to defer indefinitely. Infrastructure defaults are especially easy to misdocument because they often work until a warning or deploy audit proves otherwise.
+
+## 18. A useful repair does not require another automatic lane
+
+The loader-origin/source fence and signed-hash identity repair can ship without new CI jobs, scheduled screenshots or a stop hook. Use the existing local commands for review evidence. Keep browser coverage explicit rather than claiming source-string checks establish behaviour, and do not add automatic workload merely because a new suite is available.
+
+Count expanded browser cases, not declarations: loops made the proposed default
+83 checks, not 57. Four real loader checks now replace six weaker resize checks
+in the default collection (56 versus main's 58), retaining real origin/source
+and resize coverage without growing that budget. The additional 27 behaviour
+checks are opt-in through `npm run test:e2e:behaviour`; all 83 require the explicit
+`EMBED_BEHAVIOUR_CHECKS=1` flag. A manual review fixture is not permission to
+increase default workload, and these checks do not prove production deployment
+or cross-platform screenshots.
