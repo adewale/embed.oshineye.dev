@@ -43,7 +43,9 @@ export interface PlayerIdentity {
 export function getIdentity(playerId: string): PlayerIdentity {
   const h = hash(playerId);
   const colorIndex = h % PALETTE.length;
-  const animalIndex = (h >> 8) % ANIMALS.length;
+  // Math.floor(h / 256), not h >> 8: hash() can return 2^31 (Math.abs of
+  // -2^31), which >> wraps back to a negative index.
+  const animalIndex = Math.floor(h / 256) % ANIMALS.length;
 
   const color = PALETTE[colorIndex];
   const colorName = COLOR_NAMES[colorIndex];

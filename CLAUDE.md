@@ -14,8 +14,11 @@ The full spec is in `specs/embeds.md` — read it before making architectural de
 npx wrangler dev              # Local dev server
 npx wrangler deploy           # Deploy to Cloudflare Workers
 npx wrangler whoami           # Verify Cloudflare auth
-npm test                      # Run tests
+npm test                      # Run Vitest tests
 npm run test -- --testNamePattern "pattern"  # Run a single test
+npm run check                 # Opt-in local typecheck + Vitest + Python unittest
+npm run test:e2e              # Playwright E2E; starts wrangler dev unless BASE_URL is set
+npm run test:e2e:behaviour    # Explicit additional 27 client-behaviour checks
 npm run build:team-architectures             # Refresh team architecture data + SVGs
 python3 scripts/build_user_architectures.py <username> --open  # One-user standalone report
 ```
@@ -81,6 +84,11 @@ Use test-driven development with red-green-refactor. Work in vertical slices (on
 2. **Tracer bullet** — write ONE test for ONE behavior, watch it fail, write minimal code to pass
 3. **Incremental loop** — repeat for each remaining behavior
 4. **Refactor** — only after all tests pass; never refactor while red
+
+### Local verification
+
+- Run `npm run check` for local checks and `npm run test:e2e` for browser checks. This repair adds no automatic CI jobs, schedules or lifecycle hooks; those proposed additions are deferred under the no-cost-growth constraint.
+- Default browser collection is 56 tests versus main's 58: four real loader checks replace six weaker resize checks. The 27 additional behaviour checks remain opt-in via `npm run test:e2e:behaviour`; `EMBED_BEHAVIOUR_CHECKS=1 npm run test:e2e` explicitly runs all 83. Do not add those checks to the default or enlarge workers, retries or timeout budgets.
 
 ### Test quality
 

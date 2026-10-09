@@ -7,7 +7,11 @@
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
     "test": "vitest run",
+    "test:py": "python3 -m unittest discover -s tests -p \"test_*.py\"",
+    "typecheck": "tsc --noEmit",
+    "check": "npm run typecheck && npm test && npm run test:py",
     "test:e2e": "playwright test",
+    "test:e2e:behaviour": "EMBED_BEHAVIOUR_CHECKS=1 playwright test tests/e2e/embed-behaviour.spec.ts",
     "build:github-timeline": "tsx scripts/build-github-timeline.ts",
     "build:blogging-timeline": "tsx scripts/build-blogging-timeline.ts",
     "build:timelines": "tsx scripts/build-github-timeline.ts && tsx scripts/build-blogging-timeline.ts",
@@ -16,7 +20,7 @@
     "postinstall": "patch-package"
   },
   "dependencies": {
-    "hono": "^4.12.2"
+    "hono": "^4.13.7"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20260303.0",

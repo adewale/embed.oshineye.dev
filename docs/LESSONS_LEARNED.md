@@ -26,6 +26,8 @@ The `?theme=light|dark` parameter is read by JavaScript in the embed HTML, not b
 
 The `loader.js` validates `event.origin === "https://embed.oshineye.dev"` before acting on any postMessage. This is critical security — without it, any page could send resize messages and manipulate the iframe height. The spec was explicit about this, and the implementation follows it exactly.
 
+The origin check is not enough on its own: every embed posts from that same origin, so with two embeds on one page each loader resized its iframe on the other embed's messages too (a timeline ended up the height of an avatar stack). The loader now also requires `event.source === iframe.contentWindow`. `tests/e2e/loader.spec.ts` runs the real loader in Chromium on a host page with two embeds, and with a second frame on the embed origin, so removing either check fails a test.
+
 ## 7. The registry pattern makes adding embeds straightforward
 
 Each embed is an entry in `registry.ts` with a slug, title, description, and imported HTML. Adding a new visualisation is: create the HTML file, add one entry to the array, done. The catalogue page and slug routing both read from this single source of truth. This is slightly more coupled than filesystem-based discovery, but simpler and more explicit.
@@ -36,7 +38,7 @@ All embeds are fully self-contained single HTML files with inline CSS and JS. No
 
 ## 9. Test what the spec specifies, not what the implementation does
 
-The tests check for `searchParams.get('theme')`, `embed.oshineye.resize`, `document.body.scrollHeight` — strings that the spec defines as part of the contract. They don't test internal function calls or module structure. When the auditor reviewed the tests, the question was "would this test break if we refactored the internals?" and the answer was no for all 14 tests.
+*Revised.* The original tests checked that the embed HTML contained strings such as `searchParams.get('theme')`, `embed.oshineye.resize` and `document.body.scrollHeight`, on the grounds that the spec names them. Those tests passed as long as the words were present: inverting the years cutoff, ignoring `?forks=show`, breaking the tag filter or posting the wrong height all left them green. Three dark-theme checks also passed on light pages, because both palettes' colours are always in the CSS. The spec's contract is the behaviour, so `tests/e2e/embed-behaviour.spec.ts` now checks it in a real browser (computed colours, visible items, the posted height), and the Vitest route tests compare the server's output against both theme variants. A test must fail when the behaviour breaks, not only when a word is renamed.
 
 ## 10. Audit-then-fix cycles are efficient
 
@@ -69,3 +71,16 @@ For one-off users who should not be added to the shared team registry, the simpl
 ## 17. Docs drift quickly around infrastructure defaults and generated routes
 
 The recent work exposed stale documentation in two places: HTML import behavior and generated standalone architecture routes. Keeping `README.md`, `CLAUDE.md`, and `docs/LESSONS_LEARNED.md` aligned with the actual Worker, Wrangler, and generation pipeline is part of the implementation work, not cleanup to defer indefinitely. Infrastructure defaults are especially easy to misdocument because they often work until a warning or deploy audit proves otherwise.
+
+## 18. A useful repair does not require another automatic lane
+
+The loader-origin/source fence and signed-hash identity repair can ship without new CI jobs, scheduled screenshots or a stop hook. Use the existing local commands for review evidence. Keep browser coverage explicit rather than claiming source-string checks establish behaviour, and do not add automatic workload merely because a new suite is available.
+
+Count expanded browser cases, not declarations: loops made the proposed default
+83 checks, not 57. Four real loader checks now replace six weaker resize checks
+in the default collection (56 versus main's 58), retaining real origin/source
+and resize coverage without growing that budget. The additional 27 behaviour
+checks are opt-in through `npm run test:e2e:behaviour`; all 83 require the explicit
+`EMBED_BEHAVIOUR_CHECKS=1` flag. A manual review fixture is not permission to
+increase default workload, and these checks do not prove production deployment
+or cross-platform screenshots.
