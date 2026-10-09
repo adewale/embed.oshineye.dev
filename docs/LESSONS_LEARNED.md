@@ -84,3 +84,11 @@ checks are opt-in through `npm run test:e2e:behaviour`; all 83 require the expli
 `EMBED_BEHAVIOUR_CHECKS=1` flag. A manual review fixture is not permission to
 increase default workload, and these checks do not prove production deployment
 or cross-platform screenshots.
+
+## 19. Remove unused dependency machinery without removing the contract
+
+The unpatched braces advisory came through patch-package's general discovery
+stack, not our renderer. This project applies exactly one reviewed patch.
+Replacing discovery with a fixed-path, version-checked Git application removes
+that chain while preserving the patch bytes and fail-closed drift checks.
+Document the Git prerequisite; do not call deleting a necessary patch a fix.
